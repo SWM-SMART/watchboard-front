@@ -1,4 +1,6 @@
+'use client';
 import { Text } from '@react-three/drei';
+
 interface TextViewProps {
   obj: TextObj;
 }

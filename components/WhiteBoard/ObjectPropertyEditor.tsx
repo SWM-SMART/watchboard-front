@@ -1,3 +1,4 @@
+'use client';
 import { objMapState } from '@/states/whiteboard';
 import { useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';

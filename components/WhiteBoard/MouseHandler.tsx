@@ -1,8 +1,9 @@
-import { objMapState, objState, objTreeState, toolState } from '@/states/whiteboard';
+'use client';
+import { objMapState, currentObjState, objTreeState, currentToolState } from '@/states/whiteboard';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { createRect, genDepth, genId, getPos } from '@/utils/whiteboardHelper';
+import { createRect, getPos } from '@/utils/whiteboardHelper';
 
 const MAX_OPACITY = 0.5;
 
@@ -15,7 +16,7 @@ export default function MouseHandler() {
     gl: { domElement },
   } = useThree(); // More like reference? Not a state, useEffect can't track these
 
-  const tool = useRecoilValue(toolState);
+  const tool = useRecoilValue(currentToolState);
 
   const [upPos, setUpPos] = useState<Coord>(() => getPos(mouse, camera));
   const [opacity, setOpacity] = useState<number>(0);
@@ -27,7 +28,7 @@ export default function MouseHandler() {
   const [zoom, setZoom] = useState<number>(1);
   const [objMap, setObjMap] = useRecoilState(objMapState);
   const [objTree, setObjTree] = useRecoilState(objTreeState);
-  const [current, setCurrent] = useRecoilState(objState);
+  const [current, setCurrent] = useRecoilState(currentObjState);
 
   useEffect(() => {
     setSelection(false);

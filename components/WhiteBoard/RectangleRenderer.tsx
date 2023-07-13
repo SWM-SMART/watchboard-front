@@ -1,5 +1,5 @@
 'use client';
-import { objState } from '@/states/whiteboard';
+import { currentObjState } from '@/states/whiteboard';
 import { useRecoilState } from 'recoil';
 
 interface Props {
@@ -8,7 +8,7 @@ interface Props {
 
 // renders given rectangle object, sets selection onClick
 export default function RectangleRenderer({ obj }: Props) {
-  const [selection, setSelection] = useRecoilState(objState);
+  const [selection, setSelection] = useRecoilState(currentObjState);
   return (
     <mesh
       position={[obj.x, obj.y, obj.depth]}

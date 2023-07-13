@@ -1,24 +1,24 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 export const objMapState = atom<Map<string, Obj>>({
-  key: "whiteboard-objMap",
+  key: 'whiteboard-objMap',
   default: new Map<string, Obj>(),
 });
 
 export const objTreeState = atom<ObjNode>({
-  key: "whiteboard-objTree",
+  key: 'whiteboard-objTree',
   default: {
-    objId: "root",
+    objId: 'root',
     childNodes: [],
   },
 });
 
-export const toolState = atom<Tool>({
-  key: "whiteboard-toolSelection",
-  default: "HAND",
+export const currentToolState = atom<Tool>({
+  key: 'whiteboard-toolSelection',
+  default: 'HAND',
 });
 
-export const objState = atom<string | null>({
-  key: "whiteboard-objState",
+export const currentObjState = atom<string | null>({
+  key: 'whiteboard-objState',
   default: null,
 });
