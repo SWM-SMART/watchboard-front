@@ -10,7 +10,7 @@ interface WhiteBoardProps {
   style?: CSSProperties;
 }
 
-export default function Whiteboard({ style }: WhiteBoardProps) {
+export default function WhiteBoard({ style }: WhiteBoardProps) {
   const objTree = useRecoilValue(objTreeState);
   return (
     <Canvas
