@@ -4,7 +4,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 
 interface ObjectPropertyEditorProps {
-  targetObjId: string;
+  targetObjId: string | null;
 }
 
 // view and edit target object properties
