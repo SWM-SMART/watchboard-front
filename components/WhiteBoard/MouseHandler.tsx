@@ -272,10 +272,10 @@ const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement) => {
   useEffect(() => {
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
-      setZoom((z) => {
-        const newZ = z - e.deltaY / WHEEL_DELTA_FACTOR;
-        if (newZ < 0.1) return z;
-        return newZ;
+      setZoom((previousZoom) => {
+        const newZoom = previousZoom - e.deltaY / WHEEL_DELTA_FACTOR;
+        if (newZoom < 0.1) return previousZoom;
+        return newZoom;
       });
       invalidate();
     };
@@ -298,15 +298,15 @@ const useDrawRect = (
   useEffect(() => {
     if (drawRect) {
       const appendRect = (obj: RectObj) => {
-        const map = new Map<string, Obj>();
-        map.set(obj.objId, obj);
-        setObjMap((m) => {
-          return new Map<string, Obj>([...m, ...map]);
+        const newMap = new Map<string, Obj>();
+        newMap.set(obj.objId, obj);
+        setObjMap((previousMap) => {
+          return new Map<string, Obj>([...previousMap, ...newMap]);
         });
-        setObjTree((t) => {
+        setObjTree((previousTree) => {
           return {
-            ...t,
-            childNodes: [...t.childNodes, { objId: obj.objId, childNodes: [] }],
+            ...previousTree,
+            childNodes: [...previousTree.childNodes, { objId: obj.objId, childNodes: [] }],
           };
         });
       };

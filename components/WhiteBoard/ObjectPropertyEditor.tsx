@@ -21,8 +21,8 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
   // update objMap if obj value has changed
   useEffect(() => {
     if (obj === undefined) return;
-    setObjMap((m) => {
-      return new Map([...m, [obj.objId, obj]]);
+    setObjMap((previousMap) => {
+      return new Map([...previousMap, [obj.objId, obj]]);
     });
   }, [obj, setObjMap]);
 
@@ -42,9 +42,9 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
             propKey={keys[i]}
             propValue={values[i]}
             onChange={(e) => {
-              setObj((o) => {
-                if (o === undefined) return undefined;
-                return { ...o, [keys[i]]: e.target.value };
+              setObj((previousObj) => {
+                if (previousObj === undefined) return undefined;
+                return { ...previousObj, [keys[i]]: e.target.value };
               });
             }}
           />
