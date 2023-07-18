@@ -1,6 +1,6 @@
 'use client';
 import { objMapState } from '@/states/whiteboard';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
 
 interface ObjectPropertyEditorProps {
@@ -37,20 +37,34 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
     <div>
       {values.map((v, i) => {
         return (
-          <div key={`objectviewer-${keys[i]}`}>
-            <span>{keys[i]}</span>
-            <input
-              onChange={(e) => {
-                setObj((o) => {
-                  if (o === undefined) return undefined;
-                  return { ...o, [keys[i]]: e.target.value };
-                });
-              }}
-              value={v}
-            />
-          </div>
+          <ObjectProperty
+            key={`objectviewer-${keys[i]}`}
+            propKey={keys[i]}
+            propValue={values[i]}
+            onChange={(e) => {
+              setObj((o) => {
+                if (o === undefined) return undefined;
+                return { ...o, [keys[i]]: e.target.value };
+              });
+            }}
+          />
         );
       })}
     </div>
+  );
+}
+
+interface ObjectPropertyProps {
+  propKey: string;
+  propValue: string;
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+}
+
+function ObjectProperty({ propKey: key, propValue: value, onChange }: ObjectPropertyProps) {
+  return (
+    <>
+      <span>{key}</span>
+      <input onChange={onChange} value={value} />
+    </>
   );
 }
