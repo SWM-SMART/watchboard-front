@@ -7,6 +7,7 @@ import { createRect, getPos } from '@/utils/whiteboardHelper';
 import { Camera, Clock, Vector2 } from 'three';
 
 const MAX_OPACITY = 0.5;
+const WHEEL_DELTA_FACTOR = 1200;
 
 export default function MouseHandler() {
   const {
@@ -272,7 +273,7 @@ const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement) => {
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
       setZoom((z) => {
-        const newZ = z - e.deltaY / 1200;
+        const newZ = z - e.deltaY / WHEEL_DELTA_FACTOR;
         if (newZ < 0.1) return z;
         return newZ;
       });
