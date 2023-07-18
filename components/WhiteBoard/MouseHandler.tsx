@@ -205,7 +205,7 @@ const usePointerDown = (
           break;
         case 'RECT':
           setDrawRect(false);
-          e.stopPropagation();
+          e.stopPropagation(); // fall through
         case 'SELECT': // selection box on left click
           if (e.button === 0) {
             setSelection(true);
