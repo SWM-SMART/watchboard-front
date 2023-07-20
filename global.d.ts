@@ -33,21 +33,21 @@ interface Coord {
 
 type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT';
 
-interface DocumentMetadata {
+interface WBDocumentMetadata {
   document_id: number;
   document_name: string;
   created_at: Date;
   modified_at: Date;
 }
 
-type DocumentData = Map<string, Obj>;
+type WBDocumentData = Map<string, Obj>;
 
-interface Document extends DocumentMetadata {
-  document_data: DocumentData;
+interface WBDocument extends WBDocumentMetadata {
+  document_data: WBDocumentData;
 }
 
-type DocumentListReponse = DocumentMetaData[];
+type WBDocumentListReponse = WBDocumentMetaData[];
 
-type DocumentReponse = Document;
+type WBDocumentReponse = WBDocument;
 
-type DocumentCreateResponse = DocumentMetadata;
+type WBDocumentCreateResponse = WBDocumentMetadata;
