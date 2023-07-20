@@ -40,12 +40,14 @@ interface DocumentMetadata {
   modified_at: Date;
 }
 
+type DocumentData = Map<string, Obj>;
+
 interface Document extends DocumentMetadata {
-  document_data: Map<string, Obj>;
+  document_data: DocumentData;
 }
 
-export type DocumentListReponse = DocumentMetaData[];
+type DocumentListReponse = DocumentMetaData[];
 
-export type DocumentReponse = Document;
+type DocumentReponse = Document;
 
-export type DocumentCreateResponse = DocumentMetadata;
+type DocumentCreateResponse = DocumentMetadata;
