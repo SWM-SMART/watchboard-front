@@ -11,3 +11,7 @@ export async function httpPost(url: string, body: any) {
     body: JSON.stringify(body),
   });
 }
+
+export async function httpDelete(url: string) {
+  return await fetch(url, { method: 'DELETE' });
+}
