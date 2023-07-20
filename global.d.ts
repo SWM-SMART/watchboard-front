@@ -5,7 +5,7 @@ interface ObjNode {
 
 interface Obj {
   objId: string;
-  type: "RECT" | "TEXT";
+  type: 'RECT' | 'TEXT';
   x: number;
   y: number;
   depth: number;
@@ -21,7 +21,7 @@ interface RectObj extends Obj {
 interface TextObj extends Obj {
   w: number;
   fontSize: number;
-  overflow: "normal" | "break-word";
+  overflow: 'normal' | 'break-word';
   text: string;
   color: string;
 }
@@ -31,9 +31,21 @@ interface Coord {
   y: number;
 }
 
-interface Document {
-  documentId: string;
-  objects;
+type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT';
+
+interface DocumentMetadata {
+  document_id: number;
+  document_name: string;
+  created_at: Date;
+  modified_at: Date;
 }
 
-type Tool = "HAND" | "SELECT" | "RECT" | "TEXT";
+interface Document extends DocumentMetadata {
+  document_data: Map<string, Obj>;
+}
+
+export type DocumentListReponse = DocumentMetaData[];
+
+export type DocumentReponse = Document;
+
+export type DocumentCreateResponse = DocumentMetadata;
