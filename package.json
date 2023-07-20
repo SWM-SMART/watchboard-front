@@ -24,5 +24,8 @@
     "recoil": "^0.7.7",
     "three": "^0.154.0",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "msw": "^1.2.3"
   }
 }
