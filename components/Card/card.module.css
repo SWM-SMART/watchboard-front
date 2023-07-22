@@ -1,0 +1,33 @@
+.card {
+  width: 260px;
+  height: 190px;
+  border-radius: 20px;
+  background-color: var(--foreground);
+  overflow: hidden;
+  position: relative;
+}
+
+.labelContainer {
+  box-sizing: border-box;
+  padding: 8px 10px 8px 10px;
+  justify-content: space-evenly;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: 0;
+  height: 55px;
+  width: 100%;
+  background-color: var(--secondary-light);
+}
+
+p.labelTitle {
+  font-size: 15px;
+  margin: 0;
+  color: var(--foreground);
+}
+
+p.labelDesc {
+  font-size: 13px;
+  margin: 0;
+  color: var(--highlight);
+}
