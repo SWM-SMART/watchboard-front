@@ -14,7 +14,7 @@ export default function LinkButton({ text, icon, href }: LinkButtonProps) {
       <div className={styles.container}>
         <span className={styles.text}>{text}</span>
         {icon === undefined ? null : (
-          <span className={`material-symbols-outlined ${styles.icon} ${styles.text}`}>{icon}</span>
+          <span className={`material-symbols-outlined ${styles.icon}`}>{icon}</span>
         )}
       </div>
     </Link>
