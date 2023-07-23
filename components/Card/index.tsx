@@ -1,10 +1,10 @@
 import { timeDifference } from '../../utils/ui';
 import styles from './card.module.css';
-interface DocumentCardProps {
+interface CardProps {
   document: WBDocumentMetadata;
 }
 
-export default function Card({ document }: DocumentCardProps) {
+export default function Card({ document }: CardProps) {
   return (
     <div className={styles.card}>
       <div className={styles.labelContainer}>
