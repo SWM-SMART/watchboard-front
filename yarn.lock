@@ -2071,6 +2071,11 @@ maath@^0.6.0:
   resolved "https://registry.yarnpkg.com/maath/-/maath-0.6.0.tgz#7841d0fb95bbb37d19b08b7c5458ef70190950d2"
   integrity sha512-dSb2xQuP7vDnaYqfoKzlApeRcR2xtN8/f7WV/TMAkBC8552TwTLtOO0JTcSygkYMjNDPoo6V01jTw/aPi4JrMw==
 
+material-symbols@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/material-symbols/-/material-symbols-0.10.1.tgz#a49cfce1a37079a70fd26b92f0e790b986072266"
+  integrity sha512-hGylDJScyjeR0LI524AVfCLI/thKuUX2rG78BYYHEg0R/IS4NzSh28aCP0k088968dxItxV/4hNNR4MAiXrb8Q==
+
 merge-stream@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/merge-stream/-/merge-stream-2.0.0.tgz#52823629a14dd00c9770fb6ad47dc6310f2c1f60"
