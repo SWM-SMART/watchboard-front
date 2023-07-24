@@ -10,11 +10,18 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* TODO: dark theme */
+  /* TODO: dark theme */
+  /* :root {
     --background: #000000;
   }
   html {
     color-scheme: dark;
-  }
+  } */
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background-color: var(--background);
 }
