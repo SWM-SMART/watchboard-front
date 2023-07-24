@@ -36,8 +36,8 @@ type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT';
 interface WBDocumentMetadata {
   document_id: number;
   document_name: string;
-  created_at: Date;
-  modified_at: Date;
+  created_at: number;
+  modified_at: number;
 }
 
 type WBDocumentData = Map<string, Obj>;

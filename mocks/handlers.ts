@@ -5,20 +5,20 @@ let documents: WBDocumentMetadata[] = [
   {
     document_id: 0,
     document_name: 'document0',
-    created_at: new Date('2023-07-20T04:49:46.901Z'),
-    modified_at: new Date('2023-07-20T04:49:46.901Z'),
+    created_at: new Date('2023-07-20T04:49:46.901Z').getTime(),
+    modified_at: new Date('2023-07-20T04:49:46.901Z').getTime(),
   },
   {
     document_id: 1,
     document_name: 'document1',
-    created_at: new Date('2023-07-19T04:49:46.901Z'),
-    modified_at: new Date('2023-07-20T04:49:46.901Z'),
+    created_at: new Date('2023-07-19T04:49:46.901Z').getTime(),
+    modified_at: new Date('2023-07-20T04:49:46.901Z').getTime(),
   },
   {
     document_id: 2,
     document_name: 'document2',
-    created_at: new Date('2023-07-21T04:49:46.901Z'),
-    modified_at: new Date('2023-07-22T04:49:46.901Z'),
+    created_at: new Date('2023-07-21T04:49:46.901Z').getTime(),
+    modified_at: new Date('2023-07-22T04:49:46.901Z').getTime(),
   },
 ];
 
@@ -70,7 +70,7 @@ const documentData: WBDocumentData = new Map([
 ]);
 
 const createDocument = (document_name: string) => {
-  const date = new Date();
+  const date = new Date().getTime();
   const newDocument: WBDocumentMetadata = {
     document_id: documents.length + 1,
     document_name: document_name,
