@@ -31,3 +31,7 @@ p.labelDesc {
   margin: 0;
   color: var(--highlight);
 }
+
+.link {
+  border-radius: 20px;
+}
