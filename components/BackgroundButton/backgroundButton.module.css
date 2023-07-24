@@ -6,14 +6,22 @@
 }
 
 .container {
+  background-color: var(--foreground);
   color: var(--secondary-dark);
   display: inline-block;
   height: 40px;
-  padding: 0 15px 0 20px;
+  padding: 0 20px 0 15px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.invert {
+  background-color: var(--secondary-dark);
+  color: var(--foreground);
 }
 
 .text {
   vertical-align: middle;
   line-height: 40px;
-  margin-right: 5px;
+  margin-left: 5px;
 }
