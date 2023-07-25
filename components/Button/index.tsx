@@ -1,22 +1,22 @@
-'use client';
-import { MouseEventHandler } from 'react';
-import styles from './button.module.css';
 import 'material-symbols';
+import styles from './button.module.css';
+import Link from 'next/link';
 
 interface ButtonProps {
   text: string;
   icon?: string;
-  invert?: boolean;
-  onClick: MouseEventHandler;
+  href: string;
 }
 
-export default function Button({ text, icon, invert, onClick }: ButtonProps) {
+export default function Button({ text, icon, href }: ButtonProps) {
   return (
-    <div className={`${styles.container} ${invert ? styles.invert : null}`} onClick={onClick}>
-      {icon === undefined ? null : (
-        <span className={`material-symbols-outlined ${styles.icon}`}>{icon}</span>
-      )}
-      <span className={styles.text}>{text}</span>
-    </div>
+    <Link href={href}>
+      <div className={styles.container}>
+        <span className={styles.text}>{text}</span>
+        {icon === undefined ? null : (
+          <span className={`material-symbols-outlined ${styles.icon}`}>{icon}</span>
+        )}
+      </div>
+    </Link>
   );
 }
