@@ -33,7 +33,6 @@ export default async function HomePage() {
           </div>
           <div className={styles.contentList}>
             {documents.map((document) => {
-              console.log(document);
               return <Card key={`document-card-${document.document_id}`} document={document} />;
             })}
           </div>
