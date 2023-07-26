@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import styles from './kakaoLoginButton.module.css';
-import { API_BASE_URL } from '../../utils/api';
+import { KAKAO_AUTH_URL } from '../../utils/api';
 import Image from 'next/image';
 
 export default function KakaoLoginButton() {
   return (
-    <Link href={`${API_BASE_URL}/users/auth/kakao`} className={styles.link}>
+    <Link href={KAKAO_AUTH_URL} className={styles.link}>
       <div className={styles.container}>
         <Image
           className={styles.symbol}
