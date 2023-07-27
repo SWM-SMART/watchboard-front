@@ -1,0 +1,46 @@
+.container {
+  background-color: var(--secondary-dark);
+  box-sizing: border-box;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.sideBar {
+  display: flex;
+  flex-direction: column;
+  width: 350px;
+  flex: 0 0 350px;
+}
+
+.sideBarUp {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-dark);
+  align-items: stretch;
+  flex: 0;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.toolBar {
+  flex-grow: 0;
+  background-color: var(--secondary-dark);
+}
+
+.whiteBoardContainer {
+  background-color: var(--foreground);
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  min-width: 0;
+}
