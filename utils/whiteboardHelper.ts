@@ -1,5 +1,14 @@
 import { Camera, Vector2, Vector3 } from 'three';
 
+export const rootObj: Obj = {
+  objId: 'ROOT',
+  type: 'ROOT',
+  x: 0,
+  y: 0,
+  depth: 0,
+  parentId: '',
+};
+
 export function appendRect() {}
 
 /**
