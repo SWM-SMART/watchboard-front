@@ -81,9 +81,10 @@ const createDocument = (document_name: string) => {
   return newDocument;
 };
 
-const getDocument = (documentID: number): undefined | WBDocument => {
+const getDocument = (documentID: number): undefined | Object => {
   for (let document of documents) {
-    if (document.document_id === documentID) return { ...document, document_data: documentData };
+    if (document.document_id === documentID)
+      return { ...document, document_data: Object.fromEntries(documentData) };
   }
   return undefined;
 };
