@@ -110,8 +110,6 @@ export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
     }
   }
 
-  console.log(root);
-
   return root;
 }
 
