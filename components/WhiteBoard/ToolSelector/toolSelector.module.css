@@ -10,7 +10,9 @@
 }
 
 .buttonContainer {
-  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 50%;
   cursor: default;
   width: 33px;
@@ -25,7 +27,5 @@
 }
 
 .icon {
-  line-height: 33px;
-  width: 100%;
   text-align: center;
 }
