@@ -77,6 +77,44 @@ export function getPos(mouse: Vector2, camera: Camera) {
   return { x, y };
 }
 
+/**
+ * Construct and return ObjTree based on ObjMap input
+ *
+ * @param {Map<string, Obj>} [objMap] Map of all objects
+ * @return {ObjNode} Root node of constructed objTree
+ */
+export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
+  const dependencyMap = new Map<string, string[]>();
+  const blank: string[] = [];
+
+  for (const [_, v] of objMap) {
+    dependencyMap.set(v.parentId, [...(dependencyMap.get(v.parentId) || blank), v.objId]);
+  }
+
+  const root: ObjNode = {
+    objId: 'ROOT',
+    childNodes: [],
+  };
+
+  const stack: ObjNode[] = [root];
+
+  while (stack.length > 0) {
+    const parent = stack.pop()!;
+
+    const nextIds = dependencyMap.get(parent.objId);
+    if (nextIds === undefined) continue;
+    for (const id of nextIds) {
+      const child: ObjNode = { objId: id, childNodes: [] };
+      parent.childNodes.push(child);
+      stack.push(child);
+    }
+  }
+
+  console.log(root);
+
+  return root;
+}
+
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
 Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus sed dapibus risus, non tristique mi. Quisque vel euismod tellus. Pellentesque sit amet porttitor massa. Maecenas erat mi, eleifend a eleifend non, malesuada eget purus. Mauris ac enim lobortis nulla consequat elementum. Donec imperdiet, metus sed auctor bibendum, eros nulla blandit purus, vel convallis odio nulla id dui. Ut condimentum diam ut turpis tempus, a rhoncus arcu convallis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec lacinia elementum ex vitae vestibulum. Sed id est ultricies neque fermentum hendrerit. Duis molestie velit id eleifend ornare.
 Etiam augue metus, venenatis eget facilisis ut, ornare ut elit. Morbi in sodales velit, in sollicitudin ligula. Donec ac ex pulvinar dolor elementum eleifend. Suspendisse eget tempus arcu. Quisque id vestibulum magna, ac sodales purus. Integer pulvinar lectus pulvinar, aliquet ipsum vel, iaculis nisl. Quisque maximus diam quis eros eleifend commodo.
