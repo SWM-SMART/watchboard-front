@@ -5,7 +5,7 @@ interface ObjNode {
 
 interface Obj {
   objId: string;
-  type: 'RECT' | 'TEXT';
+  type: 'RECT' | 'TEXT' | 'ROOT';
   x: number;
   y: number;
   depth: number;
