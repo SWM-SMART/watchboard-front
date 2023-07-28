@@ -1,0 +1,23 @@
+.container {
+  cursor: pointer;
+  border-radius: 20px;
+  background-color: var(--secondary-light);
+  width: 70px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: var(--background);
+  gap: 1px;
+}
+
+.label {
+  font-size: 12px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}

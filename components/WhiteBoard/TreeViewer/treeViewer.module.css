@@ -1,0 +1,19 @@
+.arrow {
+  rotate: -90deg;
+  width: 24px;
+  height: 24px;
+}
+
+.expand {
+  rotate: 0deg;
+}
+
+.nodeContainer {
+  display: flex;
+  justify-content: flex-start;
+  gap: 3px;
+}
+
+.container {
+  padding: 10px 5px;
+}

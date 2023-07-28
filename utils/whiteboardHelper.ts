@@ -1,5 +1,14 @@
 import { Camera, Vector2, Vector3 } from 'three';
 
+export const rootObj: Obj = {
+  objId: 'ROOT',
+  type: 'ROOT',
+  x: 0,
+  y: 0,
+  depth: 0,
+  parentId: '',
+};
+
 export function appendRect() {}
 
 /**
@@ -75,6 +84,42 @@ const vector3 = new Vector3();
 export function getPos(mouse: Vector2, camera: Camera) {
   const { x, y } = vector3.set(mouse.x, mouse.y, 0).unproject(camera);
   return { x, y };
+}
+
+/**
+ * Construct and return ObjTree based on ObjMap input
+ *
+ * @param {Map<string, Obj>} [objMap] Map of all objects
+ * @return {ObjNode} Root node of constructed objTree
+ */
+export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
+  const dependencyMap = new Map<string, string[]>();
+  const blank: string[] = [];
+
+  for (const [_, v] of objMap) {
+    dependencyMap.set(v.parentId, [...(dependencyMap.get(v.parentId) || blank), v.objId]);
+  }
+
+  const root: ObjNode = {
+    objId: 'ROOT',
+    childNodes: [],
+  };
+
+  const stack: ObjNode[] = [root];
+
+  while (stack.length > 0) {
+    const parent = stack.pop()!;
+
+    const nextIds = dependencyMap.get(parent.objId);
+    if (nextIds === undefined) continue;
+    for (const id of nextIds) {
+      const child: ObjNode = { objId: id, childNodes: [] };
+      parent.childNodes.push(child);
+      stack.push(child);
+    }
+  }
+
+  return root;
 }
 
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;

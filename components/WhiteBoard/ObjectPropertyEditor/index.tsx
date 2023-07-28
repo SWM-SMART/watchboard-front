@@ -1,4 +1,5 @@
 'use client';
+import styles from './objectPropertyEditor.module.css';
 import { objMapState } from '@/states/whiteboard';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
@@ -34,7 +35,7 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
   const values = Object.values(obj);
 
   return (
-    <div>
+    <div className={styles.container}>
       {values.map((v, i) => {
         return (
           <ObjectProperty
@@ -62,9 +63,9 @@ interface ObjectPropertyProps {
 
 function ObjectProperty({ propKey: key, propValue: value, onChange }: ObjectPropertyProps) {
   return (
-    <>
-      <span>{key}</span>
-      <input onChange={onChange} value={value} />
-    </>
+    <div className={styles.row}>
+      <span className={styles.label}>{key}</span>
+      <input className={styles.input} onChange={onChange} value={value} />
+    </div>
   );
 }

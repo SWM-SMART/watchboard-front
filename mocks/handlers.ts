@@ -24,9 +24,9 @@ let documents: WBDocumentMetadata[] = [
 
 const documentData: WBDocumentData = new Map([
   [
-    'a',
+    '0',
     {
-      objId: 'a',
+      objId: '0',
       type: 'RECT',
       x: 10,
       y: 10,
@@ -38,9 +38,9 @@ const documentData: WBDocumentData = new Map([
     },
   ],
   [
-    'b',
+    '1',
     {
-      objId: 'b',
+      objId: '1',
       type: 'RECT',
       x: -10,
       y: -10,
@@ -52,14 +52,110 @@ const documentData: WBDocumentData = new Map([
     },
   ],
   [
-    'c',
+    '2',
     {
-      objId: 'c',
+      objId: '2',
       type: 'TEXT',
       x: 0,
       y: 0,
       depth: 0.0003,
       parentId: 'ROOT',
+      w: 100,
+      fontSize: 5,
+      overflow: 'normal',
+      text: 'lorem ipsum',
+      color: 'rgb(121, 75, 150)',
+    },
+  ],
+  [
+    '3',
+    {
+      objId: '3',
+      type: 'TEXT',
+      x: 0,
+      y: 0,
+      depth: 0.0003,
+      parentId: '1',
+      w: 100,
+      fontSize: 5,
+      overflow: 'normal',
+      text: 'lorem ipsum',
+      color: 'rgb(121, 75, 150)',
+    },
+  ],
+  [
+    '4',
+    {
+      objId: '4',
+      type: 'TEXT',
+      x: 0,
+      y: 0,
+      depth: 0.0003,
+      parentId: '2',
+      w: 100,
+      fontSize: 5,
+      overflow: 'normal',
+      text: 'lorem ipsum',
+      color: 'rgb(121, 75, 150)',
+    },
+  ],
+  [
+    '5',
+    {
+      objId: '5',
+      type: 'TEXT',
+      x: 0,
+      y: 0,
+      depth: 0.0003,
+      parentId: '6',
+      w: 100,
+      fontSize: 5,
+      overflow: 'normal',
+      text: 'lorem ipsum',
+      color: 'rgb(121, 75, 150)',
+    },
+  ],
+  [
+    '6',
+    {
+      objId: '6',
+      type: 'TEXT',
+      x: 0,
+      y: 0,
+      depth: 0.0003,
+      parentId: '2',
+      w: 100,
+      fontSize: 5,
+      overflow: 'normal',
+      text: 'lorem ipsum',
+      color: 'rgb(121, 75, 150)',
+    },
+  ],
+  [
+    '7',
+    {
+      objId: '7',
+      type: 'TEXT',
+      x: 0,
+      y: 0,
+      depth: 0.0003,
+      parentId: '1',
+      w: 100,
+      fontSize: 5,
+      overflow: 'normal',
+      text: 'lorem ipsum',
+      color: 'rgb(121, 75, 150)',
+    },
+  ],
+  [
+    '8',
+    {
+      objId: '8',
+      type: 'TEXT',
+      x: 0,
+      y: 0,
+      depth: 0.0003,
+      parentId: '3',
       w: 100,
       fontSize: 5,
       overflow: 'normal',
@@ -81,9 +177,10 @@ const createDocument = (document_name: string) => {
   return newDocument;
 };
 
-const getDocument = (documentID: number): undefined | WBDocument => {
+const getDocument = (documentID: number): undefined | Object => {
   for (let document of documents) {
-    if (document.document_id === documentID) return { ...document, document_data: documentData };
+    if (document.document_id === documentID)
+      return { ...document, document_data: Object.fromEntries(documentData) };
   }
   return undefined;
 };
