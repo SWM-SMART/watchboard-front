@@ -165,11 +165,11 @@ const documentData: WBDocumentData = new Map([
   ],
 ]);
 
-const createDocument = (document_name: string) => {
+const createDocument = (documentName: string) => {
   const date = new Date().getTime();
   const newDocument: WBDocumentMetadata = {
     documentId: documents.length + 1,
-    documentName: document_name,
+    documentName: documentName,
     createdAt: date,
     modifiedAt: date,
   };
@@ -180,7 +180,7 @@ const createDocument = (document_name: string) => {
 const getDocument = (documentID: number): undefined | Object => {
   for (let document of documents) {
     if (document.documentId === documentID)
-      return { ...document, document_data: Object.fromEntries(documentData) };
+      return { ...document, documentData: Object.fromEntries(documentData) };
   }
   return undefined;
 };
@@ -196,7 +196,7 @@ export const handlers = [
     return res(ctx.json(documents));
   }),
   rest.post(`${API_BASE_URL}/documents`, async (req, res, ctx) => {
-    return res(ctx.json(createDocument((await req.json()).document_name)));
+    return res(ctx.json(createDocument((await req.json()).documentName)));
   }),
   rest.get(`${API_BASE_URL}/documents/:documentID`, (req, res, ctx) => {
     return res(ctx.json(getDocument(parseInt(req.params.documentID as string))));
