@@ -1,0 +1,39 @@
+.tabContainer {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  background-color: var(--secondary-dark);
+}
+
+.tabHeader {
+  cursor: default;
+  justify-content: center;
+  gap: 5px;
+  display: flex;
+  padding: 5px;
+  margin: 10px;
+  background-color: var(--background);
+  color: var(--secondary-dark);
+  align-self: center;
+  flex: 0;
+  border-radius: 100px;
+}
+
+.headerLabel {
+  font-size: 12px;
+  padding: 10px 20px;
+  border-radius: 100px;
+}
+
+.enabled {
+  background-color: var(--secondary-light);
+  color: var(--background);
+}
+
+.tabContent {
+  background-color: var(--background);
+  flex-grow: 1;
+  overflow: auto;
+}
