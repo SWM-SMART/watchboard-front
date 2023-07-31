@@ -1,7 +1,7 @@
-import RecoilRootWrapper from '@/components/RecoilRootWrapper';
+import RecoilRootWrapper from '@/app/components/RecoilRootWrapper';
 import './globals.css';
 import { Inter } from 'next/font/google';
-import LoadMsw from './LoadMsw';
+import LoadMsw from './components/LoadMsw';
 
 const inter = Inter({ subsets: ['latin'] });
 
