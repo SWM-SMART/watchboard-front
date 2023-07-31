@@ -50,10 +50,6 @@
   .title {
     color: var(--primary-dark);
   }
-
-  .count {
-    color: var(--secondary-dark);
-  }
 }
 
 .contentList {

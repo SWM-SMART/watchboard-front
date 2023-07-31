@@ -2,9 +2,9 @@
 import { useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { getDocument } from '../../../utils/api';
-import DocumentTitle from '../../../components/Document/DocumentTitle';
-import ActionButtonGroup from '../../../components/Document/ActionButtonGroup';
-import Tab from '../../../components/Document/Tab';
+import DocumentTitle from './components/DocumentTitle';
+import ActionButtonGroup from './components/ActionButtonGroup';
+import Tab from './components/Tab';
 import ObjectPropertyEditor from '../../../components/WhiteBoard/ObjectPropertyEditor';
 import TreeViewer from '../../../components/WhiteBoard/TreeViewer';
 import { currentObjState, objMapState, objTreeState } from '../../../states/whiteboard';
