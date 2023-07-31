@@ -15,6 +15,6 @@ export default function DocumentList() {
   }, [setDocumentList]);
 
   return documentList.map((document) => {
-    return <Card key={`document-card-${document.document_id}`} document={document} />;
+    return <Card key={`document-card-${document.documentId}`} document={document} />;
   });
 }

@@ -14,10 +14,10 @@ import WhiteBoard from '../../../components/WhiteBoard';
 import { constructRootObjTree } from '../../../utils/whiteboardHelper';
 
 interface DocumentPageProps {
-  params: { document_id: string };
+  params: { documentId: string };
 }
 
-function useDocument(document_id: number) {
+function useDocument(documentId: number) {
   const [document, setDocument] = useState<WBDocument | null>(null);
   const [_objTree, setObjTree] = useRecoilState(objTreeState);
   const [_objMap, setObjMap] = useRecoilState(objMapState);
@@ -25,8 +25,8 @@ function useDocument(document_id: number) {
   useEffect(() => {
     (async () => {
       // get raw document data
-      const newDocument = await getDocument(document_id);
-      const newObjMap = new Map<string, Obj>(Object.entries(newDocument.document_data));
+      const newDocument = await getDocument(documentId);
+      const newObjMap = new Map<string, Obj>(Object.entries(newDocument.documentData));
       const newObjTree = constructRootObjTree(newObjMap);
 
       // construct tree
@@ -34,13 +34,13 @@ function useDocument(document_id: number) {
       setObjMap(newObjMap);
       setObjTree(newObjTree);
     })();
-  }, [document_id, setObjMap, setObjTree]);
+  }, [documentId, setObjMap, setObjTree]);
 
   return document;
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const document = useDocument(parseInt(params.document_id));
+  const document = useDocument(parseInt(params.documentId));
   const obj = useRecoilValue(currentObjState);
   const tree = useRecoilValue(objTreeState);
 
@@ -50,7 +50,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     <div className={styles.container}>
       <div className={styles.sideBar}>
         <div className={styles.sideBarUp}>
-          <DocumentTitle document_name={document.document_name} />
+          <DocumentTitle documentName={document.documentName} />
           <ActionButtonGroup />
         </div>
         <Tab labels={['속성', '레이어']}>
