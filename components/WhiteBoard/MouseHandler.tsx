@@ -3,11 +3,15 @@ import { objMapState, currentObjState, objTreeState, currentToolState } from '@/
 import { Camera, useFrame, useThree } from '@react-three/fiber';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { createRect, getPos } from '@/utils/whiteboardHelper';
+import { boundNumber, createRect, getPos } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 
 const MAX_OPACITY = 0.5;
 const WHEEL_DELTA_FACTOR = 100;
+const WHEEL_MAX_DELTA = 20;
+const PAN_MAX_DELTA = 100;
+const MAX_ZOOM = 10000;
+const MIN_ZOOM = 0.1;
 
 export default function MouseHandler() {
   const {
@@ -55,7 +59,7 @@ export default function MouseHandler() {
     setUpTime,
   );
 
-  const { zoom } = useWheel(invalidate, domElement, camera);
+  useWheel(invalidate, domElement, camera);
 
   usePointerMove(mouse, camera, domElement, cameraPan, selection, opacity, invalidate, setUpPos);
 
@@ -74,13 +78,6 @@ export default function MouseHandler() {
       const newPos = getPos(s.mouse, s.camera);
       s.camera.position.setX(downPos.x - (newPos.x - s.camera.position.x));
       s.camera.position.setY(downPos.y - (newPos.y - s.camera.position.y));
-    }
-
-    // update camera zoom (if zoom value has changed)
-    if (zoom != s.camera.zoom) {
-      // TODO: make mouse stay on the same position during zoom
-      s.camera.zoom = zoom;
-      s.camera.updateProjectionMatrix();
     }
   });
 
@@ -269,29 +266,32 @@ const usePointerMove = (
 };
 
 const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera: Camera) => {
-  const [zoom, setZoom] = useState<number>(1);
   // wheel
   useEffect(() => {
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
       // pinch zoom
       if (e.ctrlKey) {
-        setZoom((previousZoom) => {
-          const newZoom = previousZoom - (e.deltaY * previousZoom) / WHEEL_DELTA_FACTOR;
-          if (newZoom < 0.1) return previousZoom;
-          return newZoom;
-        });
+        const boundDelta = boundNumber(e.deltaY, -WHEEL_MAX_DELTA, WHEEL_MAX_DELTA);
+        const newZoom = camera.zoom - (boundDelta * camera.zoom) / WHEEL_DELTA_FACTOR;
+        if (newZoom < MIN_ZOOM) camera.zoom = MIN_ZOOM;
+        else if (newZoom > MAX_ZOOM) camera.zoom = MAX_ZOOM;
+        else camera.zoom = newZoom;
+        camera.updateProjectionMatrix();
       } else {
         // scroll pan
-        camera.position.setX(camera.position.x + e.deltaX / camera.zoom);
-        camera.position.setY(camera.position.y - e.deltaY / camera.zoom);
+        camera.position.setX(
+          camera.position.x + boundNumber(e.deltaX, -PAN_MAX_DELTA, PAN_MAX_DELTA) / camera.zoom,
+        );
+        camera.position.setY(
+          camera.position.y - boundNumber(e.deltaY, -PAN_MAX_DELTA, PAN_MAX_DELTA) / camera.zoom,
+        );
       }
       invalidate();
     };
     domElement.addEventListener('wheel', wheel);
     return () => domElement.removeEventListener('wheel', wheel);
   }, [domElement, invalidate, camera]);
-  return { zoom };
 };
 
 const useDrawRect = (
