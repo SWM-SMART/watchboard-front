@@ -3,22 +3,22 @@ import { API_BASE_URL } from '../utils/api';
 
 let documents: WBDocumentMetadata[] = [
   {
-    document_id: 0,
-    document_name: 'document0',
-    created_at: new Date('2023-07-20T04:49:46.901Z').getTime(),
-    modified_at: new Date('2023-07-20T04:49:46.901Z').getTime(),
+    documentId: 0,
+    documentName: 'document0',
+    createdAt: new Date('2023-07-20T04:49:46.901Z').getTime(),
+    modifiedAt: new Date('2023-07-20T04:49:46.901Z').getTime(),
   },
   {
-    document_id: 1,
-    document_name: 'document1',
-    created_at: new Date('2023-07-19T04:49:46.901Z').getTime(),
-    modified_at: new Date('2023-07-20T04:49:46.901Z').getTime(),
+    documentId: 1,
+    documentName: 'document1',
+    createdAt: new Date('2023-07-19T04:49:46.901Z').getTime(),
+    modifiedAt: new Date('2023-07-20T04:49:46.901Z').getTime(),
   },
   {
-    document_id: 2,
-    document_name: 'document2',
-    created_at: new Date('2023-07-21T04:49:46.901Z').getTime(),
-    modified_at: new Date('2023-07-22T04:49:46.901Z').getTime(),
+    documentId: 2,
+    documentName: 'document2',
+    createdAt: new Date('2023-07-21T04:49:46.901Z').getTime(),
+    modifiedAt: new Date('2023-07-22T04:49:46.901Z').getTime(),
   },
 ];
 
@@ -168,10 +168,10 @@ const documentData: WBDocumentData = new Map([
 const createDocument = (document_name: string) => {
   const date = new Date().getTime();
   const newDocument: WBDocumentMetadata = {
-    document_id: documents.length + 1,
-    document_name: document_name,
-    created_at: date,
-    modified_at: date,
+    documentId: documents.length + 1,
+    documentName: document_name,
+    createdAt: date,
+    modifiedAt: date,
   };
   documents.push(newDocument);
   return newDocument;
@@ -179,7 +179,7 @@ const createDocument = (document_name: string) => {
 
 const getDocument = (documentID: number): undefined | Object => {
   for (let document of documents) {
-    if (document.document_id === documentID)
+    if (document.documentId === documentID)
       return { ...document, document_data: Object.fromEntries(documentData) };
   }
   return undefined;
@@ -187,7 +187,7 @@ const getDocument = (documentID: number): undefined | Object => {
 
 const deleteDocument = (documentID: number): void => {
   documents = documents.filter((v) => {
-    v.document_id === documentID;
+    v.documentId === documentID;
   });
 };
 

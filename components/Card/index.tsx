@@ -7,11 +7,11 @@ interface CardProps {
 
 export default function Card({ document }: CardProps) {
   return (
-    <Link href={`/document/${document.document_id}`} className={styles.link}>
+    <Link href={`/document/${document.documentId}`} className={styles.link}>
       <div className={styles.card}>
         <div className={styles.labelContainer}>
-          <p className={styles.labelTitle}>{document.document_name}</p>
-          <p className={styles.labelDesc}>{timeDifference(document.modified_at)}</p>
+          <p className={styles.labelTitle}>{document.documentName}</p>
+          <p className={styles.labelDesc}>{timeDifference(document.modifiedAt)}</p>
         </div>
       </div>
     </Link>
