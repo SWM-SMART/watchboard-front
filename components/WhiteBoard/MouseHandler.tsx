@@ -1,13 +1,13 @@
 'use client';
 import { objMapState, currentObjState, objTreeState, currentToolState } from '@/states/whiteboard';
-import { useFrame, useThree } from '@react-three/fiber';
+import { Camera, useFrame, useThree } from '@react-three/fiber';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { createRect, getPos } from '@/utils/whiteboardHelper';
-import { Camera, Clock, Vector2 } from 'three';
+import { Clock, Vector2 } from 'three';
 
 const MAX_OPACITY = 0.5;
-const WHEEL_DELTA_FACTOR = 1200;
+const WHEEL_DELTA_FACTOR = 100;
 
 export default function MouseHandler() {
   const {
@@ -55,7 +55,7 @@ export default function MouseHandler() {
     setUpTime,
   );
 
-  const { zoom } = useWheel(invalidate, domElement);
+  const { zoom } = useWheel(invalidate, domElement, camera);
 
   usePointerMove(mouse, camera, domElement, cameraPan, selection, opacity, invalidate, setUpPos);
 
@@ -253,7 +253,9 @@ const usePointerMove = (
 ) => {
   useEffect(() => {
     const pointerMove = () => {
-      if (cameraPan) invalidate();
+      if (cameraPan) {
+        invalidate();
+      }
       if (selection) {
         if (opacity === MAX_OPACITY) setUpPos(getPos(mouse, camera));
         invalidate();
@@ -266,22 +268,29 @@ const usePointerMove = (
   }, [camera, cameraPan, domElement, invalidate, mouse, opacity, selection, setUpPos]);
 };
 
-const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement) => {
+const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera: Camera) => {
   const [zoom, setZoom] = useState<number>(1);
   // wheel
   useEffect(() => {
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
-      setZoom((previousZoom) => {
-        const newZoom = previousZoom - e.deltaY / WHEEL_DELTA_FACTOR;
-        if (newZoom < 0.1) return previousZoom;
-        return newZoom;
-      });
+      // pinch zoom
+      if (e.ctrlKey) {
+        setZoom((previousZoom) => {
+          const newZoom = previousZoom - (e.deltaY * previousZoom) / WHEEL_DELTA_FACTOR;
+          if (newZoom < 0.1) return previousZoom;
+          return newZoom;
+        });
+      } else {
+        // scroll pan
+        camera.position.setX(camera.position.x + e.deltaX / camera.zoom);
+        camera.position.setY(camera.position.y - e.deltaY / camera.zoom);
+      }
       invalidate();
     };
     domElement.addEventListener('wheel', wheel);
     return () => domElement.removeEventListener('wheel', wheel);
-  }, [domElement, invalidate]);
+  }, [domElement, invalidate, camera]);
   return { zoom };
 };
 
@@ -291,9 +300,9 @@ const useDrawRect = (
   drawRect: boolean,
   setDrawRect: Dispatch<SetStateAction<boolean>>,
 ) => {
-  const [objMap, setObjMap] = useRecoilState(objMapState);
-  const [objTree, setObjTree] = useRecoilState(objTreeState);
-  const [current, setCurrent] = useRecoilState(currentObjState);
+  const [_objMap, setObjMap] = useRecoilState(objMapState);
+  const [_objTree, setObjTree] = useRecoilState(objTreeState);
+  const [_current, setCurrent] = useRecoilState(currentObjState);
 
   useEffect(() => {
     if (drawRect) {
