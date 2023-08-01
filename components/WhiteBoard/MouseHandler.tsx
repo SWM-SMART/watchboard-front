@@ -9,7 +9,13 @@ import {
 import { Camera, useFrame, useThree } from '@react-three/fiber';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { SetterOrUpdater, useRecoilState, useRecoilValue } from 'recoil';
-import { boundNumber, createRect, getPos } from '@/utils/whiteboardHelper';
+import {
+  SELECT_DEPTH,
+  SELECT_HIGHLIGHT,
+  boundNumber,
+  createRect,
+  getPos,
+} from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 
 const MAX_OPACITY = 0.5;
@@ -124,7 +130,7 @@ export default function MouseHandler() {
   // mouse interaction feedback: draw rectangle in selected area (if selection is active)
   return selection && !drag ? (
     <mesh
-      position={[(upPos.x + downPos.x) / 2, (upPos.y + downPos.y) / 2, 1]}
+      position={[(upPos.x + downPos.x) / 2, (upPos.y + downPos.y) / 2, SELECT_DEPTH]}
       scale={1}
       onClick={(e) => {
         e.stopPropagation();
@@ -137,7 +143,7 @@ export default function MouseHandler() {
       <meshStandardMaterial
         transparent={true}
         opacity={opacity}
-        color={'rgb(220,220,255)'}
+        color={SELECT_HIGHLIGHT}
         depthWrite={true}
         depthTest={true}
       />

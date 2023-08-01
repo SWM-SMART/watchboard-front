@@ -1,5 +1,9 @@
 import { Camera, Vector2, Vector3 } from 'three';
 
+export const SELECT_HIGHLIGHT = '#39DFFF';
+export const SELECT_HIGHLIGHT_OPACITY = 0.5;
+export const SELECT_DEPTH = 1;
+
 export const rootObj: Obj = {
   objId: 'ROOT',
   type: 'ROOT',
