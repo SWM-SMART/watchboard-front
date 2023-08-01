@@ -22,3 +22,5 @@ export const currentObjState = atom<string | null>({
   key: 'whiteboard-objState',
   default: null,
 });
+
+export const dragState = atom<Coord | null>({ key: 'whiteboard-dragState', default: null });

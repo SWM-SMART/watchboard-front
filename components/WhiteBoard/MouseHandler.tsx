@@ -1,8 +1,14 @@
 'use client';
-import { objMapState, currentObjState, objTreeState, currentToolState } from '@/states/whiteboard';
+import {
+  objMapState,
+  currentObjState,
+  objTreeState,
+  currentToolState,
+  dragState,
+} from '@/states/whiteboard';
 import { Camera, useFrame, useThree } from '@react-three/fiber';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { SetterOrUpdater, useRecoilState, useRecoilValue } from 'recoil';
 import { boundNumber, createRect, getPos } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 
@@ -23,6 +29,9 @@ export default function MouseHandler() {
   } = useThree(); // More like reference? Not a state, useEffect can't track these
 
   const tool = useRecoilValue(currentToolState);
+  const [objMap, setObjMap] = useRecoilState(objMapState);
+  const [currentObj, setCurrentObj] = useRecoilState(currentObjState);
+  const [drag, setDrag] = useRecoilState(dragState);
 
   const {
     opacity,
@@ -44,6 +53,7 @@ export default function MouseHandler() {
     setSelection,
     setCameraPan,
     setDrawRect,
+    setDrag,
   );
 
   const { downPos } = usePointerDown(
@@ -57,17 +67,30 @@ export default function MouseHandler() {
     setOpacity,
     setUpPos,
     setUpTime,
+    setCurrentObj,
   );
 
   useWheel(invalidate, domElement, camera);
 
-  usePointerMove(mouse, camera, domElement, cameraPan, selection, opacity, invalidate, setUpPos);
+  usePointerMove(
+    mouse,
+    camera,
+    domElement,
+    cameraPan,
+    selection,
+    opacity,
+    drag,
+    invalidate,
+    setUpPos,
+  );
 
   useDrawRect(upPos, downPos, drawRect, setDrawRect);
 
   useFrame((s) => {
     // update opacity (if selection is active)
-    if (upTime > 0 && selection) {
+    if (drag !== null) {
+      setSelection(false);
+    } else if (upTime > 0 && selection) {
       const newO = MAX_OPACITY - (s.clock.elapsedTime - upTime);
       if (newO < 0) setSelection(false);
       else setOpacity(newO);
@@ -79,10 +102,27 @@ export default function MouseHandler() {
       s.camera.position.setX(downPos.x - (newPos.x - s.camera.position.x));
       s.camera.position.setY(downPos.y - (newPos.y - s.camera.position.y));
     }
+
+    // drag object
+    if (drag !== null && currentObj !== null) {
+      const obj = objMap.get(currentObj);
+      // move selected obj
+      if (obj !== undefined) {
+        const newPos = getPos(s.mouse, s.camera);
+        const newObj = {
+          ...obj,
+          x: newPos.x + drag.x,
+          y: newPos.y + drag.y,
+        } as Obj;
+        setObjMap((prevObjMap) => {
+          return new Map([...prevObjMap, [newObj.objId, newObj]]);
+        });
+      }
+    }
   });
 
   // mouse interaction feedback: draw rectangle in selected area (if selection is active)
-  return selection ? (
+  return selection && !drag ? (
     <mesh
       position={[(upPos.x + downPos.x) / 2, (upPos.y + downPos.y) / 2, 1]}
       scale={1}
@@ -116,6 +156,7 @@ const usePointerUp = (
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
   setDrawRect: Dispatch<SetStateAction<boolean>>,
+  setDrag: SetterOrUpdater<Coord | null>,
 ) => {
   const [upPos, setUpPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
   const [upTime, setUpTime] = useState<number>(0);
@@ -124,6 +165,7 @@ const usePointerUp = (
   useEffect(() => {
     const pointerUp = (e: PointerEvent) => {
       const newPos = getPos(mouse, camera);
+      setDrag(null);
 
       if (e.button === 1) {
         setCameraPan(false);
@@ -160,7 +202,17 @@ const usePointerUp = (
     domElement.addEventListener('pointerup', pointerUp);
 
     return () => domElement.removeEventListener('pointerup', pointerUp);
-  }, [camera, clock.elapsedTime, domElement, mouse, setCameraPan, setDrawRect, setSelection, tool]);
+  }, [
+    camera,
+    clock.elapsedTime,
+    domElement,
+    mouse,
+    setCameraPan,
+    setDrag,
+    setDrawRect,
+    setSelection,
+    tool,
+  ]);
 
   return { upPos, setUpPos, upTime, setUpTime };
 };
@@ -176,6 +228,7 @@ const usePointerDown = (
   setOpacity: Dispatch<SetStateAction<number>>,
   setUpPos: Dispatch<SetStateAction<Coord>>,
   setUpTime: Dispatch<SetStateAction<number>>,
+  setCurrentObj: SetterOrUpdater<string | null>,
 ) => {
   const [downPos, setDownPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
   // pointer down listener
@@ -227,6 +280,7 @@ const usePointerDown = (
     domElement,
     mouse,
     setCameraPan,
+    setCurrentObj,
     setDrawRect,
     setOpacity,
     setSelection,
@@ -245,11 +299,15 @@ const usePointerMove = (
   cameraPan: boolean,
   selection: boolean,
   opacity: number,
+  drag: Coord | null,
   invalidate: () => void,
   setUpPos: Dispatch<SetStateAction<Coord>>,
 ) => {
   useEffect(() => {
     const pointerMove = () => {
+      if (drag !== null) {
+        invalidate();
+      }
       if (cameraPan) {
         invalidate();
       }
@@ -262,7 +320,7 @@ const usePointerMove = (
     return () => {
       domElement.removeEventListener('pointermove', pointerMove);
     };
-  }, [camera, cameraPan, domElement, invalidate, mouse, opacity, selection, setUpPos]);
+  }, [camera, cameraPan, domElement, drag, invalidate, mouse, opacity, selection, setUpPos]);
 };
 
 const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera: Camera) => {
