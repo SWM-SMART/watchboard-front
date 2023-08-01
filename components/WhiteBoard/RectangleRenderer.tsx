@@ -19,7 +19,7 @@ export default function RectangleRenderer({ obj }: Props) {
       position={[obj.x, obj.y, obj.depth]}
       onPointerDown={(e) => {
         e.stopPropagation();
-        if (tool === 'SELECT') {
+        if (e.button === 0 && tool === 'SELECT') {
           setSelection(obj.objId);
           const mousePos = getPos(mouse, camera);
           setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y) });
