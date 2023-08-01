@@ -17,6 +17,7 @@ import {
   createRect,
   createText,
   getPos,
+  validateValue,
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 
@@ -119,8 +120,8 @@ export default function MouseHandler() {
         const newPos = getPos(s.mouse, s.camera);
         const newObj = {
           ...obj,
-          x: newPos.x + drag.x,
-          y: newPos.y + drag.y,
+          x: validateValue(newPos.x + drag.x),
+          y: validateValue(newPos.y + drag.y),
         } as Obj;
         setObjMap((prevObjMap) => {
           return new Map([...prevObjMap, [newObj.objId, newObj]]);
@@ -129,10 +130,25 @@ export default function MouseHandler() {
     }
   });
 
+  // validation
+  const validate = tool === 'RECT' || tool === 'TEXT';
+  const validUpPos: Coord = {
+    x: validate ? validateValue(upPos.x) : upPos.x,
+    y: validate ? validateValue(upPos.y) : upPos.y,
+  };
+  const validDownPos: Coord = {
+    x: validate ? validateValue(downPos.x) : downPos.x,
+    y: validate ? validateValue(downPos.y) : downPos.y,
+  };
+
   // mouse interaction feedback: draw rectangle in selected area (if selection is active)
   return selection && !drag ? (
     <mesh
-      position={[(upPos.x + downPos.x) / 2, (upPos.y + downPos.y) / 2, SELECT_DEPTH]}
+      position={[
+        (validUpPos.x + validDownPos.x) / 2,
+        (validUpPos.y + validDownPos.y) / 2,
+        SELECT_DEPTH,
+      ]}
       scale={1}
       onClick={(e) => {
         e.stopPropagation();
@@ -140,7 +156,7 @@ export default function MouseHandler() {
     >
       <planeGeometry
         attach={'geometry'}
-        args={[Math.abs(upPos.x - downPos.x), Math.abs(upPos.y - downPos.y)]}
+        args={[Math.abs(validUpPos.x - validDownPos.x), Math.abs(validUpPos.y - validDownPos.y)]}
       />
       <meshStandardMaterial
         transparent={true}
