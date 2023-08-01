@@ -269,6 +269,7 @@ const usePointerDown = (
             setUpPos(newPos);
             setDownPos(newPos);
             setUpTime(0);
+            setCurrentObj(null);
           }
           break;
         case 'TEXT':
