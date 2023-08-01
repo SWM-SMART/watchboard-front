@@ -20,18 +20,17 @@ export default function RectangleRenderer({ obj }: Props) {
   const tool = useRecoilValue(currentToolState);
   const { mouse, camera } = useThree();
   return (
-    <group>
-      <mesh
-        position={[obj.x, obj.y, obj.depth]}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          if (e.button === 0 && tool === 'SELECT') {
-            setSelection(obj.objId);
-            const mousePos = getPos(mouse, camera);
-            setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y) });
-          }
-        }}
-      >
+    <group
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        if (e.button === 0 && tool === 'SELECT') {
+          setSelection(obj.objId);
+          const mousePos = getPos(mouse, camera);
+          setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y) });
+        }
+      }}
+    >
+      <mesh position={[obj.x, obj.y, obj.depth]}>
         <planeGeometry attach={'geometry'} args={[obj.w, obj.h]} />
         <meshStandardMaterial color={obj.color} depthWrite={true} depthTest={true} />
       </mesh>
