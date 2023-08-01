@@ -8,7 +8,7 @@ import {
 } from '@/utils/whiteboardHelper';
 import { Text } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
-import { useRef } from 'react';
+import { useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
 interface TextViewProps {
@@ -20,7 +20,7 @@ export default function TextRenderer({ obj }: TextViewProps) {
   const [_drag, setDrag] = useRecoilState(dragState);
   const tool = useRecoilValue(currentToolState);
   const { mouse, camera } = useThree();
-  const textRef = useRef<any>(null);
+  const [size, setSize] = useState<Coord>({ x: 0, y: 0 });
 
   return (
     <group
@@ -34,7 +34,6 @@ export default function TextRenderer({ obj }: TextViewProps) {
       }}
     >
       <Text
-        ref={textRef}
         font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
         fontSize={obj.fontSize}
         maxWidth={obj.w}
@@ -44,19 +43,19 @@ export default function TextRenderer({ obj }: TextViewProps) {
         position={[obj.x, obj.y, obj.depth]}
         anchorX={'center'}
         anchorY={'middle'}
+        onAfterRender={(_renderer, _scene, _camera, geometry) => {
+          if (geometry.boundingBox === null) return;
+          setSize({
+            x: geometry.boundingBox.max.x - geometry.boundingBox.min.x,
+            y: geometry.boundingBox.max.y - geometry.boundingBox.min.y,
+          });
+        }}
       >
         {obj.text}
       </Text>
-      {selection === obj.objId && textRef.current !== null ? (
+      {selection === obj.objId ? (
         <mesh position={[obj.x, obj.y, SELECT_DEPTH]}>
-          <planeGeometry
-            attach={'geometry'}
-            args={[
-              obj.w,
-              textRef.current.geometry.boundingBox.max.y -
-                textRef.current.geometry.boundingBox.min.y,
-            ]}
-          />
+          <planeGeometry attach={'geometry'} args={[obj.w, size.y]} />
           <meshStandardMaterial
             transparent={true}
             opacity={SELECT_HIGHLIGHT_OPACITY}
