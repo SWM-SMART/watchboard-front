@@ -7,8 +7,8 @@ import { useRecoilState } from 'recoil';
 export default function ToolSelector() {
   return (
     <div className={styles.container}>
-      <ToolButton toolName={'HAND'} icon={'drag_pan'} />
       <ToolButton toolName={'SELECT'} icon={'arrow_selector_tool'} />
+      <ToolButton toolName={'HAND'} icon={'drag_pan'} />
       <ToolButton toolName={'RECT'} icon={'rectangle'} />
       <ToolButton toolName={'TEXT'} icon={'insert_text'} />
     </div>
