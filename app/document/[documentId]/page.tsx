@@ -54,7 +54,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           <ActionButtonGroup />
         </div>
         <Tab labels={['속성', '레이어']}>
-          <ObjectPropertyEditor targetObjId={obj} />
+          <ObjectPropertyEditor key={obj} targetObjId={obj} />
           <TreeViewer root={tree} />
         </Tab>
       </div>
