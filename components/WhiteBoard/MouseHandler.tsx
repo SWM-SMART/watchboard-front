@@ -370,7 +370,7 @@ const useDrawRect = (
   const [_current, setCurrent] = useRecoilState(currentObjState);
 
   useEffect(() => {
-    const newObjPos = { x: (upPos.x + downPos.x) / 2, y: (upPos.y + downPos.y) / 2 };
+    const newObjPos = { x: Math.min(upPos.x, downPos.x), y: Math.min(upPos.y, downPos.y) };
     const newObjSize = { x: Math.abs(upPos.x - downPos.x), y: Math.abs(upPos.y - downPos.y) };
     if (drawRect) {
       // create and append obj

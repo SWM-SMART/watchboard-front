@@ -41,8 +41,8 @@ export default function TextRenderer({ obj }: TextViewProps) {
         overflowWrap={obj.overflow}
         lineHeight={1}
         position={[obj.x, obj.y, obj.depth]}
-        anchorX={'center'}
-        anchorY={'middle'}
+        anchorX={'left'}
+        anchorY={'bottom'}
         onAfterRender={(_renderer, _scene, _camera, geometry) => {
           if (geometry.boundingBox === null) return;
           setSize({
@@ -54,7 +54,7 @@ export default function TextRenderer({ obj }: TextViewProps) {
         {obj.text}
       </Text>
       {selection === obj.objId && size.y > 0 ? (
-        <mesh position={[obj.x, obj.y, SELECT_DEPTH]}>
+        <mesh position={[obj.x + obj.w / 2, obj.y + size.y / 2, SELECT_DEPTH]}>
           <planeGeometry attach={'geometry'} args={[obj.w, size.y]} />
           <meshStandardMaterial
             transparent={true}

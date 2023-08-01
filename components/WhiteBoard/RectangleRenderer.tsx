@@ -30,12 +30,12 @@ export default function RectangleRenderer({ obj }: Props) {
         }
       }}
     >
-      <mesh position={[obj.x, obj.y, obj.depth]}>
+      <mesh position={[obj.x + obj.w / 2, obj.y + obj.h / 2, obj.depth]}>
         <planeGeometry attach={'geometry'} args={[obj.w, obj.h]} />
         <meshStandardMaterial color={obj.color} depthWrite={true} depthTest={true} />
       </mesh>
       {selection === obj.objId ? (
-        <mesh position={[obj.x, obj.y, SELECT_DEPTH]}>
+        <mesh position={[obj.x + obj.w / 2, obj.y + obj.h / 2, SELECT_DEPTH]}>
           <planeGeometry attach={'geometry'} args={[obj.w, obj.h]} />
           <meshStandardMaterial
             transparent={true}
