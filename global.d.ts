@@ -18,10 +18,11 @@ interface RectObj extends Obj {
   color: string;
 }
 
+type OverflowType = 'normal' | 'break-word';
 interface TextObj extends Obj {
   w: number;
   fontSize: number;
-  overflow: 'normal' | 'break-word';
+  overflow: OverflowType;
   text: string;
   color: string;
 }

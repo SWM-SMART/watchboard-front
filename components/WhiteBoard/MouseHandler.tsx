@@ -12,8 +12,10 @@ import { SetterOrUpdater, useRecoilState, useRecoilValue } from 'recoil';
 import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
+  appendObj,
   boundNumber,
   createRect,
+  createText,
   getPos,
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
@@ -90,7 +92,7 @@ export default function MouseHandler() {
     setUpPos,
   );
 
-  useDrawRect(upPos, downPos, drawRect, setDrawRect);
+  useDrawRect(tool, upPos, downPos, drawRect, setDrawRect);
 
   useFrame((s) => {
     // update opacity (if selection is active)
@@ -187,6 +189,7 @@ const usePointerUp = (
           }
           break;
         case 'RECT':
+        case 'TEXT':
           if (e.button == 0) {
             setUpPos(newPos);
             setUpTime(0);
@@ -199,8 +202,6 @@ const usePointerUp = (
             setUpPos(newPos);
             setUpTime(clock.elapsedTime);
           }
-          break;
-        case 'TEXT':
           break;
       }
     };
@@ -260,6 +261,7 @@ const usePointerDown = (
           }
           break;
         case 'RECT':
+        case 'TEXT':
           setDrawRect(false);
           e.stopPropagation(); // fall through
         case 'SELECT': // selection box on left click
@@ -271,9 +273,6 @@ const usePointerDown = (
             setUpTime(0);
             setCurrentObj(null);
           }
-          break;
-        case 'TEXT':
-          e.stopPropagation();
           break;
       }
     };
@@ -360,6 +359,7 @@ const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera:
 };
 
 const useDrawRect = (
+  tool: Tool,
   upPos: Coord,
   downPos: Coord,
   drawRect: boolean,
@@ -370,32 +370,36 @@ const useDrawRect = (
   const [_current, setCurrent] = useRecoilState(currentObjState);
 
   useEffect(() => {
+    const newObjPos = { x: (upPos.x + downPos.x) / 2, y: (upPos.y + downPos.y) / 2 };
+    const newObjSize = { x: Math.abs(upPos.x - downPos.x), y: Math.abs(upPos.y - downPos.y) };
     if (drawRect) {
-      const appendRect = (obj: RectObj) => {
-        const newMap = new Map<string, Obj>();
-        newMap.set(obj.objId, obj);
-        setObjMap((previousMap) => {
-          return new Map<string, Obj>([...previousMap, ...newMap]);
-        });
-        setObjTree((previousTree) => {
-          return {
-            ...previousTree,
-            childNodes: [...previousTree.childNodes, { objId: obj.objId, childNodes: [] }],
-          };
-        });
-      };
-      // create and append rect
-      const obj = createRect(
-        (upPos.x + downPos.x) / 2,
-        (upPos.y + downPos.y) / 2,
-        Math.abs(upPos.x - downPos.x),
-        Math.abs(upPos.y - downPos.y),
-      );
-      appendRect(obj);
+      // create and append obj
+      const obj = (() => {
+        switch (tool) {
+          case 'RECT':
+            return createRect(newObjPos.x, newObjPos.y, newObjSize.x, newObjSize.y);
+          case 'TEXT':
+            return createText(newObjPos.x, newObjPos.y, newObjSize.x);
+        }
+        return null;
+      })();
+      if (obj === null) return;
+      appendObj(obj, setObjMap, setObjTree);
       setCurrent(obj.objId);
       setDrawRect(false);
     }
-  }, [downPos, drawRect, setCurrent, setDrawRect, setObjMap, setObjTree, upPos]);
+  }, [
+    downPos.x,
+    downPos.y,
+    drawRect,
+    setCurrent,
+    setDrawRect,
+    setObjMap,
+    setObjTree,
+    tool,
+    upPos.x,
+    upPos.y,
+  ]);
 };
 
 const useToolFlags = (tool: string) => {

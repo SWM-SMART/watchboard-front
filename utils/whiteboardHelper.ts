@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from 'react';
 import { Camera, Vector2, Vector3 } from 'three';
 
 export const SELECT_HIGHLIGHT = '#39DFFF';
@@ -12,8 +13,6 @@ export const rootObj: Obj = {
   depth: 0,
   parentId: '',
 };
-
-export function appendRect() {}
 
 /**
  * Generate object id
@@ -78,6 +77,40 @@ export function createRect(
 }
 
 /**
+ * Create Text Object based on input parameter
+ *
+ * @param {number} [x] x position
+ * @param {number} [y] y position
+ * @param {number} [w] width value
+ * @param {OverflowType} [overflow='normal'] overflow value
+ * @param {string} [color=genColor()] rgb string
+ * @param {number} [depth=genDepth()] depth value
+ * @return {TextObj} generated Text Object based on input parameter
+ */
+export function createText(
+  x: number,
+  y: number,
+  w: number,
+  overflow: OverflowType = 'normal',
+  color: string = genColor(),
+  depth: number = genDepth(),
+): TextObj {
+  return {
+    objId: genId(),
+    type: 'TEXT',
+    x: x,
+    y: y,
+    depth: depth,
+    parentId: 'root',
+    w: w,
+    fontSize: 10,
+    overflow: overflow,
+    text: '',
+    color: color,
+  };
+}
+
+/**
  * Returns real position of mouse inside canvas
  *
  * @param {Vector2} [mouse] target mouse object to find coordinates of
@@ -136,6 +169,31 @@ export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
  */
 export function boundNumber(value: number, min: number, max: number): number {
   return Math.max(Math.min(value, max), min);
+}
+
+/**
+ * appends object to global object tree & map
+ *
+ * @param {obj} [Obj] obj to append
+ * @param {Dispatch<SetStateAction<Map<string, Obj>>>} [setObjMap] global objMap setter
+ * @param {Dispatch<SetStateAction<ObjNode>>} [setObjTree] global objTree setter
+ */
+export function appendObj(
+  obj: Obj,
+  setObjMap: Dispatch<SetStateAction<Map<string, Obj>>>,
+  setObjTree: Dispatch<SetStateAction<ObjNode>>,
+): void {
+  const newMap = new Map<string, Obj>();
+  newMap.set(obj.objId, obj);
+  setObjMap((previousMap) => {
+    return new Map<string, Obj>([...previousMap, ...newMap]);
+  });
+  setObjTree((previousTree) => {
+    return {
+      ...previousTree,
+      childNodes: [...previousTree.childNodes, { objId: obj.objId, childNodes: [] }],
+    };
+  });
 }
 
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
