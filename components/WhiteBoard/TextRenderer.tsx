@@ -53,7 +53,7 @@ export default function TextRenderer({ obj }: TextViewProps) {
       >
         {obj.text}
       </Text>
-      {selection === obj.objId ? (
+      {selection === obj.objId && size.y > 0 ? (
         <mesh position={[obj.x, obj.y, SELECT_DEPTH]}>
           <planeGeometry attach={'geometry'} args={[obj.w, size.y]} />
           <meshStandardMaterial
