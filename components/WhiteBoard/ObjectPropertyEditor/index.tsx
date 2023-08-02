@@ -11,21 +11,11 @@ interface ObjectPropertyEditorProps {
 // view and edit target object properties
 export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEditorProps) {
   const [objMap, setObjMap] = useRecoilState(objMapState);
-  const [obj, setObj] = useState<Obj | undefined>(undefined);
+
+  if (targetObjId === null) return <></>;
 
   // get object from objMap using targetObjId
-  useEffect(() => {
-    if (targetObjId === null) return;
-    setObj(objMap.get(targetObjId));
-  }, [targetObjId, objMap]);
-
-  // update objMap if obj value has changed
-  useEffect(() => {
-    if (obj === undefined) return;
-    setObjMap((previousMap) => {
-      return new Map([...previousMap, [obj.objId, obj]]);
-    });
-  }, [obj, setObjMap]);
+  const obj = objMap.get(targetObjId);
 
   // show nothing if obj is not found or set
   if (obj === undefined) return <></>;
@@ -43,9 +33,9 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
             propKey={keys[i]}
             propValue={values[i]}
             onChange={(e) => {
-              setObj((previousObj) => {
-                if (previousObj === undefined) return undefined;
-                return { ...previousObj, [keys[i]]: e.target.value };
+              const newObj = { ...obj, [keys[i]]: e.target.value };
+              setObjMap((previousMap) => {
+                return new Map([...previousMap, [obj.objId, newObj]]);
               });
             }}
           />

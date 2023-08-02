@@ -15,10 +15,12 @@ export const objTreeState = atom<ObjNode>({
 
 export const currentToolState = atom<Tool>({
   key: 'whiteboard-toolSelection',
-  default: 'HAND',
+  default: 'SELECT',
 });
 
 export const currentObjState = atom<string | null>({
   key: 'whiteboard-objState',
   default: null,
 });
+
+export const dragState = atom<Coord | null>({ key: 'whiteboard-dragState', default: null });
