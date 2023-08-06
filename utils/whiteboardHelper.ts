@@ -174,31 +174,6 @@ export function boundNumber(value: number, min: number, max: number): number {
 }
 
 /**
- * appends object to global object tree & map
- *
- * @param {obj} [Obj] obj to append
- * @param {Dispatch<SetStateAction<Map<string, Obj>>>} [setObjMap] global objMap setter
- * @param {Dispatch<SetStateAction<ObjNode>>} [setObjTree] global objTree setter
- */
-export function appendObj(
-  obj: Obj,
-  setObjMap: Dispatch<SetStateAction<Map<string, Obj>>>,
-  setObjTree: Dispatch<SetStateAction<ObjNode>>,
-): void {
-  const newMap = new Map<string, Obj>();
-  newMap.set(obj.objId, validateObj(obj));
-  setObjMap((previousMap) => {
-    return new Map<string, Obj>([...previousMap, ...newMap]);
-  });
-  setObjTree((previousTree) => {
-    return {
-      ...previousTree,
-      childNodes: [...previousTree.childNodes, { objId: obj.objId, childNodes: [] }],
-    };
-  });
-}
-
-/**
  * validates input obj
  *
  * @param {obj} [Obj] obj to validate

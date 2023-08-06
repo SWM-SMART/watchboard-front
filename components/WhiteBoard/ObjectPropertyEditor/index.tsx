@@ -1,8 +1,7 @@
 'use client';
+import { useWhiteBoard } from '@/states/whiteboard';
 import styles from './objectPropertyEditor.module.css';
-import { objMapState } from '@/states/whiteboard';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { useRecoilState } from 'recoil';
+import { ChangeEvent } from 'react';
 
 interface ObjectPropertyEditorProps {
   targetObjId: string | null;
@@ -10,7 +9,10 @@ interface ObjectPropertyEditorProps {
 
 // view and edit target object properties
 export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEditorProps) {
-  const [objMap, setObjMap] = useRecoilState(objMapState);
+  const { objMap, updateObj } = useWhiteBoard((state) => ({
+    objMap: state.objMap,
+    updateObj: state.updateObj,
+  }));
 
   if (targetObjId === null) return <></>;
 
@@ -33,10 +35,8 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
             propKey={keys[i]}
             propValue={values[i]}
             onChange={(e) => {
-              const newObj = { ...obj, [keys[i]]: e.target.value };
-              setObjMap((previousMap) => {
-                return new Map([...previousMap, [obj.objId, newObj]]);
-              });
+              const newObj = { ...obj, [keys[i]]: getValue(e.target.value) };
+              updateObj(newObj);
             }}
           />
         );
@@ -58,4 +58,10 @@ function ObjectProperty({ propKey: key, propValue: value, onChange }: ObjectProp
       <input className={styles.input} onChange={onChange} value={value} />
     </div>
   );
+}
+
+function getValue(input: string) {
+  const number = Number(input);
+  if (isNaN(number)) return input;
+  return number;
 }

@@ -1,17 +1,16 @@
 'use client';
 import { CSSProperties } from 'react';
-import { useRecoilValue } from 'recoil';
-import { objTreeState } from '@/states/whiteboard';
 import { Canvas } from '@react-three/fiber';
 import NodeRenderer from './NodeRenderer';
 import MouseHandler from './MouseHandler';
+import { useWhiteBoard } from '@/states/whiteboard';
 
 interface WhiteBoardProps {
   style?: CSSProperties;
 }
 
 export default function WhiteBoard({ style }: WhiteBoardProps) {
-  const objTree = useRecoilValue(objTreeState);
+  const objTree = useWhiteBoard((state) => state.objTree);
   return (
     <Canvas
       frameloop="demand"

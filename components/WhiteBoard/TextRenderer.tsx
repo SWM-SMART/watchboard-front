@@ -1,5 +1,5 @@
 'use client';
-import { currentObjState, currentToolState, dragState } from '@/states/whiteboard';
+import { useWhiteBoard } from '@/states/whiteboard';
 import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
@@ -9,16 +9,18 @@ import {
 import { Text } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { useState } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
 
 interface TextViewProps {
   obj: TextObj;
 }
 
 export default function TextRenderer({ obj }: TextViewProps) {
-  const [selection, setSelection] = useRecoilState(currentObjState);
-  const [_drag, setDrag] = useRecoilState(dragState);
-  const tool = useRecoilValue(currentToolState);
+  const { currentObj, setCurrentObj, setDrag, currentTool } = useWhiteBoard((state) => ({
+    currentObj: state.currentObj,
+    setCurrentObj: state.setCurrentObj,
+    setDrag: state.setDrag,
+    currentTool: state.currentTool,
+  }));
   const { mouse, camera } = useThree();
   const [size, setSize] = useState<Coord>({ x: 0, y: 0 });
 
@@ -26,8 +28,8 @@ export default function TextRenderer({ obj }: TextViewProps) {
     <group
       onPointerDown={(e) => {
         e.stopPropagation();
-        if (tool === 'SELECT') {
-          setSelection(obj.objId);
+        if (currentTool === 'SELECT') {
+          setCurrentObj(obj.objId);
           const mousePos = getPos(mouse, camera);
           setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y) });
         }
@@ -53,7 +55,7 @@ export default function TextRenderer({ obj }: TextViewProps) {
       >
         {obj.text}
       </Text>
-      {selection === obj.objId && size.y > 0 ? (
+      {currentObj === obj.objId && size.y > 0 ? (
         <mesh position={[obj.x + obj.w / 2, obj.y + size.y / 2, SELECT_DEPTH]}>
           <planeGeometry attach={'geometry'} args={[obj.w, size.y]} />
           <meshStandardMaterial

@@ -1,5 +1,5 @@
 'use client';
-import { currentObjState, currentToolState, dragState } from '@/states/whiteboard';
+import { useWhiteBoard } from '@/states/whiteboard';
 import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
@@ -7,7 +7,6 @@ import {
   getPos,
 } from '@/utils/whiteboardHelper';
 import { useThree } from '@react-three/fiber';
-import { useRecoilState, useRecoilValue } from 'recoil';
 
 interface Props {
   obj: RectObj;
@@ -15,16 +14,19 @@ interface Props {
 
 // renders given rectangle object, sets selection onClick
 export default function RectangleRenderer({ obj }: Props) {
-  const [selection, setSelection] = useRecoilState(currentObjState);
-  const [_drag, setDrag] = useRecoilState(dragState);
-  const tool = useRecoilValue(currentToolState);
+  const { currentObj, setCurrentObj, setDrag, currentTool } = useWhiteBoard((state) => ({
+    currentObj: state.currentObj,
+    setCurrentObj: state.setCurrentObj,
+    setDrag: state.setDrag,
+    currentTool: state.currentTool,
+  }));
   const { mouse, camera } = useThree();
   return (
     <group
       onPointerDown={(e) => {
         e.stopPropagation();
-        if (e.button === 0 && tool === 'SELECT') {
-          setSelection(obj.objId);
+        if (e.button === 0 && currentTool === 'SELECT') {
+          setCurrentObj(obj.objId);
           const mousePos = getPos(mouse, camera);
           setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y) });
         }
@@ -34,7 +36,7 @@ export default function RectangleRenderer({ obj }: Props) {
         <planeGeometry attach={'geometry'} args={[obj.w, obj.h]} />
         <meshStandardMaterial color={obj.color} depthWrite={true} depthTest={true} />
       </mesh>
-      {selection === obj.objId ? (
+      {currentObj === obj.objId ? (
         <mesh position={[obj.x + obj.w / 2, obj.y + obj.h / 2, SELECT_DEPTH]}>
           <planeGeometry attach={'geometry'} args={[obj.w, obj.h]} />
           <meshStandardMaterial

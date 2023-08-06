@@ -1,6 +1,15 @@
-import { atom } from 'recoil';
+import { getDocumentList } from '@/utils/api';
+import { create } from 'zustand';
 
-export const documentListState = atom<WBDocumentMetadata[]>({
-  key: 'document-list',
-  default: [],
-});
+interface DocumentListState {
+  documentList: WBDocumentMetadata[];
+  fetchDocumentList: () => void;
+}
+
+export const useDocumentList = create<DocumentListState>()((set) => ({
+  documentList: [],
+  fetchDocumentList: async () => {
+    const newList = (await getDocumentList()) as WBDocumentMetadata[];
+    set(() => ({ documentList: newList }));
+  },
+}));

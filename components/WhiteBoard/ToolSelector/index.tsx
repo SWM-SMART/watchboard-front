@@ -1,8 +1,7 @@
 'use client';
+import { useWhiteBoard } from '@/states/whiteboard';
 import styles from './toolSelector.module.css';
 import 'material-symbols';
-import { currentToolState } from '@/states/whiteboard';
-import { useRecoilState } from 'recoil';
 
 export default function ToolSelector() {
   return (
@@ -21,11 +20,17 @@ interface ToolButtonProps {
 }
 
 function ToolButton({ toolName, icon }: ToolButtonProps) {
-  const [tool, setTool] = useRecoilState(currentToolState);
+  const { currentTool, setCurrentTool } = useWhiteBoard((state) => ({
+    currentTool: state.currentTool,
+    setCurrentTool: state.setCurrentTool,
+  }));
+
   return (
     <div
-      className={`${styles.buttonContainer} ${tool === toolName ? styles.buttonSelection : ''}`}
-      onClick={() => setTool(toolName)}
+      className={`${styles.buttonContainer} ${
+        currentTool === toolName ? styles.buttonSelection : ''
+      }`}
+      onClick={() => setCurrentTool(toolName)}
     >
       <span className={`material-symbols-outlined ${styles.icon}`}>{icon}</span>
     </div>
