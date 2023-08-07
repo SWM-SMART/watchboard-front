@@ -20,3 +20,7 @@ export async function createDocument(documentName: string): Promise<WBDocumentCr
 export async function deleteDocument(documentId: number) {
   await httpDelete(`${API_BASE_URL}/documents/${documentId}`);
 }
+
+export async function getUserData(): Promise<UserDataResponse> {
+  return (await httpGet(`${API_BASE_URL}/users/info`)).json();
+}
