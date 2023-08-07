@@ -3,19 +3,23 @@ import DocumentCount from './components/DocumentCount';
 import DocumentList from './components/DocumentList';
 import LoginButton from './components/LoginButton';
 import styles from './page.module.css';
+import DocumentCreateDialogue from './components/DocumentCreateDialogue';
 
-export default function HomePage() {
+export default function HomePage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   return (
     <>
-      <div className={styles.overlay}> </div>
       <div className={styles.container}>
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <LoginButton />
           </div>
           <div className={styles.headerRight}>
-            <BackgroundButton text={'녹음으로 생성'} href="/create" invert={true} icon="add" />
-            <BackgroundButton text={'문서 생성'} href="/create" icon="add" />
+            <BackgroundButton text={'녹음으로 생성'} href="/?create" invert={true} icon="add" />
+            <BackgroundButton text={'문서 생성'} href="/?create" icon="add" />
           </div>
         </div>
         <div className={styles.content}>
@@ -28,6 +32,13 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+      {searchParams.create === undefined ? (
+        <></>
+      ) : (
+        <div className={styles.overlay}>
+          <DocumentCreateDialogue />
+        </div>
+      )}
     </>
   );
 }
