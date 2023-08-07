@@ -52,3 +52,10 @@ type WBDocumentListReponse = WBDocumentMetaData[];
 type WBDocumentReponse = WBDocument;
 
 type WBDocumentCreateResponse = WBDocumentMetadata;
+interface UserData {
+  userId: number;
+  nickname: string;
+  email: string;
+}
+
+type UserDataResponse = UserData;
