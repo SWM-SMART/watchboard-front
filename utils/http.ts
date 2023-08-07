@@ -1,28 +1,65 @@
-const API_ACCESS_TOKEN = process.env.NEXT_PUBLIC_API_ACCESS_TOKEN || '';
+import { useUser } from '@/states/user';
+import { refreshToken } from './api';
 
-export async function httpGet(url: string) {
-  const headers = new Headers({ Accept: 'application/json' });
-  headers.set('accessToken', API_ACCESS_TOKEN);
-  return await fetch(url, {
+// refresh token on failure
+export async function httpGet(url: string, retry: boolean = true) {
+  const headers = createHeaders();
+  const res = await fetch(url, {
     method: 'GET',
+    credentials: 'include',
     headers: headers,
   });
+  if (res.status >= 400 && retry) {
+    await preRetry(headers);
+    const newres = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: headers,
+    });
+    return newres;
+  }
+  return res;
 }
 
-export async function httpPost(url: string, body: any) {
-  const headers = new Headers({
-    'Content-Type': 'application/json',
-  });
-  headers.set('accessToken', API_ACCESS_TOKEN);
-  return await fetch(url, {
+export async function httpPost(url: string, body: any, retry: boolean = true) {
+  const headers = createHeaders();
+  const res = await fetch(url, {
     method: 'POST',
+    credentials: 'include',
     headers: headers,
     body: JSON.stringify(body),
   });
+  if (res.status >= 400 && retry) {
+    await preRetry(headers);
+    return await fetch(url, {
+      method: 'POST',
+      credentials: 'include',
+      headers: headers,
+      body: JSON.stringify(body),
+    });
+  }
+  return res;
 }
 
-export async function httpDelete(url: string) {
+export async function httpDelete(url: string, retry: boolean = true) {
+  const headers = createHeaders();
+  const res = await fetch(url, { method: 'DELETE', credentials: 'include', headers: headers });
+  if (res.status >= 400 && retry) {
+    await preRetry(headers);
+    return await fetch(url, { method: 'DELETE', credentials: 'include', headers: headers });
+  }
+  return res;
+}
+
+function createHeaders() {
+  const accessToken = useUser.getState().accessToken;
   const headers = new Headers();
-  headers.set('accessToken', API_ACCESS_TOKEN);
-  return await fetch(url, { method: 'DELETE', headers: headers });
+  headers.set('Authorization', accessToken);
+  return headers;
+}
+
+async function preRetry(headers: Headers) {
+  const newAccessToken = (await refreshToken()) || '';
+  headers.set('Authorization', newAccessToken);
+  useUser.setState((state) => ({ accessToken: newAccessToken }));
 }
