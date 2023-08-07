@@ -18,10 +18,11 @@ interface RectObj extends Obj {
   color: string;
 }
 
+type OverflowType = 'normal' | 'break-word';
 interface TextObj extends Obj {
   w: number;
   fontSize: number;
-  overflow: 'normal' | 'break-word';
+  overflow: OverflowType;
   text: string;
   color: string;
 }
@@ -34,16 +35,16 @@ interface Coord {
 type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT';
 
 interface WBDocumentMetadata {
-  document_id: number;
-  document_name: string;
-  created_at: number;
-  modified_at: number;
+  documentId: number;
+  documentName: string;
+  createdAt: number;
+  modifiedAt: number;
 }
 
 type WBDocumentData = Map<string, Obj>;
 
 interface WBDocument extends WBDocumentMetadata {
-  document_data: WBDocumentData;
+  documentData: WBDocumentData;
 }
 
 type WBDocumentListReponse = WBDocumentMetaData[];

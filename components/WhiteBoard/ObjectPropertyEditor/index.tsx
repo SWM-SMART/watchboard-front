@@ -1,8 +1,7 @@
 'use client';
+import { useWhiteBoard } from '@/states/whiteboard';
 import styles from './objectPropertyEditor.module.css';
-import { objMapState } from '@/states/whiteboard';
-import { ChangeEvent, useEffect, useState } from 'react';
-import { useRecoilState } from 'recoil';
+import { ChangeEvent } from 'react';
 
 interface ObjectPropertyEditorProps {
   targetObjId: string | null;
@@ -10,22 +9,15 @@ interface ObjectPropertyEditorProps {
 
 // view and edit target object properties
 export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEditorProps) {
-  const [objMap, setObjMap] = useRecoilState(objMapState);
-  const [obj, setObj] = useState<Obj | undefined>(undefined);
+  const { objMap, updateObj } = useWhiteBoard((state) => ({
+    objMap: state.objMap,
+    updateObj: state.updateObj,
+  }));
+
+  if (targetObjId === null) return <></>;
 
   // get object from objMap using targetObjId
-  useEffect(() => {
-    if (targetObjId === null) return;
-    setObj(objMap.get(targetObjId));
-  }, [targetObjId, objMap]);
-
-  // update objMap if obj value has changed
-  useEffect(() => {
-    if (obj === undefined) return;
-    setObjMap((previousMap) => {
-      return new Map([...previousMap, [obj.objId, obj]]);
-    });
-  }, [obj, setObjMap]);
+  const obj = objMap.get(targetObjId);
 
   // show nothing if obj is not found or set
   if (obj === undefined) return <></>;
@@ -43,10 +35,8 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
             propKey={keys[i]}
             propValue={values[i]}
             onChange={(e) => {
-              setObj((previousObj) => {
-                if (previousObj === undefined) return undefined;
-                return { ...previousObj, [keys[i]]: e.target.value };
-              });
+              const newObj = { ...obj, [keys[i]]: getValue(e.target.value) };
+              updateObj(newObj);
             }}
           />
         );
@@ -68,4 +58,10 @@ function ObjectProperty({ propKey: key, propValue: value, onChange }: ObjectProp
       <input className={styles.input} onChange={onChange} value={value} />
     </div>
   );
+}
+
+function getValue(input: string) {
+  const number = Number(input);
+  if (isNaN(number)) return input;
+  return number;
 }

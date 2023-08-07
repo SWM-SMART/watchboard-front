@@ -1,4 +1,9 @@
+import { Dispatch, SetStateAction } from 'react';
 import { Camera, Vector2, Vector3 } from 'three';
+
+export const SELECT_HIGHLIGHT = '#39DFFF';
+export const SELECT_HIGHLIGHT_OPACITY = 0.5;
+export const SELECT_DEPTH = 1;
 
 export const rootObj: Obj = {
   objId: 'ROOT',
@@ -8,8 +13,6 @@ export const rootObj: Obj = {
   depth: 0,
   parentId: '',
 };
-
-export function appendRect() {}
 
 /**
  * Generate object id
@@ -60,7 +63,8 @@ export function createRect(
   color: string = genColor(),
   depth: number = genDepth(),
 ): RectObj {
-  return {
+  // automatically validates
+  return validateRectObj({
     objId: genId(),
     type: 'RECT',
     x: x,
@@ -70,7 +74,41 @@ export function createRect(
     depth: depth,
     color: color,
     parentId: 'root',
-  };
+  } as RectObj);
+}
+
+/**
+ * Create Text Object based on input parameter
+ *
+ * @param {number} [x] x position
+ * @param {number} [y] y position
+ * @param {number} [w] width value
+ * @param {OverflowType} [overflow='normal'] overflow value
+ * @param {string} [color=genColor()] rgb string
+ * @param {number} [depth=genDepth()] depth value
+ * @return {TextObj} generated Text Object based on input parameter
+ */
+export function createText(
+  x: number,
+  y: number,
+  w: number,
+  overflow: OverflowType = 'normal',
+  color: string = genColor(),
+  depth: number = genDepth(),
+): TextObj {
+  return validateTextObj({
+    objId: genId(),
+    type: 'TEXT',
+    x: x,
+    y: y,
+    depth: depth,
+    parentId: 'root',
+    w: w,
+    fontSize: 10,
+    overflow: overflow,
+    text: '',
+    color: color,
+  } as TextObj);
 }
 
 /**
@@ -78,12 +116,13 @@ export function createRect(
  *
  * @param {Vector2} [mouse] target mouse object to find coordinates of
  * @param {Camera} [camera] camera object to find coordinates with
+ * @param {boolean} [validate=false] validate coords
  * @return {RectObj} generated Rectangle Object based on input parameter
  */
 const vector3 = new Vector3();
-export function getPos(mouse: Vector2, camera: Camera) {
+export function getPos(mouse: Vector2, camera: Camera, validate: boolean = false) {
   const { x, y } = vector3.set(mouse.x, mouse.y, 0).unproject(camera);
-  return { x, y };
+  return { x: validate ? validateValue(x) : x, y: validate ? validateValue(y) : y };
 }
 
 /**
@@ -120,6 +159,75 @@ export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
   }
 
   return root;
+}
+
+/**
+ * returns number value in provided boundary
+ *
+ * @param {number} [value] value to bound
+ * @param {number} [min] minimum bound
+ * @param {number} [max] maximum bound
+ * @return {number} bounded value
+ */
+export function boundNumber(value: number, min: number, max: number): number {
+  return Math.max(Math.min(value, max), min);
+}
+
+/**
+ * validates input obj
+ *
+ * @param {obj} [Obj] obj to validate
+ * @return {Obj} validated obj
+ */
+export function validateObj(obj: Obj): Obj {
+  switch (obj.type) {
+    case 'RECT':
+      validateRectObj(obj as RectObj);
+      break;
+    case 'ROOT':
+      break;
+    case 'TEXT':
+      validateTextObj(obj as TextObj);
+      break;
+  }
+  return obj;
+}
+
+/**
+ * validates input rect obj
+ *
+ * @param {obj} [RectObj] rect obj to validate
+ * @return {Obj} validated obj
+ */
+function validateRectObj(obj: RectObj): RectObj {
+  obj.w = validateValue(obj.w);
+  obj.h = validateValue(obj.h);
+  obj.x = validateValue(obj.x);
+  obj.y = validateValue(obj.y);
+  return obj;
+}
+
+/**
+ * validates input text obj
+ *
+ * @param {obj} [TextObj] text obj to validate
+ * @return {TextObj} validated obj
+ */
+function validateTextObj(obj: TextObj): TextObj {
+  obj.w = validateValue(obj.w);
+  obj.x = validateValue(obj.x);
+  obj.y = validateValue(obj.y);
+  return obj;
+}
+
+/**
+ * validates input value
+ *
+ * @param {value} [number] number value to validate
+ * @return {number} validated obj
+ */
+export function validateValue(value: number): number {
+  return Math.round(value);
 }
 
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
