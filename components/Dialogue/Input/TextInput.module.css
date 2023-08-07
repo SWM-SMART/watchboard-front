@@ -1,0 +1,23 @@
+.input {
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--secondary-dark);
+  background-color: var(--foreground);
+  border-radius: 6px;
+}
+
+.input:focus {
+  background-color: var(--background);
+}
+
+.container {
+  padding: 0 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  color: var(--secondary-dark);
+  font-size: 15px;
+  margin: 0;
+}
