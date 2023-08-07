@@ -1,10 +1,10 @@
 'use client';
-import { useDocumentList } from '../../states/document';
+import { useDocument } from '../../states/document';
 import { useEffect } from 'react';
 import Card from '../../components/Card';
 
 export default function DocumentList() {
-  const { documentList, fetchDocumentList } = useDocumentList();
+  const { documentList, fetchDocumentList } = useDocument();
 
   useEffect(() => {
     fetchDocumentList();
