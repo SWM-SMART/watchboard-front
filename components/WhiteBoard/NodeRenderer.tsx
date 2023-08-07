@@ -1,6 +1,5 @@
 'use client';
-import { useRecoilValue } from 'recoil';
-import { objMapState } from '@/states/whiteboard';
+import { useWhiteBoard } from '@/states/whiteboard';
 import RectangleRenderer from './RectangleRenderer';
 import TextRenderer from './TextRenderer';
 
@@ -9,7 +8,7 @@ interface NodeRendererProps {
 }
 
 export default function NodeRenderer({ node }: NodeRendererProps) {
-  const objMap = useRecoilValue(objMapState);
+  const objMap = useWhiteBoard((state) => state.objMap);
   const current = objMap.get(node.objId);
 
   return (

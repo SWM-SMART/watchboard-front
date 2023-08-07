@@ -1,10 +1,9 @@
 'use client';
 import styles from './treeViewer.module.css';
-import { objMapState } from '@/states/whiteboard';
-import { useRecoilValue } from 'recoil';
 import 'material-symbols';
 import { useState } from 'react';
 import { rootObj } from '../../../utils/whiteboardHelper';
+import { useWhiteBoard } from '@/states/whiteboard';
 
 const INDENT_SIZE = 10;
 
@@ -30,7 +29,7 @@ interface TreeViewerNodeProps {
 // recursively show object info
 function TreeViewerNode({ node, depth = 0, root = false }: TreeViewerNodeProps) {
   const [expand, setExpand] = useState<boolean>(false);
-  const objMap = useRecoilValue(objMapState);
+  const objMap = useWhiteBoard((state) => state.objMap);
   const obj = node.objId === 'ROOT' ? rootObj : objMap.get(node.objId);
   if (obj === undefined) return <></>;
   const leaf = !root && node.childNodes.length === 0;

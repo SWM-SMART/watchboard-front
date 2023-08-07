@@ -1,9 +1,10 @@
 'use client';
+import { useDocumentList } from '@/states/document';
 import styles from './documentCount.module.css';
-import { useRecoilValue } from 'recoil';
-import { documentListState } from '../../../states/document';
+import { Suspense } from 'react';
 
 export default function DocumentCount() {
-  const { length } = useRecoilValue(documentListState);
+  const { documentList } = useDocumentList();
+  const length = documentList.length;
   return <p className={styles.count}>{length > 0 ? length : '...'}</p>;
 }

@@ -1,18 +1,9 @@
 'use client';
-import {
-  objMapState,
-  currentObjState,
-  objTreeState,
-  currentToolState,
-  dragState,
-} from '@/states/whiteboard';
 import { Camera, useFrame, useThree } from '@react-three/fiber';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { SetterOrUpdater, useRecoilState, useRecoilValue } from 'recoil';
 import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
-  appendObj,
   boundNumber,
   createRect,
   createText,
@@ -20,6 +11,7 @@ import {
   validateValue,
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
+import { useWhiteBoard } from '@/states/whiteboard';
 
 const MAX_OPACITY = 0.5;
 const WHEEL_DELTA_FACTOR = 100;
@@ -37,10 +29,17 @@ export default function MouseHandler() {
     gl: { domElement },
   } = useThree(); // More like reference? Not a state, useEffect can't track these
 
-  const tool = useRecoilValue(currentToolState);
-  const [objMap, setObjMap] = useRecoilState(objMapState);
-  const [currentObj, setCurrentObj] = useRecoilState(currentObjState);
-  const [drag, setDrag] = useRecoilState(dragState);
+  const { currentTool, objMap, addObj, updateObj, currentObj, setCurrentObj, drag, setDrag } =
+    useWhiteBoard((state) => ({
+      currentTool: state.currentTool,
+      objMap: state.objMap,
+      addObj: state.addObj,
+      updateObj: state.updateObj,
+      currentObj: state.currentObj,
+      setCurrentObj: state.setCurrentObj,
+      drag: state.drag,
+      setDrag: state.setDrag,
+    }));
 
   const {
     opacity,
@@ -51,12 +50,12 @@ export default function MouseHandler() {
     setSelection,
     drawRect,
     setDrawRect,
-  } = useToolFlags(tool);
+  } = useToolFlags(currentTool);
 
   const { upPos, setUpPos, upTime, setUpTime } = usePointerUp(
     mouse,
     camera,
-    tool,
+    currentTool,
     domElement,
     clock,
     setSelection,
@@ -68,7 +67,7 @@ export default function MouseHandler() {
   const { downPos } = usePointerDown(
     mouse,
     camera,
-    tool,
+    currentTool,
     domElement,
     setSelection,
     setCameraPan,
@@ -93,7 +92,7 @@ export default function MouseHandler() {
     setUpPos,
   );
 
-  useDrawRect(tool, upPos, downPos, drawRect, setDrawRect);
+  useDrawRect(currentTool, upPos, downPos, drawRect, setDrawRect, addObj);
 
   useFrame((s) => {
     // update opacity (if selection is active)
@@ -123,15 +122,13 @@ export default function MouseHandler() {
           x: validateValue(newPos.x + drag.x),
           y: validateValue(newPos.y + drag.y),
         } as Obj;
-        setObjMap((prevObjMap) => {
-          return new Map([...prevObjMap, [newObj.objId, newObj]]);
-        });
+        updateObj(newObj);
       }
     }
   });
 
   // validation
-  const validate = tool === 'RECT' || tool === 'TEXT';
+  const validate = currentTool === 'RECT' || currentTool === 'TEXT';
   const validUpPos: Coord = {
     x: validate ? validateValue(upPos.x) : upPos.x,
     y: validate ? validateValue(upPos.y) : upPos.y,
@@ -180,7 +177,7 @@ const usePointerUp = (
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
   setDrawRect: Dispatch<SetStateAction<boolean>>,
-  setDrag: SetterOrUpdater<Coord | null>,
+  setDrag: (drag: Coord | null) => void,
 ) => {
   const [upPos, setUpPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
   const [upTime, setUpTime] = useState<number>(0);
@@ -251,7 +248,7 @@ const usePointerDown = (
   setOpacity: Dispatch<SetStateAction<number>>,
   setUpPos: Dispatch<SetStateAction<Coord>>,
   setUpTime: Dispatch<SetStateAction<number>>,
-  setCurrentObj: SetterOrUpdater<string | null>,
+  setCurrentObj: (obj: string | null) => void,
 ) => {
   const [downPos, setDownPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
   // pointer down listener
@@ -380,11 +377,8 @@ const useDrawRect = (
   downPos: Coord,
   drawRect: boolean,
   setDrawRect: Dispatch<SetStateAction<boolean>>,
+  addObj: (obj: Obj) => void,
 ) => {
-  const [_objMap, setObjMap] = useRecoilState(objMapState);
-  const [_objTree, setObjTree] = useRecoilState(objTreeState);
-  const [_current, setCurrent] = useRecoilState(currentObjState);
-
   useEffect(() => {
     const newObjPos = { x: Math.min(upPos.x, downPos.x), y: Math.min(upPos.y, downPos.y) };
     const newObjSize = { x: Math.abs(upPos.x - downPos.x), y: Math.abs(upPos.y - downPos.y) };
@@ -400,22 +394,10 @@ const useDrawRect = (
         return null;
       })();
       if (obj === null) return;
-      appendObj(obj, setObjMap, setObjTree);
-      setCurrent(obj.objId);
+      addObj(obj);
       setDrawRect(false);
     }
-  }, [
-    downPos.x,
-    downPos.y,
-    drawRect,
-    setCurrent,
-    setDrawRect,
-    setObjMap,
-    setObjTree,
-    tool,
-    upPos.x,
-    upPos.y,
-  ]);
+  }, [addObj, downPos.x, downPos.y, drawRect, setDrawRect, tool, upPos.x, upPos.y]);
 };
 
 const useToolFlags = (tool: string) => {
