@@ -1,8 +1,6 @@
 'use client';
 import Logo from '@/components/Logo';
-import styles from './error.module.css';
 import Link from 'next/link';
-
 export default function Error() {
   return (
     <div className="error-container">
