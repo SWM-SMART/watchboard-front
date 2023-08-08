@@ -28,25 +28,27 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   if (document === null) return <LoadingScreen message={'Loading document'} />;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.sideBar}>
-        <div className={styles.sideBarUp}>
-          <DocumentTitle documentName={document.documentName} />
-          <ActionButtonGroup />
+    <div className={styles.rootContainer}>
+      <div className={styles.container}>
+        <div className={styles.sideBar}>
+          <div className={styles.sideBarUp}>
+            <DocumentTitle documentName={document.documentName} />
+            <ActionButtonGroup />
+          </div>
+          <Tab labels={['속성', '레이어']}>
+            <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />
+            <TreeViewer root={objTree} />
+          </Tab>
         </div>
-        <Tab labels={['속성', '레이어']}>
-          <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />
-          <TreeViewer root={objTree} />
-        </Tab>
-      </div>
-      <div className={styles.content}>
-        <div className={styles.toolBar}>
-          <ToolSelector />
-        </div>
-        <div className={styles.whiteBoardContainer}>
-          <Suspense fallback={<h1>loading renderer</h1>}>
-            <WhiteBoard />
-          </Suspense>
+        <div className={styles.content}>
+          <div className={styles.toolBar}>
+            <ToolSelector />
+          </div>
+          <div className={styles.whiteBoardContainer}>
+            <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
+              <WhiteBoard />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>

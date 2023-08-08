@@ -7,6 +7,7 @@
   --foreground-disabled: #c7cfd0;
   --foreground: #ffffff;
   --background: #e8f1f2;
+  --intro-animation: show 0.5s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -82,4 +83,15 @@ div.loading-bar {
   animation-name: barAnimation;
   animation-duration: 3s;
   animation-iteration-count: infinite;
+}
+
+@keyframes show {
+  0% {
+    opacity: 0;
+    scale: 98%;
+  }
+  100% {
+    opacity: 1;
+    scale: 100%;
+  }
 }
