@@ -1,3 +1,5 @@
+import LoadingScreen from '../../../components/LoadingScreen';
+
 export default function DocumentLoading() {
-  return <h1>loading resources</h1>;
+  return <LoadingScreen message={'Loading bundles'} />;
 }

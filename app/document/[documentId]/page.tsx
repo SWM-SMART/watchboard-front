@@ -10,6 +10,7 @@ import Tab from './components/Tab';
 import ObjectPropertyEditor from '@/components/WhiteBoard/ObjectPropertyEditor';
 import TreeViewer from '@/components/WhiteBoard/TreeViewer';
 import ToolSelector from '@/components/WhiteBoard/ToolSelector';
+import LoadingScreen from '../../../components/LoadingScreen';
 const WhiteBoard = dynamic(() => import('@/components/WhiteBoard'), { ssr: false });
 
 interface DocumentPageProps {
@@ -24,7 +25,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
 
   const document = useDocument(parseInt(params.documentId));
 
-  if (document === null) return <h1>loading document</h1>;
+  if (document === null) return <LoadingScreen message={'Loading document'} />;
 
   return (
     <div className={styles.container}>
