@@ -1,9 +1,10 @@
-import { getUserData } from '@/utils/api';
+import { getUserData, refreshToken } from '@/utils/api';
 import { create } from 'zustand';
 
 interface UserState {
   userData: UserData | null;
   fetchUserData: () => void;
+  accessToken: string;
 }
 
 export const useUser = create<UserState>()((set) => ({
@@ -14,4 +15,5 @@ export const useUser = create<UserState>()((set) => ({
       userData: newUserData,
     }));
   },
+  accessToken: '',
 }));
