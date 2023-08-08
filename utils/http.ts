@@ -54,7 +54,7 @@ export async function httpDelete(url: string, retry: boolean = true) {
 function createHeaders() {
   const accessToken = useUser.getState().accessToken;
   const headers = new Headers();
-  headers.set('Authorization', accessToken);
+  if (accessToken.length > 0) headers.set('Authorization', accessToken);
   return headers;
 }
 
