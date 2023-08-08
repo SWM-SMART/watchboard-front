@@ -1,47 +1,30 @@
 'use client';
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense, useEffect, useState } from 'react';
 import styles from './page.module.css';
-import { getDocument } from '../../../utils/api';
+import { useWhiteBoard } from '@/states/whiteboard';
+import { getDocument } from '@/utils/api';
 import DocumentTitle from './components/DocumentTitle';
 import ActionButtonGroup from './components/ActionButtonGroup';
 import Tab from './components/Tab';
-import ObjectPropertyEditor from '../../../components/WhiteBoard/ObjectPropertyEditor';
-import TreeViewer from '../../../components/WhiteBoard/TreeViewer';
-import { useWhiteBoard } from '../../../states/whiteboard';
-import ToolSelector from '../../../components/WhiteBoard/ToolSelector';
-import WhiteBoard from '../../../components/WhiteBoard';
-import { constructRootObjTree } from '../../../utils/whiteboardHelper';
+import ObjectPropertyEditor from '@/components/WhiteBoard/ObjectPropertyEditor';
+import TreeViewer from '@/components/WhiteBoard/TreeViewer';
+import ToolSelector from '@/components/WhiteBoard/ToolSelector';
+const WhiteBoard = dynamic(() => import('@/components/WhiteBoard'), { ssr: false });
 
 interface DocumentPageProps {
   params: { documentId: string };
 }
 
-function useDocument(documentId: number) {
-  const [document, setDocument] = useState<WBDocument | null>(null);
-  const loadDocument = useWhiteBoard((state) => state.loadDocument);
-
-  useEffect(() => {
-    (async () => {
-      // get raw document data
-      const newDocument = await getDocument(documentId);
-
-      // construct tree
-      loadDocument(newDocument);
-      setDocument(newDocument);
-    })();
-  }, [documentId, loadDocument]);
-
-  return document;
-}
-
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const document = useDocument(parseInt(params.documentId));
   const { currentObj, objTree } = useWhiteBoard((state) => ({
     currentObj: state.currentObj,
     objTree: state.objTree,
   }));
 
-  if (document === null) return <Loading />;
+  const document = useDocument(parseInt(params.documentId));
+
+  if (document === null) return <h1>loading document</h1>;
 
   return (
     <div className={styles.container}>
@@ -60,13 +43,32 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           <ToolSelector />
         </div>
         <div className={styles.whiteBoardContainer}>
-          <WhiteBoard />
+          <Suspense fallback={<h1>loading renderer</h1>}>
+            <WhiteBoard />
+          </Suspense>
         </div>
       </div>
     </div>
   );
 }
 
-function Loading() {
-  return <h1>loading</h1>;
+function useDocument(documentId: number) {
+  const [document, setDocument] = useState<WBDocument | null>(null);
+  const loadDocument = useWhiteBoard((state) => state.loadDocument);
+
+  useEffect(() => {
+    // reset
+    setDocument(null);
+
+    (async () => {
+      // get raw document data
+      const newDocument = await getDocument(documentId);
+
+      // construct tree
+      loadDocument(newDocument);
+      setDocument(newDocument);
+    })();
+  }, [documentId, loadDocument]);
+
+  return document;
 }
