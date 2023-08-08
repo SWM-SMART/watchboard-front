@@ -85,6 +85,15 @@ div.loading-bar {
   animation-iteration-count: infinite;
 }
 
+@keyframes progress-bar {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
 @keyframes show {
   0% {
     opacity: 0;

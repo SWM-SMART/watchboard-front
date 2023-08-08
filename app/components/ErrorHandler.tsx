@@ -1,11 +1,16 @@
 'use client';
-
-import { useError } from '@/utils/ui';
+import { useToast } from '@/states/toast';
+import { throwError, useError } from '@/utils/ui';
 
 export default function ErrorHandler() {
+  const pushToast = useToast((state) => state.pushToast);
   useError((msg: string) => {
-    // TODO: handle error messages
     console.log(msg);
+    pushToast({
+      id: new Date().getTime(),
+      msg: msg,
+      duraton: 10000,
+    });
   });
   return null;
 }
