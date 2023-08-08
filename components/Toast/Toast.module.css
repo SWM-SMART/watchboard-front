@@ -1,0 +1,23 @@
+.container {
+  animation: var(--intro-animation);
+  background-color: var(--foreground);
+  width: 500px;
+  border-radius: 10px;
+  border: 1px solid var(--background);
+  overflow: hidden;
+  box-shadow: 5px 5px 5px #00000030;
+}
+
+.progressBar {
+  position: relative;
+  background-color: var(--secondary-light);
+  height: 5px;
+  border-radius: 10px;
+  bottom: 0;
+  left: 0;
+}
+
+.text {
+  word-break: break-all;
+  padding: 0 20px;
+}

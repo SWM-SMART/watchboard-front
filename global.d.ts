@@ -59,3 +59,9 @@ interface UserData {
 }
 
 type UserDataResponse = UserData;
+
+interface ToastData {
+  id: number;
+  duraton: number;
+  msg: string;
+}
