@@ -75,3 +75,7 @@ interface ToastData {
 
 type DragData = Coord & { mode: DragMode };
 type DragMode = 'move' | 'n' | 'e' | 'w' | 's';
+
+interface textRequest {
+  text: string;
+}
