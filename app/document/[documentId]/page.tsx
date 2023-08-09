@@ -18,12 +18,18 @@ interface DocumentPageProps {
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const { currentObj, objTree } = useWhiteBoard((state) => ({
+  const { currentObj, objTree, resetWhiteBoard } = useWhiteBoard((state) => ({
     currentObj: state.currentObj,
     objTree: state.objTree,
+    resetWhiteBoard: state.resetWhiteBoard,
   }));
 
   const document = useDocument(parseInt(params.documentId));
+
+  // reset whiteboard
+  useEffect(() => {
+    resetWhiteBoard();
+  }, [resetWhiteBoard]);
 
   if (document === null) return <LoadingScreen message={'Loading document'} />;
 
