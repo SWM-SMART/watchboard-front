@@ -5,12 +5,22 @@ import LoginButton from './components/LoginButton';
 import styles from './page.module.css';
 import DocumentCreateDialogue from './components/DocumentCreateDialogue';
 import RecordDialogue from './components/RecordDialogue';
+import OverlayWrapper from '@/components/OverlayWrapper';
 
 export default function HomePage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const overlay = (() => {
+    switch (searchParams.create) {
+      case '':
+        return <DocumentCreateDialogue />;
+      case 'record':
+        return <RecordDialogue />;
+    }
+  })();
+
   return (
     <>
       <div className={styles.container}>
@@ -38,26 +48,7 @@ export default function HomePage({
           </div>
         </div>
       </div>
-      <DialogueWrapper create={searchParams.create} />
+      <OverlayWrapper>{overlay}</OverlayWrapper>
     </>
   );
-}
-
-interface DialogueWrapperProps {
-  create?: string | string[];
-}
-
-function DialogueWrapper({ create }: DialogueWrapperProps) {
-  switch (create) {
-    case '':
-      return (
-        <div className={styles.overlay}>
-          <DocumentCreateDialogue />
-        </div>
-      );
-    case 'record':
-      return <RecordDialogue />;
-  }
-
-  return <></>;
 }
