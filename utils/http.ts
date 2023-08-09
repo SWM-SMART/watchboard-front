@@ -56,7 +56,7 @@ async function doGetRes(
   getRes: (headers: Headers) => Promise<Response>,
   headers: Headers,
   retry: boolean,
-) {
+): Promise<Response | undefined> {
   try {
     return await getRes(headers);
   } catch (e) {
@@ -66,6 +66,5 @@ async function doGetRes(
     }
     if ((await preRetry(headers)) === false) return;
   }
-
-  return await getRes(headers);
+  return await doGetRes(getRes, headers, false);
 }
