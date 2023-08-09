@@ -26,3 +26,7 @@ export async function getUserData(): Promise<UserDataResponse> {
 export async function refreshToken(): Promise<string | null> {
   return (await httpGet(`${API_BASE_URL}/users/token`, false))?.headers.get('Authorization') || '';
 }
+
+export async function generateGraph(text: textRequest): Promise<any> {
+  return (await httpPost(`${API_BASE_URL}/users/token`, text))?.json();
+}
