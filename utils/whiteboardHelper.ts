@@ -106,7 +106,7 @@ export function createText(
     depth: depth,
     parentId: 'root',
     w: w,
-    fontSize: 10,
+    fontSize: 20,
     overflow: overflow,
     text: '',
     color: color,
