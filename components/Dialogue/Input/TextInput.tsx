@@ -1,17 +1,23 @@
 'use client';
-import { ChangeEvent } from 'react';
+import { ChangeEventHandler } from 'react';
 import styles from './TextInput.module.css';
 
 interface TextInputProps {
   label: string;
-  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  multiline?: boolean;
+  onChange?: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
 }
 
-export default function TextInput({ label, onChange }: TextInputProps) {
+export default function TextInput({ label, multiline = false, onChange }: TextInputProps) {
+  const input = multiline ? (
+    <textarea className={styles.input} rows={15} onChange={onChange} />
+  ) : (
+    <input className={styles.input} onChange={onChange} type="text" />
+  );
   return (
     <div className={styles.container}>
       <p className={styles.label}>{label}</p>
-      <input className={styles.input} onChange={onChange} type="text" />
+      {input}
     </div>
   );
 }
