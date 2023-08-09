@@ -12,6 +12,13 @@ interface Obj {
   parentId: string;
 }
 
+interface ObjDimensions {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 interface RectObj extends Obj {
   w: number;
   h: number;
