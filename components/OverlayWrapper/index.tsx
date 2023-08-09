@@ -10,7 +10,11 @@ export default function OverlayWrapper({ children, onCancel }: OverlayWrapperPro
   if (children === null || children === undefined) return <></>;
   return (
     <div className={styles.overlay} onClick={onCancel}>
-      {children}
+      {onCancel === undefined ? (
+        children
+      ) : (
+        <div onClick={(e) => e.stopPropagation()}>{children}</div>
+      )}
     </div>
   );
 }
