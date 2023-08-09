@@ -1,5 +1,4 @@
 'use client';
-import styles from './DocumentCreateDialogue.module.css';
 import Dialogue from '@/components/Dialogue';
 import TextInput from '@/components/Dialogue/Input/TextInput';
 import { useToast } from '@/states/toast';
@@ -14,7 +13,7 @@ export default function DocumentCreateDialogue() {
   const pushToast = useToast((state) => state.pushToast);
 
   return (
-    <div className={styles.container}>
+    <div style={{ maxWidth: '500px', width: '100%' }}>
       <Dialogue
         enabled={!load}
         title={'문서 생성'}
