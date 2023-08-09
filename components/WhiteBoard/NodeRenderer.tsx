@@ -54,19 +54,24 @@ function ObjectWrapper({ obj }: ObjectWrapperProps) {
     currentTool: state.currentTool,
   }));
   const { mouse, camera } = useThree();
+  const selection = currentObj === obj.objId;
   return (
     <group
       onPointerDown={(e) => {
+        // 첫번째 클릭만 여기서 처리, selection 이후는 selectionRenderer에서 처리
         e.stopPropagation();
-        if (e.button === 0 && currentTool === 'SELECT') {
+        if (e.button === 0) {
           setCurrentObj(obj.objId);
-          const mousePos = getPos(mouse, camera);
-          setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y) });
+          if (selection) return;
+          if (currentTool === 'SELECT') {
+            const mousePos = getPos(mouse, camera);
+            setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y), mode: 'move' });
+          }
         }
       }}
     >
       <RenderWrapper obj={obj} setDimensions={setDimensions} />
-      {currentObj === obj.objId ? <SelectionRenderer dimensions={dimensions} /> : <></>}
+      {selection ? <SelectionRenderer dimensions={dimensions} /> : <></>}
     </group>
   );
 }

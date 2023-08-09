@@ -114,15 +114,44 @@ export default function MouseHandler() {
     // drag object
     if (drag !== null && currentObj !== null) {
       const obj = objMap.get(currentObj);
-      // move selected obj
-      if (obj !== undefined) {
-        const newPos = getPos(s.mouse, s.camera);
-        const newObj = {
-          ...obj,
-          x: validateValue(newPos.x + drag.x),
-          y: validateValue(newPos.y + drag.y),
-        } as Obj;
-        updateObj(newObj);
+      if (obj === undefined) return;
+      const newPos = getPos(s.mouse, s.camera);
+      switch (drag.mode) {
+        case 'move':
+          updateObj({
+            ...obj,
+            x: validateValue(newPos.x + drag.x),
+            y: validateValue(newPos.y + drag.y),
+          } as Obj);
+          break;
+        case 'n':
+          if (obj.type === 'TEXT') break;
+          updateObj({
+            ...obj,
+            h: validateValue(newPos.y - drag.y),
+          } as Obj);
+          break;
+        case 'e':
+          updateObj({
+            ...obj,
+            w: validateValue(newPos.x - drag.x),
+          } as Obj);
+          break;
+        case 'w':
+          updateObj({
+            ...obj,
+            w: validateValue(drag.x - newPos.x),
+            x: validateValue(newPos.x),
+          } as Obj);
+          break;
+        case 's':
+          if (obj.type === 'TEXT') break;
+          updateObj({
+            ...obj,
+            h: validateValue(drag.y - newPos.y),
+            y: validateValue(newPos.y),
+          } as Obj);
+          break;
       }
     }
   });
@@ -177,7 +206,7 @@ const usePointerUp = (
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
   setDrawRect: Dispatch<SetStateAction<boolean>>,
-  setDrag: (drag: Coord | null) => void,
+  setDrag: (drag: DragData | null) => void,
 ) => {
   const [upPos, setUpPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
   const [upTime, setUpTime] = useState<number>(0);

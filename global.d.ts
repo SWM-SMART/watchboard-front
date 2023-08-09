@@ -72,3 +72,6 @@ interface ToastData {
   duraton: number;
   msg: string;
 }
+
+type DragData = Coord & { mode: DragMode };
+type DragMode = 'move' | 'n' | 'e' | 'w' | 's';

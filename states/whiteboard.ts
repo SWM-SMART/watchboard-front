@@ -10,8 +10,8 @@ interface WhiteBoardState {
   setCurrentTool: (tool: Tool) => void;
   currentObj: string | null;
   setCurrentObj: (obj: string | null) => void;
-  drag: Coord | null;
-  setDrag: (drag: Coord | null) => void;
+  drag: DragData | null;
+  setDrag: (drag: DragData | null) => void;
   loadDocument: (document: WBDocument) => void;
 }
 
@@ -38,7 +38,7 @@ export const useWhiteBoard = create<WhiteBoardState>()((set) => ({
   currentObj: null,
   setCurrentObj: (obj: string | null) => set(() => ({ currentObj: obj })),
   drag: null,
-  setDrag: (drag: Coord | null) => set(() => ({ drag: drag })),
+  setDrag: (drag: DragData | null) => set(() => ({ drag: drag })),
   loadDocument: async (document: WBDocument) => {
     const newObjMap = new Map<string, Obj>(Object.entries(document.documentData));
     const newObjTree = constructRootObjTree(newObjMap);
