@@ -51,6 +51,7 @@ export default function GenerateDialouge({ onCancel }: GenerateDialogueProps) {
           </div>
         ) : (
           <TextInput
+            text={text}
             onChange={(e) => setText(e.target.value)}
             label={'생성에 사용될 글'}
             multiline={true}

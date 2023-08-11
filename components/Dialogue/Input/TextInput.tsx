@@ -3,16 +3,17 @@ import { ChangeEventHandler } from 'react';
 import styles from './TextInput.module.css';
 
 interface TextInputProps {
+  text?: string;
   label: string;
   multiline?: boolean;
   onChange?: ChangeEventHandler<HTMLTextAreaElement | HTMLInputElement>;
 }
 
-export default function TextInput({ label, multiline = false, onChange }: TextInputProps) {
+export default function TextInput({ text, label, multiline = false, onChange }: TextInputProps) {
   const input = multiline ? (
-    <textarea className={styles.input} rows={15} onChange={onChange} />
+    <textarea value={text} className={styles.input} rows={15} onChange={onChange} />
   ) : (
-    <input className={styles.input} onChange={onChange} type="text" />
+    <input value={text} className={styles.input} onChange={onChange} type="text" />
   );
   return (
     <div className={styles.container}>
