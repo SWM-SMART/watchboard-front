@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: stretch;
   overflow: hidden;
-  background-color: var(--secondary-dark);
+  background-color: var(--background);
 }
 
 .tabHeader {
@@ -21,6 +21,12 @@
   border-radius: 100px;
 }
 
+.tabHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-dark);
+}
+
 .headerLabel {
   font-size: 12px;
   padding: 10px 20px;
@@ -33,6 +39,7 @@
 }
 
 .tabContent {
+  animation: var(--intro-animation);
   background-color: var(--background);
   flex-grow: 1;
   overflow: auto;
