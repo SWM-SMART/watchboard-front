@@ -42,7 +42,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
         <div className={styles.sideBar}>
           <div className={styles.sideBarUp}>
             <DocumentTitle documentName={document.documentName} />
-            <ActionButtonGroup setOverlay={setOverlay} />
+            <ActionButtonGroup setOverlay={setOverlay} document={document} />
           </div>
           <Tab labels={['속성', '레이어']}>
             <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />

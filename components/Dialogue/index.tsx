@@ -7,8 +7,8 @@ interface DialogueProps {
   enabled: boolean;
   title: string;
   children?: ReactNode;
-  onCancel: () => void;
-  onSubmit: () => void;
+  onCancel?: () => void;
+  onSubmit?: () => void;
 }
 
 export default function Dialogue({

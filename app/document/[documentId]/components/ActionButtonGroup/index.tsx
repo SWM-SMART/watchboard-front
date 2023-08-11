@@ -4,12 +4,14 @@ import ActionButton from '../ActionButton';
 import styles from './actionButtonGroup.module.css';
 import { Dispatch, ReactNode, SetStateAction } from 'react';
 import GenerateDialouge from '../GenerateDialogue';
+import SaveDialogue from '../SaveDialogue';
 
 interface ActionButtonGroupProps {
   setOverlay: Dispatch<SetStateAction<ReactNode | null>>;
+  document: WBDocument;
 }
 
-export default function ActionButtonGroup({ setOverlay }: ActionButtonGroupProps) {
+export default function ActionButtonGroup({ setOverlay, document }: ActionButtonGroupProps) {
   return (
     <div className={styles.container}>
       <ActionButton
@@ -18,9 +20,13 @@ export default function ActionButtonGroup({ setOverlay }: ActionButtonGroupProps
         onClick={() => setOverlay(<GenerateDialouge onCancel={() => setOverlay(null)} />)}
       />
       <ActionButton
-        label={'내보내기'}
-        icon={'publish'}
-        onClick={() => throwError('준비중인 기능입니다.')}
+        label={'저장'}
+        icon={'save'}
+        onClick={() =>
+          setOverlay(
+            <SaveDialogue onDone={() => setOverlay(null)} documentId={document.documentId} />,
+          )
+        }
       />
       <ActionButton
         label={'가져오기'}
