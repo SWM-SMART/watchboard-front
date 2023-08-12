@@ -3,9 +3,11 @@ interface ObjNode {
   childNodes: ObjNode[];
 }
 
+type ObjType = 'RECT' | 'TEXT' | 'ROOT';
+
 interface Obj {
   objId: string;
-  type: 'RECT' | 'TEXT' | 'ROOT';
+  type: ObjType;
   x: number;
   y: number;
   depth: number;
