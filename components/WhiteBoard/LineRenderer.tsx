@@ -16,17 +16,15 @@ export default function LineRenderer({ obj, setDimensions }: LineRendererProps) 
     });
   }, [obj, setDimensions]);
   return (
-    <mesh>
-      <Line
-        points={[
-          [obj.x, obj.y, obj.depth],
-          [obj.x2, obj.y2, obj.depth],
-        ]}
-        color={obj.color}
-        lineWidth={obj.strokeWidth}
-        worldUnits={true}
-        dashed={false}
-      />
-    </mesh>
+    <Line
+      points={[
+        [obj.x, obj.y, obj.depth],
+        [obj.x2, obj.y2, obj.depth],
+      ]}
+      color={obj.color}
+      lineWidth={obj.strokeWidth}
+      worldUnits={true}
+      dashed={false}
+    />
   );
 }
