@@ -30,7 +30,8 @@ export default function ToastViewer() {
   if (toast === null) return null;
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} onClick={() => setToast(popToast())}>
+      {toasts.length > 0 ? <p className={styles.count}>{toasts.length}</p> : <></>}
       <Toast key={`toast-${toast.id}`} id={toast.id} msg={toast.msg} duration={toast.duraton} />
     </div>
   );

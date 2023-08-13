@@ -56,16 +56,15 @@ async function doGetRes(
   getRes: (headers: Headers) => Promise<Response>,
   headers: Headers,
   retry: boolean,
-) {
+): Promise<Response | undefined> {
   try {
-    return await getRes(headers);
+    const res = await getRes(headers);
+    if (res.status >= 400) throw Error;
+    return res;
   } catch (e) {
-    if (!retry) {
-      if (e instanceof Error) throwError(e.message);
-      return;
-    }
+    if (e instanceof Error && e.message.length > 0) throwError(e.message);
+    if (!retry) return;
     if ((await preRetry(headers)) === false) return;
   }
-
-  return await getRes(headers);
+  return await doGetRes(getRes, headers, false);
 }

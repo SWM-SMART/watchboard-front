@@ -4,12 +4,23 @@ import DocumentList from './components/DocumentList';
 import LoginButton from './components/LoginButton';
 import styles from './page.module.css';
 import DocumentCreateDialogue from './components/DocumentCreateDialogue';
+import RecordDialogue from './components/RecordDialogue';
+import OverlayWrapper from '@/components/OverlayWrapper';
 
 export default function HomePage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const overlay = (() => {
+    switch (searchParams.create) {
+      case '':
+        return <DocumentCreateDialogue />;
+      case 'record':
+        return <RecordDialogue />;
+    }
+  })();
+
   return (
     <>
       <div className={styles.container}>
@@ -18,7 +29,12 @@ export default function HomePage({
             <LoginButton />
           </div>
           <div className={styles.headerRight}>
-            <BackgroundButton text={'녹음으로 생성'} href="/?create" invert={true} icon="add" />
+            <BackgroundButton
+              text={'녹음으로 생성'}
+              href="/?create=record"
+              invert={true}
+              icon="add"
+            />
             <BackgroundButton text={'문서 생성'} href="/?create" icon="add" />
           </div>
         </div>
@@ -32,13 +48,7 @@ export default function HomePage({
           </div>
         </div>
       </div>
-      {searchParams.create === undefined ? (
-        <></>
-      ) : (
-        <div className={styles.overlay}>
-          <DocumentCreateDialogue />
-        </div>
-      )}
+      <OverlayWrapper>{overlay}</OverlayWrapper>
     </>
   );
 }

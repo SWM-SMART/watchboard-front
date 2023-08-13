@@ -5,14 +5,48 @@
   gap: 5px;
 }
 
-.row {
+.panel {
+  border-radius: 10px;
+  border: 1px solid var(--secondary-dark);
+  padding: 10px 5px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  flex: 0;
+}
+
+.property {
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
 }
 
 .label {
-  width: 100px;
+  min-width: 30;
+  font-size: 14px;
+  padding: 0;
+  margin: 0 8px;
+  text-align: center;
+  color: var(--secondary-dark);
 }
 
 .input {
+  text-align: center;
+  background-color: var(--background);
+  box-sizing: border-box;
+  border: 1px solid var(--background);
+  padding: 3px;
+  min-width: 0;
+  color: var(--secondary-light);
   flex: 1;
+}
+
+.input:focus {
+  border-radius: 10px;
+  color: var(--secondary-dark);
+  background-color: var(--foreground);
+  border: 1px solid var(--secondary-dark);
 }

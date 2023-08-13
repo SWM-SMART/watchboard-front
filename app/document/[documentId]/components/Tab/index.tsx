@@ -10,8 +10,10 @@ export default function Tab({ children, labels }: TabProps) {
   const { tabHeader, tabIndex } = useHeader(labels);
   return (
     <div className={styles.tabContainer}>
-      {tabHeader}
-      <div className={styles.tabContent}>{children[tabIndex]}</div>
+      <div className={styles.tabHeaderContainer}>{tabHeader}</div>
+      <div key={`tab-${tabIndex}`} className={styles.tabContent}>
+        {children[tabIndex]}
+      </div>
     </div>
   );
 }

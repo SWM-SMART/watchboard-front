@@ -4,15 +4,19 @@ import { create } from 'zustand';
 interface WhiteBoardState {
   objMap: Map<string, Obj>;
   objTree: ObjNode;
+  currentTool: Tool;
+  currentObj: string | null;
+  drag: DragData | null;
+}
+
+interface WhiteBoardActions {
   addObj: (obj: Obj) => void;
   updateObj: (obj: Obj) => void;
-  currentTool: Tool;
   setCurrentTool: (tool: Tool) => void;
-  currentObj: string | null;
   setCurrentObj: (obj: string | null) => void;
-  drag: Coord | null;
-  setDrag: (drag: Coord | null) => void;
+  setDrag: (drag: DragData | null) => void;
   loadDocument: (document: WBDocument) => void;
+  resetWhiteBoard: () => void;
 }
 
 const ROOT_OBJ = {
@@ -20,9 +24,16 @@ const ROOT_OBJ = {
   childNodes: [],
 } as ObjNode;
 
-export const useWhiteBoard = create<WhiteBoardState>()((set) => ({
+const initialState = {
   objMap: new Map<string, Obj>(),
   objTree: ROOT_OBJ,
+  currentTool: 'SELECT',
+  currentObj: null,
+  drag: null,
+} as WhiteBoardState;
+
+export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set) => ({
+  ...initialState,
   addObj: (obj: Obj) =>
     set((state) => ({
       objMap: state.objMap.set(obj.objId, obj),
@@ -33,15 +44,13 @@ export const useWhiteBoard = create<WhiteBoardState>()((set) => ({
       currentObj: obj.objId,
     })),
   updateObj: (obj: Obj) => set((state) => ({ objMap: state.objMap.set(obj.objId, obj) })),
-  currentTool: 'SELECT',
   setCurrentTool: (tool: Tool) => set(() => ({ currentTool: tool })),
-  currentObj: null,
   setCurrentObj: (obj: string | null) => set(() => ({ currentObj: obj })),
-  drag: null,
-  setDrag: (drag: Coord | null) => set(() => ({ drag: drag })),
+  setDrag: (drag: DragData | null) => set(() => ({ drag: drag })),
   loadDocument: async (document: WBDocument) => {
     const newObjMap = new Map<string, Obj>(Object.entries(document.documentData));
     const newObjTree = constructRootObjTree(newObjMap);
     set(() => ({ objMap: newObjMap, objTree: newObjTree }));
   },
+  resetWhiteBoard: () => set(() => ({ ...initialState })),
 }));

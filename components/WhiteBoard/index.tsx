@@ -13,6 +13,7 @@ export default function WhiteBoard({ style }: WhiteBoardProps) {
   const objTree = useWhiteBoard((state) => state.objTree);
   return (
     <Canvas
+      flat
       frameloop="demand"
       style={style}
       camera={{ position: [0, 0, 100], zoom: 1 }}

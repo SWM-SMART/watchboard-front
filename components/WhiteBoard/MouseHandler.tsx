@@ -5,6 +5,7 @@ import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
   boundNumber,
+  createLine,
   createRect,
   createText,
   getPos,
@@ -12,6 +13,7 @@ import {
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 import { useWhiteBoard } from '@/states/whiteboard';
+import { Line } from '@react-three/drei';
 
 const MAX_OPACITY = 0.5;
 const WHEEL_DELTA_FACTOR = 100;
@@ -41,16 +43,8 @@ export default function MouseHandler() {
       setDrag: state.setDrag,
     }));
 
-  const {
-    opacity,
-    setOpacity,
-    cameraPan,
-    setCameraPan,
-    selection,
-    setSelection,
-    drawRect,
-    setDrawRect,
-  } = useToolFlags(currentTool);
+  const { opacity, setOpacity, cameraPan, setCameraPan, selection, setSelection, draw, setDraw } =
+    useToolFlags(currentTool);
 
   const { upPos, setUpPos, upTime, setUpTime } = usePointerUp(
     mouse,
@@ -60,7 +54,7 @@ export default function MouseHandler() {
     clock,
     setSelection,
     setCameraPan,
-    setDrawRect,
+    setDraw,
     setDrag,
   );
 
@@ -71,7 +65,7 @@ export default function MouseHandler() {
     domElement,
     setSelection,
     setCameraPan,
-    setDrawRect,
+    setDraw,
     setOpacity,
     setUpPos,
     setUpTime,
@@ -92,7 +86,7 @@ export default function MouseHandler() {
     setUpPos,
   );
 
-  useDrawRect(currentTool, upPos, downPos, drawRect, setDrawRect, addObj);
+  useDraw(currentTool, upPos, downPos, draw, setDraw, addObj);
 
   useFrame((s) => {
     // update opacity (if selection is active)
@@ -114,21 +108,14 @@ export default function MouseHandler() {
     // drag object
     if (drag !== null && currentObj !== null) {
       const obj = objMap.get(currentObj);
-      // move selected obj
-      if (obj !== undefined) {
-        const newPos = getPos(s.mouse, s.camera);
-        const newObj = {
-          ...obj,
-          x: validateValue(newPos.x + drag.x),
-          y: validateValue(newPos.y + drag.y),
-        } as Obj;
-        updateObj(newObj);
-      }
+      if (obj === undefined) return;
+      const newPos = getPos(s.mouse, s.camera);
+      handleDrag(obj, newPos, drag, updateObj);
     }
   });
 
   // validation
-  const validate = currentTool === 'RECT' || currentTool === 'TEXT';
+  const validate = currentTool === 'RECT' || currentTool === 'TEXT' || currentTool === 'LINE';
   const validUpPos: Coord = {
     x: validate ? validateValue(upPos.x) : upPos.x,
     y: validate ? validateValue(upPos.y) : upPos.y,
@@ -139,33 +126,52 @@ export default function MouseHandler() {
   };
 
   // mouse interaction feedback: draw rectangle in selected area (if selection is active)
-  return selection && !drag ? (
-    <mesh
-      position={[
-        (validUpPos.x + validDownPos.x) / 2,
-        (validUpPos.y + validDownPos.y) / 2,
-        SELECT_DEPTH,
-      ]}
-      scale={1}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-    >
-      <planeGeometry
-        attach={'geometry'}
-        args={[Math.abs(validUpPos.x - validDownPos.x), Math.abs(validUpPos.y - validDownPos.y)]}
-      />
-      <meshStandardMaterial
-        transparent={true}
-        opacity={opacity}
-        color={SELECT_HIGHLIGHT}
-        depthWrite={true}
-        depthTest={true}
-      />
-    </mesh>
-  ) : (
-    <></>
-  );
+  if (drag || !selection) return null;
+  switch (currentTool) {
+    case 'SELECT':
+    case 'RECT':
+    case 'TEXT':
+      return (
+        <mesh
+          position={[
+            (validUpPos.x + validDownPos.x) / 2,
+            (validUpPos.y + validDownPos.y) / 2,
+            SELECT_DEPTH,
+          ]}
+          scale={1}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <planeGeometry
+            attach={'geometry'}
+            args={[
+              Math.abs(validUpPos.x - validDownPos.x),
+              Math.abs(validUpPos.y - validDownPos.y),
+            ]}
+          />
+          <meshStandardMaterial
+            transparent={true}
+            opacity={opacity}
+            color={SELECT_HIGHLIGHT}
+            depthWrite={true}
+            depthTest={true}
+          />
+        </mesh>
+      );
+    case 'LINE':
+      return (
+        <Line
+          points={[
+            [downPos.x, downPos.y, SELECT_DEPTH],
+            [upPos.x, upPos.y, SELECT_DEPTH],
+          ]}
+          color={SELECT_HIGHLIGHT}
+          lineWidth={3}
+          worldUnits={true}
+          dashed={false}
+        />
+      );
+  }
+  return null;
 }
 
 const usePointerUp = (
@@ -176,8 +182,8 @@ const usePointerUp = (
   clock: Clock,
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
-  setDrawRect: Dispatch<SetStateAction<boolean>>,
-  setDrag: (drag: Coord | null) => void,
+  setDraw: Dispatch<SetStateAction<boolean>>,
+  setDrag: (drag: DragData | null) => void,
 ) => {
   const [upPos, setUpPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
   const [upTime, setUpTime] = useState<number>(0);
@@ -202,12 +208,13 @@ const usePointerUp = (
           }
           break;
         case 'RECT':
+        case 'LINE':
         case 'TEXT':
           if (e.button == 0) {
             setUpPos(newPos);
             setUpTime(0);
             setSelection(false);
-            setDrawRect(true);
+            setDraw(true);
           }
           break;
         case 'SELECT':
@@ -229,7 +236,7 @@ const usePointerUp = (
     mouse,
     setCameraPan,
     setDrag,
-    setDrawRect,
+    setDraw,
     setSelection,
     tool,
   ]);
@@ -244,7 +251,7 @@ const usePointerDown = (
   domElement: HTMLCanvasElement,
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
-  setDrawRect: Dispatch<SetStateAction<boolean>>,
+  setDraw: Dispatch<SetStateAction<boolean>>,
   setOpacity: Dispatch<SetStateAction<number>>,
   setUpPos: Dispatch<SetStateAction<Coord>>,
   setUpTime: Dispatch<SetStateAction<number>>,
@@ -274,8 +281,9 @@ const usePointerDown = (
           }
           break;
         case 'RECT':
+        case 'LINE':
         case 'TEXT':
-          setDrawRect(false);
+          setDraw(false);
           e.stopPropagation(); // fall through
         case 'SELECT': // selection box on left click
           if (e.button === 0) {
@@ -300,7 +308,7 @@ const usePointerDown = (
     mouse,
     setCameraPan,
     setCurrentObj,
-    setDrawRect,
+    setDraw,
     setOpacity,
     setSelection,
     setUpPos,
@@ -318,7 +326,7 @@ const usePointerMove = (
   cameraPan: boolean,
   selection: boolean,
   opacity: number,
-  drag: Coord | null,
+  drag: DragData | null,
   invalidate: () => void,
   setUpPos: Dispatch<SetStateAction<Coord>>,
 ) => {
@@ -371,23 +379,25 @@ const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera:
   }, [domElement, invalidate, camera]);
 };
 
-const useDrawRect = (
+const useDraw = (
   tool: Tool,
   upPos: Coord,
   downPos: Coord,
-  drawRect: boolean,
-  setDrawRect: Dispatch<SetStateAction<boolean>>,
+  draw: boolean,
+  setDraw: Dispatch<SetStateAction<boolean>>,
   addObj: (obj: Obj) => void,
 ) => {
   useEffect(() => {
     const newObjPos = { x: Math.min(upPos.x, downPos.x), y: Math.min(upPos.y, downPos.y) };
     const newObjSize = { x: Math.abs(upPos.x - downPos.x), y: Math.abs(upPos.y - downPos.y) };
-    if (drawRect) {
+    if (draw) {
       // create and append obj
       const obj = (() => {
         switch (tool) {
           case 'RECT':
             return createRect(newObjPos.x, newObjPos.y, newObjSize.x, newObjSize.y);
+          case 'LINE':
+            return createLine(downPos.x, downPos.y, upPos.x, upPos.y);
           case 'TEXT':
             return createText(newObjPos.x, newObjPos.y, newObjSize.x);
         }
@@ -395,21 +405,21 @@ const useDrawRect = (
       })();
       if (obj === null) return;
       addObj(obj);
-      setDrawRect(false);
+      setDraw(false);
     }
-  }, [addObj, downPos.x, downPos.y, drawRect, setDrawRect, tool, upPos.x, upPos.y]);
+  }, [addObj, downPos.x, downPos.y, draw, setDraw, tool, upPos.x, upPos.y]);
 };
 
 const useToolFlags = (tool: string) => {
   const [opacity, setOpacity] = useState<number>(0);
   const [cameraPan, setCameraPan] = useState<boolean>(false);
   const [selection, setSelection] = useState<boolean>(false);
-  const [drawRect, setDrawRect] = useState<boolean>(false);
+  const [draw, setDraw] = useState<boolean>(false);
 
   useEffect(() => {
     setSelection(false);
     setCameraPan(false);
-    setDrawRect(false);
+    setDraw(false);
   }, [tool]);
 
   return {
@@ -419,7 +429,119 @@ const useToolFlags = (tool: string) => {
     setCameraPan,
     selection,
     setSelection,
-    drawRect,
-    setDrawRect,
+    draw: draw,
+    setDraw: setDraw,
   };
 };
+
+function handleDrag(obj: Obj, newPos: Coord, drag: DragData, updateObj: (obj: Obj) => void) {
+  switch (obj.type) {
+    case 'RECT':
+      return handleRectDrag(obj as RectObj, newPos, drag, updateObj);
+    case 'TEXT':
+      return handleTextDrag(obj as TextObj, newPos, drag, updateObj);
+    case 'ROOT':
+      break;
+    case 'LINE':
+      return handleLineDrag(obj as LineObj, newPos, drag, updateObj);
+  }
+}
+
+function handleRectDrag(
+  obj: RectObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+      } as Obj);
+    case 'n':
+      return updateObj({
+        ...obj,
+        h: validateValue(newPos.y - drag.prevObj.y, true),
+      } as Obj);
+    case 'e':
+      return updateObj({
+        ...obj,
+        w: validateValue(newPos.x - drag.prevObj.x, true),
+      } as Obj);
+    case 'w':
+      return updateObj({
+        ...obj,
+        w: validateValue(drag.prevObj.x + (drag.prevObj as RectObj).w - newPos.x, true),
+        x: validateValue(newPos.x),
+      } as Obj);
+    case 's':
+      return updateObj({
+        ...obj,
+        h: validateValue(drag.prevObj.y + (drag.prevObj as RectObj).h - newPos.y, true),
+        y: validateValue(newPos.y),
+      } as Obj);
+  }
+}
+
+function handleTextDrag(
+  obj: TextObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+      } as Obj);
+    case 'e':
+      return updateObj({
+        ...obj,
+        w: validateValue(newPos.x - drag.prevObj.x, true),
+      } as Obj);
+    case 'w':
+      return updateObj({
+        ...obj,
+        w: validateValue(drag.prevObj.x + (drag.prevObj as TextObj).w - newPos.x, true),
+        x: validateValue(newPos.x),
+      } as Obj);
+  }
+}
+
+function handleLineDrag(
+  obj: LineObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  const offset: Coord = {
+    x: newPos.x - drag.mousePos.x,
+    y: newPos.y - drag.mousePos.y,
+  };
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(drag.prevObj.x + offset.x),
+        x2: validateValue((drag.prevObj as LineObj).x2 + offset.x),
+        y: validateValue(drag.prevObj.y + offset.y),
+        y2: validateValue((drag.prevObj as LineObj).y2 + offset.y),
+      } as LineObj);
+    case 'ne':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x),
+        y: validateValue(newPos.y),
+      } as Obj);
+    case 'sw':
+      return updateObj({
+        ...obj,
+        x2: validateValue(newPos.x),
+        y2: validateValue(newPos.y),
+      } as Obj);
+  }
+}
