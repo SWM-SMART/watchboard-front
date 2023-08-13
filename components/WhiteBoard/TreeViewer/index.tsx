@@ -5,8 +5,6 @@ import { useState } from 'react';
 import { rootObj } from '../../../utils/whiteboardHelper';
 import { useWhiteBoard } from '@/states/whiteboard';
 
-const INDENT_SIZE = 10;
-
 interface TreeViewerProps {
   root: ObjNode;
 }
@@ -37,8 +35,9 @@ function TreeViewerNode({ node, depth = 0, root = false }: TreeViewerNodeProps) 
 
   return (
     <div
-      style={{ marginLeft: `${INDENT_SIZE * depth}px` }}
-      className={currentObj === obj.objId ? styles.currentObj : ''}
+      className={`${root ? '' : styles.nodeWithExpand} ${
+        currentObj === obj.objId ? styles.currentObj : ''
+      }`}
     >
       <div className={styles.nodeContainer}>
         <span

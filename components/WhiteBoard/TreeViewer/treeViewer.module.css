@@ -3,6 +3,7 @@
   rotate: -90deg;
   color: var(--secondary-light);
   transition: rotate 200ms;
+  width: 20px;
 }
 
 .expand {
@@ -20,7 +21,7 @@
 }
 
 .objInfoContainer {
-  padding-left: 6px;
+  padding-left: 3px;
   flex: 1;
   cursor: pointer;
   height: 24px;
@@ -43,4 +44,8 @@
 .currentObj {
   border-radius: 10px;
   background-color: var(--foreground);
+}
+
+.nodeWithExpand {
+  margin-left: 15px;
 }
