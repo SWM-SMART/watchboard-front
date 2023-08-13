@@ -48,7 +48,7 @@ interface Coord {
   y: number;
 }
 
-type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT';
+type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE';
 
 interface WBDocumentMetadata {
   documentId: number;

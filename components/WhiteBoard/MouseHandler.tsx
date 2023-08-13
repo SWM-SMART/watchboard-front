@@ -5,6 +5,7 @@ import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
   boundNumber,
+  createLine,
   createRect,
   createText,
   getPos,
@@ -12,6 +13,7 @@ import {
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 import { useWhiteBoard } from '@/states/whiteboard';
+import { Line } from '@react-three/drei';
 
 const MAX_OPACITY = 0.5;
 const WHEEL_DELTA_FACTOR = 100;
@@ -41,16 +43,8 @@ export default function MouseHandler() {
       setDrag: state.setDrag,
     }));
 
-  const {
-    opacity,
-    setOpacity,
-    cameraPan,
-    setCameraPan,
-    selection,
-    setSelection,
-    drawRect,
-    setDrawRect,
-  } = useToolFlags(currentTool);
+  const { opacity, setOpacity, cameraPan, setCameraPan, selection, setSelection, draw, setDraw } =
+    useToolFlags(currentTool);
 
   const { upPos, setUpPos, upTime, setUpTime } = usePointerUp(
     mouse,
@@ -60,7 +54,7 @@ export default function MouseHandler() {
     clock,
     setSelection,
     setCameraPan,
-    setDrawRect,
+    setDraw,
     setDrag,
   );
 
@@ -71,7 +65,7 @@ export default function MouseHandler() {
     domElement,
     setSelection,
     setCameraPan,
-    setDrawRect,
+    setDraw,
     setOpacity,
     setUpPos,
     setUpTime,
@@ -92,7 +86,7 @@ export default function MouseHandler() {
     setUpPos,
   );
 
-  useDrawRect(currentTool, upPos, downPos, drawRect, setDrawRect, addObj);
+  useDraw(currentTool, upPos, downPos, draw, setDraw, addObj);
 
   useFrame((s) => {
     // update opacity (if selection is active)
@@ -121,7 +115,7 @@ export default function MouseHandler() {
   });
 
   // validation
-  const validate = currentTool === 'RECT' || currentTool === 'TEXT';
+  const validate = currentTool === 'RECT' || currentTool === 'TEXT' || currentTool === 'LINE';
   const validUpPos: Coord = {
     x: validate ? validateValue(upPos.x) : upPos.x,
     y: validate ? validateValue(upPos.y) : upPos.y,
@@ -132,33 +126,52 @@ export default function MouseHandler() {
   };
 
   // mouse interaction feedback: draw rectangle in selected area (if selection is active)
-  return selection && !drag ? (
-    <mesh
-      position={[
-        (validUpPos.x + validDownPos.x) / 2,
-        (validUpPos.y + validDownPos.y) / 2,
-        SELECT_DEPTH,
-      ]}
-      scale={1}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-    >
-      <planeGeometry
-        attach={'geometry'}
-        args={[Math.abs(validUpPos.x - validDownPos.x), Math.abs(validUpPos.y - validDownPos.y)]}
-      />
-      <meshStandardMaterial
-        transparent={true}
-        opacity={opacity}
-        color={SELECT_HIGHLIGHT}
-        depthWrite={true}
-        depthTest={true}
-      />
-    </mesh>
-  ) : (
-    <></>
-  );
+  if (drag || !selection) return null;
+  switch (currentTool) {
+    case 'SELECT':
+    case 'RECT':
+    case 'TEXT':
+      return (
+        <mesh
+          position={[
+            (validUpPos.x + validDownPos.x) / 2,
+            (validUpPos.y + validDownPos.y) / 2,
+            SELECT_DEPTH,
+          ]}
+          scale={1}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <planeGeometry
+            attach={'geometry'}
+            args={[
+              Math.abs(validUpPos.x - validDownPos.x),
+              Math.abs(validUpPos.y - validDownPos.y),
+            ]}
+          />
+          <meshStandardMaterial
+            transparent={true}
+            opacity={opacity}
+            color={SELECT_HIGHLIGHT}
+            depthWrite={true}
+            depthTest={true}
+          />
+        </mesh>
+      );
+    case 'LINE':
+      return (
+        <Line
+          points={[
+            [downPos.x, downPos.y, SELECT_DEPTH],
+            [upPos.x, upPos.y, SELECT_DEPTH],
+          ]}
+          color={SELECT_HIGHLIGHT}
+          lineWidth={3}
+          worldUnits={true}
+          dashed={false}
+        />
+      );
+  }
+  return null;
 }
 
 const usePointerUp = (
@@ -169,7 +182,7 @@ const usePointerUp = (
   clock: Clock,
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
-  setDrawRect: Dispatch<SetStateAction<boolean>>,
+  setDraw: Dispatch<SetStateAction<boolean>>,
   setDrag: (drag: DragData | null) => void,
 ) => {
   const [upPos, setUpPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
@@ -195,12 +208,13 @@ const usePointerUp = (
           }
           break;
         case 'RECT':
+        case 'LINE':
         case 'TEXT':
           if (e.button == 0) {
             setUpPos(newPos);
             setUpTime(0);
             setSelection(false);
-            setDrawRect(true);
+            setDraw(true);
           }
           break;
         case 'SELECT':
@@ -222,7 +236,7 @@ const usePointerUp = (
     mouse,
     setCameraPan,
     setDrag,
-    setDrawRect,
+    setDraw,
     setSelection,
     tool,
   ]);
@@ -237,7 +251,7 @@ const usePointerDown = (
   domElement: HTMLCanvasElement,
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
-  setDrawRect: Dispatch<SetStateAction<boolean>>,
+  setDraw: Dispatch<SetStateAction<boolean>>,
   setOpacity: Dispatch<SetStateAction<number>>,
   setUpPos: Dispatch<SetStateAction<Coord>>,
   setUpTime: Dispatch<SetStateAction<number>>,
@@ -267,8 +281,9 @@ const usePointerDown = (
           }
           break;
         case 'RECT':
+        case 'LINE':
         case 'TEXT':
-          setDrawRect(false);
+          setDraw(false);
           e.stopPropagation(); // fall through
         case 'SELECT': // selection box on left click
           if (e.button === 0) {
@@ -293,7 +308,7 @@ const usePointerDown = (
     mouse,
     setCameraPan,
     setCurrentObj,
-    setDrawRect,
+    setDraw,
     setOpacity,
     setSelection,
     setUpPos,
@@ -364,23 +379,25 @@ const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera:
   }, [domElement, invalidate, camera]);
 };
 
-const useDrawRect = (
+const useDraw = (
   tool: Tool,
   upPos: Coord,
   downPos: Coord,
-  drawRect: boolean,
-  setDrawRect: Dispatch<SetStateAction<boolean>>,
+  draw: boolean,
+  setDraw: Dispatch<SetStateAction<boolean>>,
   addObj: (obj: Obj) => void,
 ) => {
   useEffect(() => {
     const newObjPos = { x: Math.min(upPos.x, downPos.x), y: Math.min(upPos.y, downPos.y) };
     const newObjSize = { x: Math.abs(upPos.x - downPos.x), y: Math.abs(upPos.y - downPos.y) };
-    if (drawRect) {
+    if (draw) {
       // create and append obj
       const obj = (() => {
         switch (tool) {
           case 'RECT':
             return createRect(newObjPos.x, newObjPos.y, newObjSize.x, newObjSize.y);
+          case 'LINE':
+            return createLine(downPos.x, downPos.y, upPos.x, upPos.y);
           case 'TEXT':
             return createText(newObjPos.x, newObjPos.y, newObjSize.x);
         }
@@ -388,21 +405,21 @@ const useDrawRect = (
       })();
       if (obj === null) return;
       addObj(obj);
-      setDrawRect(false);
+      setDraw(false);
     }
-  }, [addObj, downPos.x, downPos.y, drawRect, setDrawRect, tool, upPos.x, upPos.y]);
+  }, [addObj, downPos.x, downPos.y, draw, setDraw, tool, upPos.x, upPos.y]);
 };
 
 const useToolFlags = (tool: string) => {
   const [opacity, setOpacity] = useState<number>(0);
   const [cameraPan, setCameraPan] = useState<boolean>(false);
   const [selection, setSelection] = useState<boolean>(false);
-  const [drawRect, setDrawRect] = useState<boolean>(false);
+  const [draw, setDraw] = useState<boolean>(false);
 
   useEffect(() => {
     setSelection(false);
     setCameraPan(false);
-    setDrawRect(false);
+    setDraw(false);
   }, [tool]);
 
   return {
@@ -412,8 +429,8 @@ const useToolFlags = (tool: string) => {
     setCameraPan,
     selection,
     setSelection,
-    drawRect,
-    setDrawRect,
+    draw: draw,
+    setDraw: setDraw,
   };
 };
 

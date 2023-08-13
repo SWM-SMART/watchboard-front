@@ -115,6 +115,39 @@ export function createText(
 }
 
 /**
+ * Create Line Object based on input parameter
+ *
+ * @param {number} [x] x value
+ * @param {number} [y] y value
+ * @param {number} [x2] x2 value
+ * @param {number} [y2] y2 value
+ * @param {string} [color=genColor()] rgb string
+ * @param {number} [depth=genDepth()] depth value
+ * @return {LineObj} generated Line Object based on input parameter
+ */
+export function createLine(
+  x: number,
+  y: number,
+  x2: number,
+  y2: number,
+  color: string = genColor(),
+  depth: number = genDepth(),
+): LineObj {
+  return validateLineObj({
+    objId: genId(),
+    type: 'LINE',
+    x: x,
+    y: y,
+    x2: x2,
+    y2: y2,
+    strokeWidth: 3,
+    depth: depth,
+    parentId: 'root',
+    color: color,
+  } as LineObj);
+}
+
+/**
  * Returns real position of mouse inside canvas
  *
  * @param {Vector2} [mouse] target mouse object to find coordinates of
@@ -205,6 +238,20 @@ export function validateObj(obj: Obj): Obj {
 function validateRectObj(obj: RectObj): RectObj {
   obj.w = validateValue(obj.w);
   obj.h = validateValue(obj.h);
+  obj.x = validateValue(obj.x);
+  obj.y = validateValue(obj.y);
+  return obj;
+}
+
+/**
+ * validates input line obj
+ *
+ * @param {LineObj} [obj] line obj to validate
+ * @return {LineObj} validated obj
+ */
+function validateLineObj(obj: LineObj): LineObj {
+  obj.x2 = validateValue(obj.x2);
+  obj.y2 = validateValue(obj.y2);
   obj.x = validateValue(obj.x);
   obj.y = validateValue(obj.y);
   return obj;
