@@ -225,11 +225,14 @@ function validateTextObj(obj: TextObj): TextObj {
 /**
  * validates input value
  *
- * @param {value} [number] number value to validate
+ * @param {number} [value] number value to validate
+ * @param {boolean} [positive=false] the value should be above zero
  * @return {number} validated obj
  */
-export function validateValue(value: number): number {
-  return Math.round(value);
+export function validateValue(value: number, positive = false): number {
+  const newValue = Math.round(value);
+  if (newValue < 0 && positive) return 0;
+  return newValue;
 }
 
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
