@@ -1,9 +1,12 @@
-import { Dispatch, SetStateAction } from 'react';
 import { Camera, Vector2, Vector3 } from 'three';
 
-export const SELECT_HIGHLIGHT = '#39DFFF';
-export const SELECT_HIGHLIGHT_OPACITY = 0.5;
+export const SELECT_HIGHLIGHT = '#9edae6';
+export const SELECT_HIGHLIGHT_OPACITY = 0;
 export const SELECT_DEPTH = 1;
+export const FRAME_DEPTH = 1.0001;
+export const FRAME_CORNER_DEPTH = 1.0002;
+export const FRAME_COLOR = '#3491e3';
+export const FRAME_WIDTH = 5;
 
 export const rootObj: Obj = {
   objId: 'ROOT',
@@ -104,11 +107,44 @@ export function createText(
     depth: depth,
     parentId: 'root',
     w: w,
-    fontSize: 10,
+    fontSize: 20,
     overflow: overflow,
     text: '',
     color: color,
   } as TextObj);
+}
+
+/**
+ * Create Line Object based on input parameter
+ *
+ * @param {number} [x] x value
+ * @param {number} [y] y value
+ * @param {number} [x2] x2 value
+ * @param {number} [y2] y2 value
+ * @param {string} [color=genColor()] rgb string
+ * @param {number} [depth=genDepth()] depth value
+ * @return {LineObj} generated Line Object based on input parameter
+ */
+export function createLine(
+  x: number,
+  y: number,
+  x2: number,
+  y2: number,
+  color: string = genColor(),
+  depth: number = genDepth(),
+): LineObj {
+  return validateLineObj({
+    objId: genId(),
+    type: 'LINE',
+    x: x,
+    y: y,
+    x2: x2,
+    y2: y2,
+    strokeWidth: 3,
+    depth: depth,
+    parentId: 'root',
+    color: color,
+  } as LineObj);
 }
 
 /**
@@ -176,7 +212,7 @@ export function boundNumber(value: number, min: number, max: number): number {
 /**
  * validates input obj
  *
- * @param {obj} [Obj] obj to validate
+ * @param {Obj} [obj] obj to validate
  * @return {Obj} validated obj
  */
 export function validateObj(obj: Obj): Obj {
@@ -196,7 +232,7 @@ export function validateObj(obj: Obj): Obj {
 /**
  * validates input rect obj
  *
- * @param {obj} [RectObj] rect obj to validate
+ * @param {RectObj} [obj] rect obj to validate
  * @return {Obj} validated obj
  */
 function validateRectObj(obj: RectObj): RectObj {
@@ -208,9 +244,23 @@ function validateRectObj(obj: RectObj): RectObj {
 }
 
 /**
+ * validates input line obj
+ *
+ * @param {LineObj} [obj] line obj to validate
+ * @return {LineObj} validated obj
+ */
+function validateLineObj(obj: LineObj): LineObj {
+  obj.x2 = validateValue(obj.x2);
+  obj.y2 = validateValue(obj.y2);
+  obj.x = validateValue(obj.x);
+  obj.y = validateValue(obj.y);
+  return obj;
+}
+
+/**
  * validates input text obj
  *
- * @param {obj} [TextObj] text obj to validate
+ * @param {TextObj} [obj] text obj to validate
  * @return {TextObj} validated obj
  */
 function validateTextObj(obj: TextObj): TextObj {
@@ -223,11 +273,14 @@ function validateTextObj(obj: TextObj): TextObj {
 /**
  * validates input value
  *
- * @param {value} [number] number value to validate
+ * @param {number} [value] number value to validate
+ * @param {boolean} [positive=false] the value should be above zero
  * @return {number} validated obj
  */
-export function validateValue(value: number): number {
-  return Math.round(value);
+export function validateValue(value: number, positive = false): number {
+  const newValue = Math.round(value);
+  if (newValue < 0 && positive) return 0;
+  return newValue;
 }
 
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;

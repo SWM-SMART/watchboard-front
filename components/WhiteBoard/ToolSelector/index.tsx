@@ -10,6 +10,7 @@ export default function ToolSelector() {
       <ToolButton toolName={'HAND'} icon={'drag_pan'} />
       <ToolButton toolName={'RECT'} icon={'rectangle'} />
       <ToolButton toolName={'TEXT'} icon={'insert_text'} />
+      <ToolButton toolName={'LINE'} icon={'linear_scale'} />
     </div>
   );
 }
