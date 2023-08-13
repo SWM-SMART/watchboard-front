@@ -6,6 +6,7 @@ import { useThree } from '@react-three/fiber';
 import { getPos } from '@/utils/whiteboardHelper';
 import SelectionRenderer from './SelectionRenderer';
 import { Dispatch, SetStateAction, useState } from 'react';
+import LineRenderer from './LineRenderer';
 
 interface NodeRendererProps {
   node: ObjNode;
@@ -38,6 +39,8 @@ function RenderWrapper({ obj, setDimensions }: RenderWrapperProps) {
       );
     case 'TEXT':
       return <TextRenderer key={obj.objId} obj={obj as TextObj} setDimensions={setDimensions} />;
+    case 'LINE':
+      return <LineRenderer key={obj.objId} obj={obj as LineObj} setDimensions={setDimensions} />;
   }
 }
 
@@ -65,13 +68,17 @@ function ObjectWrapper({ obj }: ObjectWrapperProps) {
           if (selection) return;
           if (currentTool === 'SELECT') {
             const mousePos = getPos(mouse, camera);
-            setDrag({ x: -(mousePos.x - obj.x), y: -(mousePos.y - obj.y), mode: 'move' });
+            setDrag({
+              mousePos: mousePos,
+              mode: 'move',
+              prevObj: obj,
+            });
           }
         }
       }}
     >
       <RenderWrapper obj={obj} setDimensions={setDimensions} />
-      {selection ? <SelectionRenderer dimensions={dimensions} /> : <></>}
+      {selection ? <SelectionRenderer dimensions={dimensions} obj={obj} /> : <></>}
     </group>
   );
 }

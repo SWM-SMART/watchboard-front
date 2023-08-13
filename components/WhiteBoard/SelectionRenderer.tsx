@@ -7,15 +7,18 @@ import {
   FRAME_DEPTH,
   FRAME_WIDTH,
   getPos,
+  FRAME_CORNER_DEPTH,
 } from '@/utils/whiteboardHelper';
-import { Line } from '@react-three/drei';
-import { ThreeEvent, useThree } from '@react-three/fiber';
+import { Circle, Line } from '@react-three/drei';
+import { ThreeEvent, useFrame, useThree } from '@react-three/fiber';
+import { useState } from 'react';
 
 interface SelectionRendererProps {
   dimensions: ObjDimensions;
+  obj: Obj;
 }
 
-export default function SelectionRenderer({ dimensions }: SelectionRendererProps) {
+export default function SelectionRenderer({ dimensions, obj }: SelectionRendererProps) {
   const { setDrag, currentTool } = useWhiteBoard((state) => ({
     setDrag: state.setDrag,
     currentTool: state.currentTool,
@@ -23,32 +26,15 @@ export default function SelectionRenderer({ dimensions }: SelectionRendererProps
   const { mouse, camera } = useThree();
   const pos = () => getPos(mouse, camera);
 
-  if (dimensions.h <= 0 || dimensions.w <= 0) return null;
-
   // dragEvents are dispatched here and then handled in MouseHandler
   const pointerEventHandler = (e: ThreeEvent<PointerEvent>, mode: DragMode) => {
     // never stop propagation
     if (e.button === 0 && currentTool === 'SELECT') {
       const mousePos = pos();
-      // 모드에 따라 필요한 값 저장
-      const coord = (() => {
-        switch (mode) {
-          case 'move':
-            return { x: -(mousePos.x - dimensions.x), y: -(mousePos.y - dimensions.y) };
-          case 'n':
-            return { x: 0, y: dimensions.y };
-          case 'e':
-            return { x: dimensions.x, y: 0 };
-          case 'w':
-            return { x: dimensions.x + dimensions.w, y: 0 };
-          case 's':
-            return { x: 0, y: dimensions.y + dimensions.h };
-        }
-      })();
       setDrag({
-        x: coord.x,
-        y: coord.y,
+        mousePos: mousePos,
         mode: mode,
+        prevObj: obj,
       });
     }
   };
@@ -69,6 +55,7 @@ export default function SelectionRenderer({ dimensions }: SelectionRendererProps
         />
       </mesh>
       <WireFrame onPointerDown={pointerEventHandler} dimensions={dimensions} />
+      <Points obj={obj} onPointerDown={pointerEventHandler} dimensions={dimensions} />
     </>
   );
 }
@@ -123,5 +110,104 @@ function WireFrame({
         lineWidth={FRAME_WIDTH}
       />
     </>
+  );
+}
+
+interface PointsProps {
+  obj: Obj;
+  dimensions: ObjDimensions;
+  onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
+}
+
+function Points({ obj, dimensions, onPointerDown }: PointsProps) {
+  // TODO: add support for other object types
+  switch (obj.type) {
+    case 'RECT':
+    case 'TEXT':
+    case 'ROOT':
+      return <ObjPoints dimensions={dimensions} onPointerDown={onPointerDown} />;
+    case 'LINE':
+      return <LinePoints obj={obj as LineObj} onPointerDown={onPointerDown} />;
+  }
+}
+
+interface ObjPointsProps {
+  dimensions: ObjDimensions;
+  onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
+}
+
+function ObjPoints({ dimensions, onPointerDown }: ObjPointsProps) {
+  return (
+    <>
+      {/* NE */}
+      <Point
+        onPointerDown={(e) => {
+          console.log('pointerdown');
+          onPointerDown(e, 'ne');
+        }}
+        x={dimensions.x + dimensions.w}
+        y={dimensions.y + dimensions.h}
+      />
+      {/* NW */}
+      <Point
+        onPointerDown={(e) => onPointerDown(e, 'nw')}
+        x={dimensions.x}
+        y={dimensions.y + dimensions.h}
+      />
+      {/* SE*/}
+      <Point
+        onPointerDown={(e) => onPointerDown(e, 'se')}
+        x={dimensions.x + dimensions.w}
+        y={dimensions.y}
+      />
+      {/* SW */}
+      <Point onPointerDown={(e) => onPointerDown(e, 'sw')} x={dimensions.x} y={dimensions.y} />
+    </>
+  );
+}
+
+interface LinePointsProps {
+  obj: LineObj;
+  onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
+}
+
+function LinePoints({ obj, onPointerDown }: LinePointsProps) {
+  return (
+    <>
+      {/* NE */}
+      <Point
+        onPointerDown={(e) => {
+          console.log('pointerdown');
+          onPointerDown(e, 'ne');
+        }}
+        x={obj.x}
+        y={obj.y}
+      />
+      {/* SW */}
+      <Point onPointerDown={(e) => onPointerDown(e, 'sw')} x={obj.x2} y={obj.y2} />
+    </>
+  );
+}
+
+interface PointProps {
+  x: number;
+  y: number;
+  onPointerDown: (e: ThreeEvent<PointerEvent>) => void;
+}
+function Point({ x, y, onPointerDown }: PointProps) {
+  const [zoom, setZoom] = useState(0);
+  // size attenuation false
+  useFrame((s) => setZoom(s.camera.zoom));
+
+  if (zoom === 0) return null;
+
+  return (
+    <Circle
+      onPointerDown={(e) => onPointerDown(e)}
+      position={[x, y, FRAME_CORNER_DEPTH]}
+      args={[6 / zoom]}
+    >
+      <meshBasicMaterial color={FRAME_COLOR} />
+    </Circle>
   );
 }

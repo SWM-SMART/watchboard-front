@@ -3,7 +3,7 @@ interface ObjNode {
   childNodes: ObjNode[];
 }
 
-type ObjType = 'RECT' | 'TEXT' | 'ROOT';
+type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE';
 
 interface Obj {
   objId: string;
@@ -34,6 +34,13 @@ interface TextObj extends Obj {
   overflow: OverflowType;
   text: string;
   color: string;
+}
+
+interface LineObj extends Obj {
+  x2: number;
+  y2: number;
+  color: string;
+  strokeWidth: number;
 }
 
 interface Coord {
@@ -75,8 +82,8 @@ interface ToastData {
   msg: string;
 }
 
-type DragData = Coord & { mode: DragMode };
-type DragMode = 'move' | 'n' | 'e' | 'w' | 's';
+type DragData = { mousePos: Coord; mode: DragMode; prevObj: Obj };
+type DragMode = 'move' | 'n' | 'e' | 'w' | 's' | 'ne' | 'nw' | 'sw' | 'se';
 
 interface textRequest {
   text: string;

@@ -4,6 +4,7 @@ export const SELECT_HIGHLIGHT = '#39DFFF';
 export const SELECT_HIGHLIGHT_OPACITY = 0.5;
 export const SELECT_DEPTH = 1;
 export const FRAME_DEPTH = 1.0001;
+export const FRAME_CORNER_DEPTH = 1.0002;
 export const FRAME_COLOR = '#1d7ccf';
 export const FRAME_WIDTH = 5;
 

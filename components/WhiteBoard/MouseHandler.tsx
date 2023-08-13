@@ -116,43 +116,7 @@ export default function MouseHandler() {
       const obj = objMap.get(currentObj);
       if (obj === undefined) return;
       const newPos = getPos(s.mouse, s.camera);
-      switch (drag.mode) {
-        case 'move':
-          updateObj({
-            ...obj,
-            x: validateValue(newPos.x + drag.x),
-            y: validateValue(newPos.y + drag.y),
-          } as Obj);
-          break;
-        case 'n':
-          if (obj.type === 'TEXT') break;
-          updateObj({
-            ...obj,
-            h: validateValue(newPos.y - drag.y),
-          } as Obj);
-          break;
-        case 'e':
-          updateObj({
-            ...obj,
-            w: validateValue(newPos.x - drag.x),
-          } as Obj);
-          break;
-        case 'w':
-          updateObj({
-            ...obj,
-            w: validateValue(drag.x - newPos.x),
-            x: validateValue(newPos.x),
-          } as Obj);
-          break;
-        case 's':
-          if (obj.type === 'TEXT') break;
-          updateObj({
-            ...obj,
-            h: validateValue(drag.y - newPos.y),
-            y: validateValue(newPos.y),
-          } as Obj);
-          break;
-      }
+      handleDrag(obj, newPos, drag, updateObj);
     }
   });
 
@@ -347,7 +311,7 @@ const usePointerMove = (
   cameraPan: boolean,
   selection: boolean,
   opacity: number,
-  drag: Coord | null,
+  drag: DragData | null,
   invalidate: () => void,
   setUpPos: Dispatch<SetStateAction<Coord>>,
 ) => {
@@ -452,3 +416,115 @@ const useToolFlags = (tool: string) => {
     setDrawRect,
   };
 };
+
+function handleDrag(obj: Obj, newPos: Coord, drag: DragData, updateObj: (obj: Obj) => void) {
+  switch (obj.type) {
+    case 'RECT':
+      return handleRectDrag(obj as RectObj, newPos, drag, updateObj);
+    case 'TEXT':
+      return handleTextDrag(obj as TextObj, newPos, drag, updateObj);
+    case 'ROOT':
+      break;
+    case 'LINE':
+      return handleLineDrag(obj as LineObj, newPos, drag, updateObj);
+  }
+}
+
+function handleRectDrag(
+  obj: RectObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+      } as Obj);
+    case 'n':
+      return updateObj({
+        ...obj,
+        h: validateValue(newPos.y - drag.prevObj.y, true),
+      } as Obj);
+    case 'e':
+      return updateObj({
+        ...obj,
+        w: validateValue(newPos.x - drag.prevObj.x, true),
+      } as Obj);
+    case 'w':
+      return updateObj({
+        ...obj,
+        w: validateValue(drag.prevObj.x + (drag.prevObj as RectObj).w - newPos.x, true),
+        x: validateValue(newPos.x),
+      } as Obj);
+    case 's':
+      return updateObj({
+        ...obj,
+        h: validateValue(drag.prevObj.y + (drag.prevObj as RectObj).h - newPos.y, true),
+        y: validateValue(newPos.y),
+      } as Obj);
+  }
+}
+
+function handleTextDrag(
+  obj: TextObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+      } as Obj);
+    case 'e':
+      return updateObj({
+        ...obj,
+        w: validateValue(newPos.x - drag.prevObj.x, true),
+      } as Obj);
+    case 'w':
+      return updateObj({
+        ...obj,
+        w: validateValue(drag.prevObj.x + (drag.prevObj as TextObj).w - newPos.x, true),
+        x: validateValue(newPos.x),
+      } as Obj);
+  }
+}
+
+function handleLineDrag(
+  obj: LineObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  const offset: Coord = {
+    x: newPos.x - drag.mousePos.x,
+    y: newPos.y - drag.mousePos.y,
+  };
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(drag.prevObj.x + offset.x),
+        x2: validateValue((drag.prevObj as LineObj).x2 + offset.x),
+        y: validateValue(drag.prevObj.y + offset.y),
+        y2: validateValue((drag.prevObj as LineObj).y2 + offset.y),
+      } as LineObj);
+    case 'ne':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x),
+        y: validateValue(newPos.y),
+      } as Obj);
+    case 'sw':
+      return updateObj({
+        ...obj,
+        x2: validateValue(newPos.x),
+        y2: validateValue(newPos.y),
+      } as Obj);
+  }
+}
