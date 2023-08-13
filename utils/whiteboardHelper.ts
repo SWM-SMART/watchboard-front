@@ -178,7 +178,7 @@ export function boundNumber(value: number, min: number, max: number): number {
 /**
  * validates input obj
  *
- * @param {obj} [Obj] obj to validate
+ * @param {Obj} [obj] obj to validate
  * @return {Obj} validated obj
  */
 export function validateObj(obj: Obj): Obj {
@@ -198,7 +198,7 @@ export function validateObj(obj: Obj): Obj {
 /**
  * validates input rect obj
  *
- * @param {obj} [RectObj] rect obj to validate
+ * @param {RectObj} [obj] rect obj to validate
  * @return {Obj} validated obj
  */
 function validateRectObj(obj: RectObj): RectObj {
@@ -212,7 +212,7 @@ function validateRectObj(obj: RectObj): RectObj {
 /**
  * validates input text obj
  *
- * @param {obj} [TextObj] text obj to validate
+ * @param {TextObj} [obj] text obj to validate
  * @return {TextObj} validated obj
  */
 function validateTextObj(obj: TextObj): TextObj {
