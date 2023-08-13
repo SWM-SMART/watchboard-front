@@ -44,9 +44,9 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
             <DocumentTitle documentName={document.documentName} />
             <ActionButtonGroup setOverlay={setOverlay} document={document} />
           </div>
-          <Tab labels={['속성', '레이어']}>
-            <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />
+          <Tab labels={['레이어', '속성']}>
             <TreeViewer root={objTree} />
+            <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />
           </Tab>
         </div>
         <div className={styles.content}>
