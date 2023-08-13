@@ -185,7 +185,14 @@ function LinePanel({ obj, onChange }: LinePanelProps) {
   return (
     <div className={styles.panel}>
       <Property propKey="x2" propVal={obj.x2.toString()} onChange={onChange} type="NUMBER" />
-      <Property propKey="y2" propVal={obj.x2.toString()} onChange={onChange} type="NUMBER" />
+      <Property propKey="y2" propVal={obj.y2.toString()} onChange={onChange} type="NUMBER" />
+      <Property
+        propKey={'strokeWidth'}
+        label="굵기"
+        propVal={obj.strokeWidth.toString()}
+        onChange={onChange}
+        type="NUMBER"
+      />
       <Property
         propKey={'color'}
         label="색상"
