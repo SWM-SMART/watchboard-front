@@ -141,10 +141,7 @@ function ObjPoints({ dimensions, onPointerDown }: ObjPointsProps) {
     <>
       {/* NE */}
       <Point
-        onPointerDown={(e) => {
-          console.log('pointerdown');
-          onPointerDown(e, 'ne');
-        }}
+        onPointerDown={(e) => onPointerDown(e, 'ne')}
         x={dimensions.x + dimensions.w}
         y={dimensions.y + dimensions.h}
       />
