@@ -9,9 +9,10 @@ import {
   getPos,
   FRAME_CORNER_DEPTH,
 } from '@/utils/whiteboardHelper';
-import { Circle, Line } from '@react-three/drei';
+import { Circle } from '@react-three/drei';
 import { ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { useState } from 'react';
+import { FlatLine } from './LineRenderer';
 
 interface SelectionRendererProps {
   dimensions: ObjDimensions;
@@ -70,47 +71,58 @@ function WireFrame({
   dimensions: ObjDimensions;
   onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
 }) {
+  const [zoom, setZoom] = useState<number>(0);
+
+  useFrame((s) => {
+    setZoom(s.camera.zoom);
+  });
+  if (zoom === 0) return null;
+
   return (
     <>
       {/* N */}
-      <Line
+      <FlatLine
         onPointerDown={(e) => onPointerDown(e, 'n')}
-        points={[
-          [dimensions.x, dimensions.y + dimensions.h, FRAME_DEPTH],
-          [dimensions.x + dimensions.w, dimensions.y + dimensions.h, FRAME_DEPTH],
-        ]}
+        x={dimensions.x}
+        y={dimensions.y + dimensions.h}
+        x2={dimensions.x + dimensions.w}
+        y2={dimensions.y + dimensions.h}
+        depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        lineWidth={FRAME_WIDTH}
+        strokeWidth={FRAME_WIDTH / zoom}
       />
       {/* E */}
-      <Line
+      <FlatLine
         onPointerDown={(e) => onPointerDown(e, 'e')}
-        points={[
-          [dimensions.x + dimensions.w, dimensions.y, FRAME_DEPTH],
-          [dimensions.x + dimensions.w, dimensions.y + dimensions.h, FRAME_DEPTH],
-        ]}
+        x={dimensions.x + dimensions.w}
+        y={dimensions.y}
+        x2={dimensions.x + dimensions.w}
+        y2={dimensions.y + dimensions.h}
+        depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        lineWidth={FRAME_WIDTH}
+        strokeWidth={FRAME_WIDTH / zoom}
       />
       {/* W */}
-      <Line
+      <FlatLine
         onPointerDown={(e) => onPointerDown(e, 'w')}
-        points={[
-          [dimensions.x, dimensions.y, FRAME_DEPTH],
-          [dimensions.x, dimensions.y + dimensions.h, FRAME_DEPTH],
-        ]}
+        x={dimensions.x}
+        y={dimensions.y}
+        x2={dimensions.x}
+        y2={dimensions.y + dimensions.h}
+        depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        lineWidth={FRAME_WIDTH}
+        strokeWidth={FRAME_WIDTH / zoom}
       />
       {/* S */}
-      <Line
+      <FlatLine
         onPointerDown={(e) => onPointerDown(e, 's')}
-        points={[
-          [dimensions.x, dimensions.y, FRAME_DEPTH],
-          [dimensions.x + dimensions.w, dimensions.y, FRAME_DEPTH],
-        ]}
+        x={dimensions.x}
+        y={dimensions.y}
+        x2={dimensions.x + dimensions.w}
+        y2={dimensions.y}
+        depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        lineWidth={FRAME_WIDTH}
+        strokeWidth={FRAME_WIDTH / zoom}
       />
     </>
   );
