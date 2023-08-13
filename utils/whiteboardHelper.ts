@@ -1,7 +1,7 @@
 import { Camera, Vector2, Vector3 } from 'three';
 
 export const SELECT_HIGHLIGHT = '#9edae6';
-export const SELECT_HIGHLIGHT_OPACITY = 0.5;
+export const SELECT_HIGHLIGHT_OPACITY = 0;
 export const SELECT_DEPTH = 1;
 export const FRAME_DEPTH = 1.0001;
 export const FRAME_CORNER_DEPTH = 1.0002;
