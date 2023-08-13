@@ -41,6 +41,10 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
         <TextPanel key={`property-panel-text`} obj={obj as TextObj} onChange={onChange} />,
       );
       break;
+    case 'LINE':
+      panels.push(
+        <LinePanel key={`property-panel-line`} obj={obj as LineObj} onChange={onChange} />,
+      );
     case 'ROOT':
   }
 
@@ -165,9 +169,30 @@ function TextPanel({ obj, onChange }: TextPanelProps) {
         label="내용"
         propVal={obj.text}
         onChange={onChange}
-        enabled={true}
         type="STRING"
         span={4}
+      />
+    </div>
+  );
+}
+
+interface LinePanelProps {
+  obj: LineObj;
+  onChange: (key: string, val: any) => void;
+}
+
+function LinePanel({ obj, onChange }: LinePanelProps) {
+  return (
+    <div className={styles.panel}>
+      <Property propKey="x2" propVal={obj.x2.toString()} onChange={onChange} type="NUMBER" />
+      <Property propKey="y2" propVal={obj.x2.toString()} onChange={onChange} type="NUMBER" />
+      <Property
+        propKey={'color'}
+        label="색상"
+        propVal={obj.color}
+        onChange={onChange}
+        type="STRING"
+        span={2}
       />
     </div>
   );
