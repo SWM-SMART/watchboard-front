@@ -84,5 +84,7 @@ function typeToIcon(type: ObjType) {
       return 'title';
     case 'ROOT':
       return 'dashboard';
+    case 'LINE':
+      return 'linear_scale';
   }
 }
