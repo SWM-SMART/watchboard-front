@@ -26,6 +26,9 @@ export default function SelectionRenderer({ dimensions, obj }: SelectionRenderer
   const { mouse, camera } = useThree();
   const pos = () => getPos(mouse, camera);
 
+  if (dimensions.h <= 0) dimensions.h = 0;
+  if (dimensions.w <= 0) dimensions.w = 0;
+
   // dragEvents are dispatched here and then handled in MouseHandler
   const pointerEventHandler = (e: ThreeEvent<PointerEvent>, mode: DragMode) => {
     // never stop propagation
