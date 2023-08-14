@@ -1,3 +1,4 @@
+import { useWhiteBoard } from '@/states/whiteboard';
 import { Camera, Vector2, Vector3 } from 'three';
 
 export const SELECT_HIGHLIGHT = '#9edae6';
@@ -7,13 +8,15 @@ export const FRAME_DEPTH = 1.0001;
 export const FRAME_CORNER_DEPTH = 1.0002;
 export const FRAME_COLOR = '#3491e3';
 export const FRAME_WIDTH = 5;
+const MAX_DEPTH = 1;
+const MIN_DEPTH = 0;
 
 export const rootObj: Obj = {
   objId: 'ROOT',
   type: 'ROOT',
   x: 0,
   y: 0,
-  depth: 0,
+  depth: MIN_DEPTH,
   parentId: '',
 };
 
@@ -23,17 +26,32 @@ export const rootObj: Obj = {
  * @return {number} Generated object id based on current time
  */
 export function genId(): string {
-  return (new Date().getTime() * Math.random()).toString();
+  return (new Date().getTime() * Math.random()).toString().replaceAll('.', '');
 }
 
 /**
- * Generate depth value
+ * Generate depth value between objA and objB
  *
- * @return {number} Generated depth value. Used to solve z-index fighting
+ * @param {Obj} [objA] the object that stays below (optional) if left blank, uses MIN_DEPTH
+ * @param {Obj} [objB] the object that stays above (optional) if left blank, uses MAX_DEPTH
+ * @return {number} Generated depth value.
  */
-let depth = 0;
-export function genDepth(): number {
-  return (depth += 0.0001);
+export function genDepth(objA?: Obj, objB?: Obj): number {
+  if (objA === undefined && objB === undefined) return topDepth();
+  if (objA === undefined) return MIN_DEPTH;
+  if (objB === undefined) return (objA.depth + MAX_DEPTH) / 5;
+  return (objA.depth + objB.depth) / 5;
+}
+
+/**
+ * get depth value between top object and MAX_DEPTH
+ *
+ * @return {number} Generated depth value.
+ */
+export function topDepth(): number {
+  const rootObjNode = useWhiteBoard.getState().objTree;
+  const currentTop = rootObjNode.childNodes[0].depth || rootObjNode.depth;
+  return (currentTop + MAX_DEPTH) / 5;
 }
 
 /**
@@ -76,7 +94,7 @@ export function createRect(
     h: h,
     depth: depth,
     color: color,
-    parentId: 'root',
+    parentId: 'ROOT',
   } as RectObj);
 }
 
@@ -105,7 +123,7 @@ export function createText(
     x: x,
     y: y,
     depth: depth,
-    parentId: 'root',
+    parentId: 'ROOT',
     w: w,
     fontSize: 20,
     overflow: overflow,
@@ -142,7 +160,7 @@ export function createLine(
     y2: y2,
     strokeWidth: 3,
     depth: depth,
-    parentId: 'root',
+    parentId: 'ROOT',
     color: color,
   } as LineObj);
 }
@@ -178,20 +196,27 @@ export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
   const root: ObjNode = {
     objId: 'ROOT',
     childNodes: [],
+    depth: 0,
   };
 
   const stack: ObjNode[] = [root];
 
   while (stack.length > 0) {
     const parent = stack.pop()!;
-
     const nextIds = dependencyMap.get(parent.objId);
     if (nextIds === undefined) continue;
     for (const id of nextIds) {
-      const child: ObjNode = { objId: id, childNodes: [] };
+      const obj = objMap.get(id);
+      if (obj === undefined) continue;
+      const child: ObjNode = { objId: id, childNodes: [], depth: obj.depth };
       parent.childNodes.push(child);
       stack.push(child);
     }
+    // sort obj by depth
+    parent.childNodes.sort((a, b) => {
+      if (a.depth < b.depth) return 1;
+      return -1;
+    });
   }
 
   return root;
