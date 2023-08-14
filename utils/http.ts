@@ -18,6 +18,7 @@ export async function httpGet(url: string, retry: boolean = true) {
 
 export async function httpPost(url: string, body: any, retry: boolean = true) {
   const headers = createHeaders();
+  headers.set('Content-Type', 'application/json');
   const getRes = (headers: Headers) =>
     fetch(url, {
       method: 'POST',
