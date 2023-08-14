@@ -23,7 +23,7 @@ export const rootObj: Obj = {
  * @return {number} Generated object id based on current time
  */
 export function genId(): string {
-  return (new Date().getTime() * Math.random()).toString();
+  return (new Date().getTime() * Math.random()).toString().replaceAll('.', '');
 }
 
 /**
@@ -76,7 +76,7 @@ export function createRect(
     h: h,
     depth: depth,
     color: color,
-    parentId: 'root',
+    parentId: 'ROOT',
   } as RectObj);
 }
 
@@ -105,7 +105,7 @@ export function createText(
     x: x,
     y: y,
     depth: depth,
-    parentId: 'root',
+    parentId: 'ROOT',
     w: w,
     fontSize: 20,
     overflow: overflow,
@@ -142,7 +142,7 @@ export function createLine(
     y2: y2,
     strokeWidth: 3,
     depth: depth,
-    parentId: 'root',
+    parentId: 'ROOT',
     color: color,
   } as LineObj);
 }
