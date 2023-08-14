@@ -187,14 +187,7 @@ function LinePoints({ obj, onPointerDown }: LinePointsProps) {
   return (
     <>
       {/* NE */}
-      <Point
-        onPointerDown={(e) => {
-          console.log('pointerdown');
-          onPointerDown(e, 'ne');
-        }}
-        x={obj.x}
-        y={obj.y}
-      />
+      <Point onPointerDown={(e) => onPointerDown(e, 'ne')} x={obj.x} y={obj.y} />
       {/* SW */}
       <Point onPointerDown={(e) => onPointerDown(e, 'sw')} x={obj.x2} y={obj.y2} />
     </>
