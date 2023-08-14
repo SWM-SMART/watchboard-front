@@ -1,6 +1,7 @@
 import { httpDelete, httpGet, httpPost } from './http';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
 export const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
 
 export async function getDocumentList(): Promise<WBDocumentListReponse> {
@@ -28,7 +29,7 @@ export async function refreshToken(): Promise<string | null> {
 }
 
 export async function generateGraph(text: textRequest): Promise<any> {
-  return (await httpPost(`${API_BASE_URL}/users/token`, text))?.json();
+  return (await httpPost(`${AI_BASE_URL}/mindmap`, text))?.json();
 }
 
 export async function saveDocument(documentId: number, documentData: WBDocumentData) {
