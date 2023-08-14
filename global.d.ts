@@ -1,6 +1,7 @@
 interface ObjNode {
   objId: string;
   childNodes: ObjNode[];
+  depth: number;
 }
 
 type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE';

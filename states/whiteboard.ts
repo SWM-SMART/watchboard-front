@@ -22,6 +22,7 @@ interface WhiteBoardActions {
 const ROOT_OBJ = {
   objId: 'root',
   childNodes: [],
+  depth: 0,
 } as ObjNode;
 
 const initialState = {
@@ -39,7 +40,10 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set)
       objMap: state.objMap.set(obj.objId, obj),
       objTree: {
         ...state.objTree,
-        childNodes: [...state.objTree.childNodes, { objId: obj.objId, childNodes: [] }],
+        childNodes: [
+          { objId: obj.objId, childNodes: [], depth: obj.depth },
+          ...state.objTree.childNodes,
+        ],
       },
       currentObj: obj.objId,
     })),
