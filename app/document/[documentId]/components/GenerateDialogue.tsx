@@ -3,7 +3,9 @@
 import Dialogue from '@/components/Dialogue';
 import TextInput from '@/components/Dialogue/Input/TextInput';
 import { useToast } from '@/states/toast';
+import { useWhiteBoard } from '@/states/whiteboard';
 import { generateGraph } from '@/utils/api';
+import { createForceBundleFromMindmap } from '@/utils/whiteboardHelper';
 import { useState } from 'react';
 
 interface GenerateDialogueProps {
@@ -13,6 +15,10 @@ interface GenerateDialogueProps {
 export default function GenerateDialouge({ onCancel }: GenerateDialogueProps) {
   const [text, setText] = useState<string>('');
   const [load, setLoad] = useState<boolean>(false);
+  const { setCurrentTool, setBundle } = useWhiteBoard((state) => ({
+    setCurrentTool: state.setCurrentTool,
+    setBundle: state.setBundle,
+  }));
   const pushToast = useToast((state) => state.pushToast);
 
   const onSubmit = () => {
@@ -29,11 +35,16 @@ export default function GenerateDialouge({ onCancel }: GenerateDialogueProps) {
         return setLoad(false);
       }
 
-      // TODO: get and render actual response
+      // generate bundle
+      const bundle = createForceBundleFromMindmap(res);
+
+      setBundle(bundle);
+      setCurrentTool('BUNDLE');
+
       pushToast({
         id: new Date().getTime(),
-        duraton: 3000,
-        msg: '그래프 생성이 완료되었습니다!',
+        duraton: 5000,
+        msg: '그래프 생성이 완료되었습니다!\n클릭해서 원하는 위치에 붙여넣어 주세요',
       });
       onCancel();
     })();

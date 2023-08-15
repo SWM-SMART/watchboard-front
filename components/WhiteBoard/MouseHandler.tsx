@@ -31,20 +31,35 @@ export default function MouseHandler() {
     gl: { domElement },
   } = useThree(); // More like reference? Not a state, useEffect can't track these
 
-  const { currentTool, objMap, addObj, updateObj, currentObj, setCurrentObj, drag, setDrag } =
-    useWhiteBoard((state) => ({
-      currentTool: state.currentTool,
-      objMap: state.objMap,
-      addObj: state.addObj,
-      updateObj: state.updateObj,
-      currentObj: state.currentObj,
-      setCurrentObj: state.setCurrentObj,
-      drag: state.drag,
-      setDrag: state.setDrag,
-    }));
+  const {
+    bundle,
+    currentTool,
+    addBundle,
+    objMap,
+    addObj,
+    updateObj,
+    currentObj,
+    setCurrentObj,
+    drag,
+    setDrag,
+  } = useWhiteBoard((state) => ({
+    bundle: state.bundle,
+    currentTool: state.currentTool,
+    setCurrentTool: state.setCurrentTool,
+    objMap: state.objMap,
+    addObj: state.addObj,
+    updateObj: state.updateObj,
+    currentObj: state.currentObj,
+    setCurrentObj: state.setCurrentObj,
+    drag: state.drag,
+    setDrag: state.setDrag,
+    addBundle: state.addBundle,
+  }));
 
   const { opacity, setOpacity, cameraPan, setCameraPan, selection, setSelection, draw, setDraw } =
     useToolFlags(currentTool);
+
+  const [bundlePos, setBundlePos] = useState<Coord>({ x: 0, y: 0 });
 
   const { upPos, setUpPos, upTime, setUpTime } = usePointerUp(
     mouse,
@@ -52,6 +67,7 @@ export default function MouseHandler() {
     currentTool,
     domElement,
     clock,
+    addBundle,
     setSelection,
     setCameraPan,
     setDraw,
@@ -75,6 +91,7 @@ export default function MouseHandler() {
   useWheel(invalidate, domElement, camera);
 
   usePointerMove(
+    currentTool,
     mouse,
     camera,
     domElement,
@@ -112,6 +129,12 @@ export default function MouseHandler() {
       const newPos = getPos(s.mouse, s.camera);
       handleDrag(obj, newPos, drag, updateObj);
     }
+
+    // bundle pos
+    if (currentTool === 'BUNDLE') {
+      const newPos = getPos(s.mouse, s.camera);
+      setBundlePos(newPos);
+    }
   });
 
   // validation
@@ -126,11 +149,12 @@ export default function MouseHandler() {
   };
 
   // mouse interaction feedback: draw rectangle in selected area (if selection is active)
-  if (drag || !selection) return null;
+
   switch (currentTool) {
     case 'SELECT':
     case 'RECT':
     case 'TEXT':
+      if (drag || !selection) return null;
       return (
         <mesh
           position={[
@@ -158,6 +182,7 @@ export default function MouseHandler() {
         </mesh>
       );
     case 'LINE':
+      if (!selection) return null;
       return (
         <Line
           points={[
@@ -170,6 +195,20 @@ export default function MouseHandler() {
           dashed={false}
         />
       );
+    case 'BUNDLE':
+      if (bundle === null || isNaN(bundle.h) || isNaN(bundle.w)) return null;
+      return (
+        <mesh position={[bundlePos.x, bundlePos.y, SELECT_DEPTH]}>
+          <planeGeometry attach={'geometry'} args={[bundle.w, bundle.h]} />
+          <meshStandardMaterial
+            transparent={true}
+            opacity={0.5}
+            color={SELECT_HIGHLIGHT}
+            depthWrite={true}
+            depthTest={true}
+          />
+        </mesh>
+      );
   }
   return null;
 }
@@ -180,6 +219,7 @@ const usePointerUp = (
   tool: Tool,
   domElement: HTMLCanvasElement,
   clock: Clock,
+  addBundle: (offset: Coord) => void,
   setSelection: Dispatch<SetStateAction<boolean>>,
   setCameraPan: Dispatch<SetStateAction<boolean>>,
   setDraw: Dispatch<SetStateAction<boolean>>,
@@ -223,6 +263,11 @@ const usePointerUp = (
             setUpTime(clock.elapsedTime);
           }
           break;
+        case 'BUNDLE':
+          if (e.button == 0) {
+            // paste bundle
+            addBundle(newPos);
+          }
       }
     };
 
@@ -230,6 +275,7 @@ const usePointerUp = (
 
     return () => domElement.removeEventListener('pointerup', pointerUp);
   }, [
+    addBundle,
     camera,
     clock.elapsedTime,
     domElement,
@@ -320,6 +366,7 @@ const usePointerDown = (
 };
 
 const usePointerMove = (
+  currentTool: Tool,
   mouse: Vector2,
   camera: Camera,
   domElement: HTMLCanvasElement,
@@ -342,12 +389,26 @@ const usePointerMove = (
         if (opacity === MAX_OPACITY) setUpPos(getPos(mouse, camera));
         invalidate();
       }
+      if (currentTool === 'BUNDLE') {
+        invalidate();
+      }
     };
     domElement.addEventListener('pointermove', pointerMove);
     return () => {
       domElement.removeEventListener('pointermove', pointerMove);
     };
-  }, [camera, cameraPan, domElement, drag, invalidate, mouse, opacity, selection, setUpPos]);
+  }, [
+    camera,
+    cameraPan,
+    currentTool,
+    domElement,
+    drag,
+    invalidate,
+    mouse,
+    opacity,
+    selection,
+    setUpPos,
+  ]);
 };
 
 const useWheel = (invalidate: () => void, domElement: HTMLCanvasElement, camera: Camera) => {
@@ -491,22 +552,29 @@ function handleTextDrag(
   drag: DragData,
   updateObj: (obj: Obj) => void,
 ) {
+  const prevObj = drag.prevObj as TextObj;
   switch (drag.mode) {
     case 'move':
       return updateObj({
         ...obj,
-        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
-        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+        x: validateValue(newPos.x + prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + prevObj.y - drag.mousePos.y),
       } as Obj);
     case 'e':
+      if (prevObj.anchorX === 'center') {
+        return updateObj({ ...obj, w: validateValue((newPos.x - prevObj.x) * 2) } as Obj);
+      }
       return updateObj({
         ...obj,
-        w: validateValue(newPos.x - drag.prevObj.x, true),
+        w: validateValue(newPos.x - prevObj.x, true),
       } as Obj);
     case 'w':
+      if (prevObj.anchorX === 'center') {
+        return updateObj({ ...obj, w: validateValue((prevObj.x - newPos.x) * 2) } as Obj);
+      }
       return updateObj({
         ...obj,
-        w: validateValue(drag.prevObj.x + (drag.prevObj as TextObj).w - newPos.x, true),
+        w: validateValue(prevObj.x + prevObj.w - newPos.x, true),
         x: validateValue(newPos.x),
       } as Obj);
   }
