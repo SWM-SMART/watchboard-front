@@ -104,18 +104,16 @@ export function createRect(
  * @param {number} [x] x position
  * @param {number} [y] y position
  * @param {number} [w] width value
- * @param {OverflowType} [overflow='normal'] overflow value
- * @param {string} [color=genColor()] rgb string
  * @param {number} [depth=genDepth()] depth value
+ * @param {TextOptions} [options] other optional properties
  * @return {TextObj} generated Text Object based on input parameter
  */
 export function createText(
   x: number,
   y: number,
   w: number,
-  overflow: OverflowType = 'normal',
-  color: string = genColor(),
   depth: number = genDepth(),
+  options?: TextOptions,
 ): TextObj {
   return validateTextObj({
     objId: genId(),
@@ -125,10 +123,12 @@ export function createText(
     depth: depth,
     parentId: 'ROOT',
     w: w,
-    fontSize: 20,
-    overflow: overflow,
-    text: '',
-    color: color,
+    fontSize: options?.fontSize ?? 30,
+    overflow: options?.overflow ?? 'normal',
+    text: options?.text ?? '',
+    color: options?.color ?? genColor(),
+    textAlign: options?.textAlign ?? 'left',
+    anchorX: options?.anchorX ?? 'left',
   } as TextObj);
 }
 
@@ -139,8 +139,8 @@ export function createText(
  * @param {number} [y] y value
  * @param {number} [x2] x2 value
  * @param {number} [y2] y2 value
- * @param {string} [color=genColor()] rgb string
  * @param {number} [depth=genDepth()] depth value
+ * @param {LineOptions} [options] other options
  * @return {LineObj} generated Line Object based on input parameter
  */
 export function createLine(
@@ -148,8 +148,8 @@ export function createLine(
   y: number,
   x2: number,
   y2: number,
-  color: string = genColor(),
   depth: number = genDepth(),
+  options?: LineOptions,
 ): LineObj {
   return validateLineObj({
     objId: genId(),
@@ -158,10 +158,10 @@ export function createLine(
     y: y,
     x2: x2,
     y2: y2,
-    strokeWidth: 3,
+    strokeWidth: options?.strokeWidth ?? 3,
     depth: depth,
     parentId: 'ROOT',
-    color: color,
+    color: options?.color ?? genColor(),
   } as LineObj);
 }
 

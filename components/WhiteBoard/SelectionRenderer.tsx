@@ -43,13 +43,19 @@ export default function SelectionRenderer({ dimensions, obj }: SelectionRenderer
     }
   };
 
+  const realDimensions = calculateDimensions(dimensions);
+
   return (
     <>
       <mesh
-        position={[dimensions.x + dimensions.w / 2, dimensions.y + dimensions.h / 2, SELECT_DEPTH]}
+        position={[
+          realDimensions.x + realDimensions.w / 2,
+          realDimensions.y + realDimensions.h / 2,
+          SELECT_DEPTH,
+        ]}
         onPointerDown={(e) => pointerEventHandler(e, 'move')}
       >
-        <planeGeometry attach={'geometry'} args={[dimensions.w, dimensions.h]} />
+        <planeGeometry attach={'geometry'} args={[realDimensions.w, realDimensions.h]} />
         <meshStandardMaterial
           transparent={true}
           opacity={SELECT_HIGHLIGHT_OPACITY}
@@ -58,8 +64,8 @@ export default function SelectionRenderer({ dimensions, obj }: SelectionRenderer
           depthTest={true}
         />
       </mesh>
-      <WireFrame onPointerDown={pointerEventHandler} dimensions={dimensions} />
-      <Points obj={obj} onPointerDown={pointerEventHandler} dimensions={dimensions} />
+      <WireFrame onPointerDown={pointerEventHandler} dimensions={realDimensions} />
+      <Points obj={obj} onPointerDown={pointerEventHandler} dimensions={realDimensions} />
     </>
   );
 }
@@ -215,4 +221,15 @@ function Point({ x, y, onPointerDown }: PointProps) {
       <meshBasicMaterial color={FRAME_COLOR} />
     </Circle>
   );
+}
+
+function calculateDimensions(dimensions: ObjDimensions) {
+  switch (dimensions.anchorX) {
+    case 'center':
+      return { ...dimensions, x: dimensions.x - dimensions.w / 2 };
+    case undefined:
+    case 'left':
+    case 'right':
+  }
+  return dimensions;
 }

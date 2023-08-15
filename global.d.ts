@@ -20,6 +20,7 @@ interface ObjDimensions {
   y: number;
   w: number;
   h: number;
+  anchorX?: AnchorX;
 }
 
 interface RectObj extends Obj {
@@ -29,12 +30,25 @@ interface RectObj extends Obj {
 }
 
 type OverflowType = 'normal' | 'break-word';
+type TextAlgin = 'center' | 'left' | 'right' | 'justify';
+type AnchorX = 'center' | 'left' | 'right';
 interface TextObj extends Obj {
   w: number;
   fontSize: number;
   overflow: OverflowType;
   text: string;
   color: string;
+  textAlign: TextAlgin;
+  anchorX: AnchorX;
+}
+
+interface TextOptions {
+  fontSize?: number;
+  overflow?: OverflowType;
+  textAlign?: TextAlgin;
+  text?: string;
+  color?: string;
+  anchorX?: AnchorX;
 }
 
 interface LineObj extends Obj {
@@ -42,6 +56,11 @@ interface LineObj extends Obj {
   y2: number;
   color: string;
   strokeWidth: number;
+}
+
+interface LineOptions {
+  color?: string;
+  strokeWidth?: number;
 }
 
 interface Coord {
@@ -90,4 +109,16 @@ interface TextRequest {
   text: string;
 }
 
+interface MindmapResponse {
+  root: number;
+  keywords: string[];
+  graph: Map<string, number[]>;
+}
 
+interface ObjBundle {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  objs: Obj[];
+}
