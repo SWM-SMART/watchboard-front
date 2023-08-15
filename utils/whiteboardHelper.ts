@@ -1,4 +1,12 @@
 import { useWhiteBoard } from '@/states/whiteboard';
+import {
+  forceCenter,
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceRadial,
+  forceSimulation,
+} from 'd3';
 import { Camera, Vector2, Vector3 } from 'three';
 
 export const SELECT_HIGHLIGHT = '#9edae6';
@@ -104,18 +112,16 @@ export function createRect(
  * @param {number} [x] x position
  * @param {number} [y] y position
  * @param {number} [w] width value
- * @param {OverflowType} [overflow='normal'] overflow value
- * @param {string} [color=genColor()] rgb string
  * @param {number} [depth=genDepth()] depth value
+ * @param {TextOptions} [options] other optional properties
  * @return {TextObj} generated Text Object based on input parameter
  */
 export function createText(
   x: number,
   y: number,
   w: number,
-  overflow: OverflowType = 'normal',
-  color: string = genColor(),
   depth: number = genDepth(),
+  options?: TextOptions,
 ): TextObj {
   return validateTextObj({
     objId: genId(),
@@ -125,10 +131,12 @@ export function createText(
     depth: depth,
     parentId: 'ROOT',
     w: w,
-    fontSize: 20,
-    overflow: overflow,
-    text: '',
-    color: color,
+    fontSize: options?.fontSize ?? 30,
+    overflow: options?.overflow ?? 'normal',
+    text: options?.text ?? '',
+    color: options?.color ?? genColor(),
+    textAlign: options?.textAlign ?? 'left',
+    anchorX: options?.anchorX ?? 'left',
   } as TextObj);
 }
 
@@ -139,8 +147,8 @@ export function createText(
  * @param {number} [y] y value
  * @param {number} [x2] x2 value
  * @param {number} [y2] y2 value
- * @param {string} [color=genColor()] rgb string
  * @param {number} [depth=genDepth()] depth value
+ * @param {LineOptions} [options] other options
  * @return {LineObj} generated Line Object based on input parameter
  */
 export function createLine(
@@ -148,8 +156,8 @@ export function createLine(
   y: number,
   x2: number,
   y2: number,
-  color: string = genColor(),
   depth: number = genDepth(),
+  options?: LineOptions,
 ): LineObj {
   return validateLineObj({
     objId: genId(),
@@ -158,10 +166,10 @@ export function createLine(
     y: y,
     x2: x2,
     y2: y2,
-    strokeWidth: 3,
+    strokeWidth: options?.strokeWidth ?? 3,
     depth: depth,
     parentId: 'ROOT',
-    color: color,
+    color: options?.color ?? genColor(),
   } as LineObj);
 }
 
@@ -306,6 +314,221 @@ export function validateValue(value: number, positive = false): number {
   const newValue = Math.round(value);
   if (newValue < 0 && positive) return 0;
   return newValue;
+}
+
+interface NodeData {
+  id: number;
+  label: string;
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+}
+
+interface LinkData {
+  source: number;
+  target: number;
+}
+
+export function createForceBundleFromMindmap(response: MindmapResponse): ObjBundle {
+  const fontSize = 20;
+  const nodeRadius = 30;
+  const bounds = { minX: NaN, maxX: NaN, minY: NaN, maxY: NaN };
+  let top = topDepth();
+  const unit = 0.0001;
+  const result: Obj[] = [];
+
+  const updateBounds = (obj: Obj) => {
+    if (isNaN(bounds.minX)) {
+      bounds.minX = obj.x;
+      bounds.maxX = obj.x;
+      bounds.minY = obj.y;
+      bounds.maxY = obj.y;
+      return;
+    }
+    bounds.minX = Math.min(bounds.minX, obj.x);
+    bounds.maxX = Math.max(bounds.maxX, obj.x);
+    if (obj.type === 'TEXT') {
+      bounds.maxX = Math.max(bounds.maxX, obj.x + (obj as TextObj).w);
+    }
+    bounds.minY = Math.min(bounds.minY, obj.y);
+    bounds.maxY = Math.max(bounds.maxY, obj.y + fontSize);
+  };
+
+  const appendObj = (obj: Obj) => {
+    updateBounds(obj);
+    result.push(obj);
+    top += unit;
+  };
+
+  const simulation = forceSimulation<NodeData>();
+
+  const nodes: NodeData[] = [];
+
+  response.keywords.forEach((v, i) => {
+    nodes.push({ id: i, label: v });
+  });
+
+  const links: any[] = [];
+
+  const graph = new Map<string, number[]>(Object.entries(response.graph));
+  for (const entry of graph.entries()) {
+    for (const child of entry[1]) {
+      links.push({ source: parseInt(entry[0]), target: child });
+    }
+  }
+
+  simulation
+    .nodes(nodes)
+    .force(
+      'link',
+      forceLink<NodeData, LinkData>(links)
+        .id((d) => d.id)
+        .strength(2),
+    )
+    .force('charge', forceManyBody<NodeData>().strength(-100))
+    .force('center', forceCenter(0, 0).strength(1))
+    .force('collision', forceCollide(30))
+    .force('radial', forceRadial(0, 0, 100))
+    .tick(300);
+
+  for (const link of links) {
+    const source = link.source as NodeData;
+    const target = link.target as NodeData;
+    appendObj(
+      createLine(source.x || 0, source.y || 0, target.x || 0, target.y || 0, top, {
+        strokeWidth: 1,
+        color: '#DDDDDD',
+      }),
+    );
+  }
+
+  for (const node of nodes) {
+    appendObj(
+      createText(node.x ?? 0, node.y ?? 0, 100, top, {
+        textAlign: 'center',
+        fontSize: 10,
+        text: node.label,
+        color: 'black',
+        anchorX: 'center',
+      }),
+    );
+  }
+
+  return {
+    x: validateValue((bounds.maxX + bounds.minX) / 2),
+    y: validateValue((bounds.maxY + bounds.minY) / 2),
+    w: bounds.maxX - bounds.minX,
+    h: bounds.maxY - bounds.minY,
+    objs: result,
+  };
+}
+
+// DAGRE.js tree version
+//
+// export function createTreeBundleFromMindmap(response: MindmapResponse): ObjBundle {
+//   const fontSize = 20;
+//   const bounds = { minX: NaN, maxX: NaN, minY: NaN, maxY: NaN };
+//   let top = topDepth();
+//   const unit = 0.0001;
+//   const result: Obj[] = [];
+
+//   const updateBounds = (obj: Obj) => {
+//     if (isNaN(bounds.minX)) {
+//       bounds.minX = obj.x;
+//       bounds.maxX = obj.x;
+//       bounds.minY = obj.y;
+//       bounds.maxY = obj.y;
+//       return;
+//     }
+//     bounds.minX = Math.min(bounds.minX, obj.x);
+//     bounds.maxX = Math.max(bounds.maxX, obj.x);
+//     if (obj.type === 'TEXT') {
+//       bounds.maxX = Math.max(bounds.maxX, obj.x + (obj as TextObj).w);
+//     }
+//     bounds.minY = Math.min(bounds.minY, obj.y);
+//     bounds.maxY = Math.max(bounds.maxY, obj.y + fontSize);
+//   };
+
+//   const appendObj = (obj: Obj) => {
+//     updateBounds(obj);
+//     result.push(obj);
+//     top += unit;
+//   };
+
+//   const g = new graphlib.Graph()
+//     .setGraph({
+//       rankdir: 'LR',
+//       edgesep: 100,
+//       ranksep: 50,
+//       nodesep: 30,
+//     })
+//     .setDefaultEdgeLabel(() => ({}));
+
+//   response.keywords.forEach((v, i) => {
+//     g.setNode(i.toString(), { label: v, width: fontSize * v.length, height: 30 });
+//   });
+
+//   const graph = new Map<string, number[]>(Object.entries(response.graph));
+//   for (const entry of graph.entries()) {
+//     for (const child of entry[1]) {
+//       g.setEdge(entry[0].toString(), child.toString());
+//     }
+//   }
+
+//   dagre.layout(g);
+
+//   g.edges().forEach((v) => {
+//     const edge = g.edge(v);
+//     for (let i = 1; i < edge.points.length; i++) {
+//       appendObj(
+//         createLine(
+//           edge.points[i].x,
+//           edge.points[i].y,
+//           edge.points[i - 1].x,
+//           edge.points[i - 1].y,
+//           top,
+//         ),
+//       );
+//     }
+//   });
+
+//   g.nodes().forEach((v) => {
+//     const node = g.node(v);
+//     appendObj(
+//       createText(node.x - node.width / 2, node.y - node.height / 2, node.width, top, {
+//         fontSize: fontSize,
+//         textAlign: 'center',
+//         color: 'black',
+//         text: node.label,
+//       }),
+//     );
+//   });
+
+//   const output = g.graph();
+//   if (output.width === undefined || output.height === undefined)
+//     throw new Error('그래프 생성에 실패하였습니다.');
+
+//   return {
+//     x: output.width / 2,
+//     y: output.height / 2,
+//     w: output.width,
+//     h: output.height,
+//     objs: result,
+//   };
+// }
+
+export function translateObj(obj: Obj, offset: Coord): Obj {
+  switch (obj.type) {
+    case 'LINE':
+      (obj as LineObj).x2 += offset.x;
+      (obj as LineObj).y2 += offset.y;
+    case 'RECT':
+    case 'TEXT':
+      obj.x += offset.x;
+      obj.y += offset.y;
+  }
+  return obj;
 }
 
 export const lipsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur pulvinar, nulla quis viverra venenatis, metus sapien blandit urna, nec tristique sem justo non justo. Pellentesque semper massa nec dapibus luctus. Vestibulum facilisis ornare augue vel semper. Pellentesque id faucibus augue. Quisque ullamcorper tempor magna eget molestie. Etiam mattis a velit quis porttitor. Sed et posuere sapien, non convallis elit. Mauris tempor, metus non auctor accumsan, ante lacus posuere augue, ac scelerisque sem nunc luctus arcu. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;

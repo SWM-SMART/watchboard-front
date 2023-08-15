@@ -30,7 +30,7 @@ export async function refreshToken(): Promise<string | null> {
   );
 }
 
-export async function generateGraph(text: textRequest): Promise<any> {
+export async function generateGraph(text: TextRequest): Promise<MindmapResponse> {
   return (await httpPost(`${AI_BASE_URL}/mindmap`, text))?.json();
 }
 
