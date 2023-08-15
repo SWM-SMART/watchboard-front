@@ -49,7 +49,7 @@ interface Coord {
   y: number;
 }
 
-type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE';
+type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE';
 
 interface WBDocumentMetadata {
   documentId: number;
@@ -86,6 +86,8 @@ interface ToastData {
 type DragData = { mousePos: Coord; mode: DragMode; prevObj: Obj };
 type DragMode = 'move' | 'n' | 'e' | 'w' | 's' | 'ne' | 'nw' | 'sw' | 'se';
 
-interface textRequest {
+interface TextRequest {
   text: string;
 }
+
+
