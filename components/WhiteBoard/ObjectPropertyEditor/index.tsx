@@ -241,7 +241,7 @@ function Property({
     if (onChange === undefined) return;
     const newVal = getValue(val, type);
     setVal(newVal.toString());
-    onChange(propKey, getValue(val, type));
+    onChange(propKey, newVal);
   };
 
   return (
