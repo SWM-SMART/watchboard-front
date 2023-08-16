@@ -561,17 +561,11 @@ function handleTextDrag(
         y: validateValue(newPos.y + prevObj.y - drag.mousePos.y),
       } as Obj);
     case 'e':
-      if (prevObj.anchorX === 'center') {
-        return updateObj({ ...obj, w: validateValue((newPos.x - prevObj.x) * 2) } as Obj);
-      }
       return updateObj({
         ...obj,
         w: validateValue(newPos.x - prevObj.x, true),
       } as Obj);
     case 'w':
-      if (prevObj.anchorX === 'center') {
-        return updateObj({ ...obj, w: validateValue((prevObj.x - newPos.x) * 2) } as Obj);
-      }
       return updateObj({
         ...obj,
         w: validateValue(prevObj.x + prevObj.w - newPos.x, true),
