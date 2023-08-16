@@ -50,7 +50,7 @@ export function FlatLine({
   depth,
   onPointerDown,
 }: FlatLineProps) {
-  const { w, d } = useMemo(() => calculate(x, y, x2, y2), [x - x2, y - y2]);
+  const { w, d } = useMemo(() => calculate(x, y, x2, y2), [x, x2, y, y2]);
   return (
     <mesh
       position={[(x + x2) / 2, (y + y2) / 2, depth]}
