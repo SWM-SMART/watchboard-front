@@ -20,7 +20,6 @@ interface ObjDimensions {
   y: number;
   w: number;
   h: number;
-  anchorX?: AnchorX;
 }
 
 interface RectObj extends Obj {
@@ -30,8 +29,7 @@ interface RectObj extends Obj {
 }
 
 type OverflowType = 'normal' | 'break-word';
-type TextAlgin = 'center' | 'left' | 'right' | 'justify';
-type AnchorX = 'center' | 'left' | 'right';
+type TextAlgin = 'center' | 'left' | 'right';
 interface TextObj extends Obj {
   w: number;
   fontSize: number;
@@ -39,7 +37,6 @@ interface TextObj extends Obj {
   text: string;
   color: string;
   textAlign: TextAlgin;
-  anchorX: AnchorX;
 }
 
 interface TextOptions {
@@ -48,7 +45,6 @@ interface TextOptions {
   textAlign?: TextAlgin;
   text?: string;
   color?: string;
-  anchorX?: AnchorX;
 }
 
 interface LineObj extends Obj {

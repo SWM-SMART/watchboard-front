@@ -165,13 +165,6 @@ function TextPanel({ obj, onChange }: TextPanelProps) {
         span={2}
       />
       <Property
-        propKey={'anchorX'}
-        propVal={obj.anchorX}
-        onChange={onChange}
-        type="STRING"
-        span={2}
-      />
-      <Property
         propKey={'textAlign'}
         label="정렬"
         propVal={obj.textAlign}
