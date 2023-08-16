@@ -1,0 +1,29 @@
+name: 'Build and deploy'
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy with AWS SSM Send-Command
+        uses: peterkimzz/aws-ssm-send-command@v1.1.1
+        id: ssm
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          instance-ids: ${{ secrets.INSTANCE_ID }}
+          working-directory: /
+          command: |
+            #!/bin/bash
+            export HOME=${{ secrets.ENV_HOME }}
+            cd ~/watchboard-front
+            git checkout -- .
+            git pull
+            yarn install
+            yarn build
+            pm2 startOrRestart ecosystem.config.js
