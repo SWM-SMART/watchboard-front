@@ -58,6 +58,9 @@ export function genDepth(objA?: Obj, objB?: Obj): number {
  */
 export function topDepth(): number {
   const rootObjNode = useWhiteBoard.getState().objTree;
+  if (rootObjNode.childNodes.length === 0) {
+    return 0.0001;
+  }
   const currentTop = rootObjNode.childNodes[0].depth || rootObjNode.depth;
   return (currentTop + MAX_DEPTH) / 5;
 }
@@ -136,7 +139,6 @@ export function createText(
     text: options?.text ?? '',
     color: options?.color ?? genColor(),
     textAlign: options?.textAlign ?? 'left',
-    anchorX: options?.anchorX ?? 'left',
   } as TextObj);
 }
 
@@ -332,7 +334,13 @@ interface LinkData {
 
 export function createForceBundleFromMindmap(response: MindmapResponse): ObjBundle {
   const fontSize = 20;
-  const nodeRadius = 30;
+  const nodeWidth = fontSize * 8;
+  const nodeHeight = fontSize * 2;
+  const radius = nodeWidth / 2 + 10;
+  const edgeWidth = 2;
+  const edgeColor = '#31493C';
+  const fontColor = '#FFFFFF';
+  const nodeColor = '#7A9E7E';
   const bounds = { minX: NaN, maxX: NaN, minY: NaN, maxY: NaN };
   let top = topDepth();
   const unit = 0.0001;
@@ -384,11 +392,12 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
       'link',
       forceLink<NodeData, LinkData>(links)
         .id((d) => d.id)
-        .strength(2),
+        .strength(2)
+        .distance(10),
     )
     .force('charge', forceManyBody<NodeData>().strength(-100))
     .force('center', forceCenter(0, 0).strength(1))
-    .force('collision', forceCollide(30))
+    .force('collision', forceCollide(radius))
     .force('radial', forceRadial(0, 0, 100))
     .tick(300);
 
@@ -397,20 +406,29 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
     const target = link.target as NodeData;
     appendObj(
       createLine(source.x || 0, source.y || 0, target.x || 0, target.y || 0, top, {
-        strokeWidth: 1,
-        color: '#DDDDDD',
+        strokeWidth: edgeWidth,
+        color: edgeColor,
       }),
     );
   }
 
   for (const node of nodes) {
     appendObj(
-      createText(node.x ?? 0, node.y ?? 0, 100, top, {
+      createRect(
+        (node.x ?? 0) - nodeWidth / 2,
+        (node.y ?? 0) - nodeHeight / 2,
+        nodeWidth,
+        nodeHeight,
+        nodeColor,
+        top,
+      ),
+    );
+    appendObj(
+      createText((node.x ?? 0) - nodeWidth / 2, (node.y ?? 0) - fontSize / 2, nodeWidth, top, {
         textAlign: 'center',
-        fontSize: 10,
+        fontSize: fontSize,
         text: node.label,
-        color: 'black',
-        anchorX: 'center',
+        color: fontColor,
       }),
     );
   }
@@ -521,12 +539,12 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
 export function translateObj(obj: Obj, offset: Coord): Obj {
   switch (obj.type) {
     case 'LINE':
-      (obj as LineObj).x2 += offset.x;
-      (obj as LineObj).y2 += offset.y;
+      (obj as LineObj).x2 = validateValue((obj as LineObj).x2 + offset.x);
+      (obj as LineObj).y2 = validateValue((obj as LineObj).y2 + offset.y);
     case 'RECT':
     case 'TEXT':
-      obj.x += offset.x;
-      obj.y += offset.y;
+      obj.x = validateValue(obj.x + offset.x);
+      obj.y = validateValue(obj.y + offset.y);
   }
   return obj;
 }
