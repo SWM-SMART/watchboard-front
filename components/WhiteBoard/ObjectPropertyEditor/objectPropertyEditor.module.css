@@ -44,6 +44,24 @@
   flex: 1;
 }
 
+.select {
+  text-align: center;
+  background-color: var(--background);
+  box-sizing: border-box;
+  border: 1px solid var(--background);
+  padding: 3px;
+  min-width: 0;
+  color: var(--secondary-light);
+  flex: 1;
+}
+
+.select:focus {
+  border-radius: 10px;
+  color: var(--secondary-dark);
+  background-color: var(--background);
+  border: 1px solid var(--secondary-dark);
+}
+
 .input:focus {
   border-radius: 10px;
   color: var(--secondary-dark);
