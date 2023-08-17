@@ -47,8 +47,9 @@ export function genId(): string {
 export function genDepth(objA?: Obj, objB?: Obj): number {
   if (objA === undefined && objB === undefined) return topDepth();
   if (objA === undefined) return MIN_DEPTH;
-  if (objB === undefined) return (objA.depth + MAX_DEPTH) / 5;
-  return (objA.depth + objB.depth) / 5;
+  if (objB === undefined)
+    return objA.depth + 0.0001 < 1 ? objA.depth + 0.0001 : (objA.depth + MAX_DEPTH) / 2;
+  return (objA.depth + objB.depth) / 2;
 }
 
 /**
@@ -57,12 +58,13 @@ export function genDepth(objA?: Obj, objB?: Obj): number {
  * @return {number} Generated depth value.
  */
 export function topDepth(): number {
+  console.log(useWhiteBoard.getState().objTree);
   const rootObjNode = useWhiteBoard.getState().objTree;
   if (rootObjNode.childNodes.length === 0) {
     return 0.0001;
   }
   const currentTop = rootObjNode.childNodes[0].depth || rootObjNode.depth;
-  return (currentTop + MAX_DEPTH) / 5;
+  return currentTop + 0.0001 < MAX_DEPTH ? currentTop + 0.0001 : (currentTop + MAX_DEPTH) / 2;
 }
 
 /**
@@ -223,13 +225,15 @@ export function constructRootObjTree(objMap: Map<string, Obj>): ObjNode {
       stack.push(child);
     }
     // sort obj by depth
-    parent.childNodes.sort((a, b) => {
-      if (a.depth < b.depth) return 1;
-      return -1;
-    });
+    parent.childNodes.sort(objNodeSorter);
   }
 
   return root;
+}
+
+export function objNodeSorter(a: ObjNode, b: ObjNode) {
+  if (a.depth < b.depth) return 1;
+  return -1;
 }
 
 /**

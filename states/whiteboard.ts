@@ -1,4 +1,4 @@
-import { constructRootObjTree, translateObj } from '@/utils/whiteboardHelper';
+import { constructRootObjTree, objNodeSorter, translateObj } from '@/utils/whiteboardHelper';
 import { create } from 'zustand';
 
 interface WhiteBoardState {
@@ -68,6 +68,10 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set,
       for (const obj of bundle.objs) {
         get().addObj(translateObj(obj, realOffset));
       }
+      // sort by depth
+      set((state) => ({
+        objTree: { ...state.objTree, childNodes: state.objTree.childNodes.sort(objNodeSorter) },
+      }));
     }
     set(() => ({
       currentTool: 'SELECT',
