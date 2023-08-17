@@ -70,7 +70,7 @@ function ObjInfo({ obj }: ObjInfoProps) {
   return (
     <div className={styles.objInfoContainer} onClick={() => setCurrentObj(obj.objId)}>
       <span className={`material-symbols-outlined ${styles.objIcon}`}>{typeToIcon(obj.type)}</span>
-      <p>{obj.objId}</p>
+      <p>{obj.depth}</p>
     </div>
   );
 }
