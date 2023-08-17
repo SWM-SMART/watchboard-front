@@ -5,7 +5,7 @@ import TextRenderer from './TextRenderer';
 import { useThree } from '@react-three/fiber';
 import { getPos } from '@/utils/whiteboardHelper';
 import SelectionRenderer from './SelectionRenderer';
-import { Dispatch, SetStateAction, useState } from 'react';
+import { MutableRefObject, memo, useRef } from 'react';
 import LineRenderer from './LineRenderer';
 
 interface NodeRendererProps {
@@ -13,12 +13,11 @@ interface NodeRendererProps {
 }
 
 export default function NodeRenderer({ node }: NodeRendererProps) {
-  const objMap = useWhiteBoard((state) => state.objMap);
-  const current = objMap.get(node.objId);
+  const obj = useWhiteBoard((state) => state.objMap.get(node.objId));
 
   return (
     <>
-      {current === undefined ? <></> : <ObjectWrapper obj={current} />}
+      {obj === undefined ? <></> : <ObjectWrapper objId={node.objId} />}
       {node.childNodes.map((n) => {
         return <NodeRenderer key={n.objId} node={n} />;
       })}
@@ -27,29 +26,34 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
 }
 
 interface RenderWrapperProps {
-  obj: Obj;
-  setDimensions: Dispatch<SetStateAction<ObjDimensions>>;
+  objId: string;
+  type: ObjType;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
 }
 
-function RenderWrapper({ obj, setDimensions }: RenderWrapperProps) {
-  switch (obj.type) {
+function RenderWrapper({ objId, type, dimensionsRef }: RenderWrapperProps) {
+  switch (type) {
     case 'RECT':
-      return (
-        <RectangleRenderer key={obj.objId} obj={obj as RectObj} setDimensions={setDimensions} />
-      );
+      return <RectangleRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
     case 'TEXT':
-      return <TextRenderer key={obj.objId} obj={obj as TextObj} setDimensions={setDimensions} />;
+      return <TextRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
     case 'LINE':
-      return <LineRenderer key={obj.objId} obj={obj as LineObj} setDimensions={setDimensions} />;
+      return <LineRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
   }
 }
 
+const MemoizedRenderWrapper = memo(
+  RenderWrapper,
+  (prev, next) => prev.objId === next.objId && prev.dimensionsRef === next.dimensionsRef,
+);
+
 interface ObjectWrapperProps {
-  obj: Obj;
+  objId: string;
 }
 
-function ObjectWrapper({ obj }: ObjectWrapperProps) {
-  const [dimensions, setDimensions] = useState<ObjDimensions>({ x: 0, y: 0, w: 0, h: 0 });
+function ObjectWrapper({ objId }: ObjectWrapperProps) {
+  const obj = useWhiteBoard((state) => state.objMap.get(objId))!;
+  const dimensionsRef = useRef<ObjDimensions>({ x: 0, y: 0, w: 0, h: 0 });
   const { currentObj, setCurrentObj, setDrag, currentTool } = useWhiteBoard((state) => ({
     currentObj: state.currentObj,
     setCurrentObj: state.setCurrentObj,
@@ -77,8 +81,8 @@ function ObjectWrapper({ obj }: ObjectWrapperProps) {
         }
       }}
     >
-      <RenderWrapper obj={obj} setDimensions={setDimensions} />
-      {selection ? <SelectionRenderer dimensions={dimensions} obj={obj} /> : <></>}
+      <MemoizedRenderWrapper objId={objId} type={obj.type} dimensionsRef={dimensionsRef} />
+      {selection ? <SelectionRenderer dimensionsRef={dimensionsRef} objId={objId} /> : <></>}
     </group>
   );
 }

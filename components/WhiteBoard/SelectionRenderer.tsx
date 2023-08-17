@@ -2,7 +2,6 @@ import { useWhiteBoard } from '@/states/whiteboard';
 import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
-  SELECT_HIGHLIGHT_OPACITY,
   FRAME_COLOR,
   FRAME_DEPTH,
   FRAME_WIDTH,
@@ -11,15 +10,18 @@ import {
 } from '@/utils/whiteboardHelper';
 import { Circle } from '@react-three/drei';
 import { ThreeEvent, useFrame, useThree } from '@react-three/fiber';
-import { useState } from 'react';
-import { FlatLine } from './LineRenderer';
+import { MutableRefObject, forwardRef, useImperativeHandle, useRef } from 'react';
+import { FlatLine, FlatLineRef } from './LineRenderer';
+import { BufferGeometry, Mesh, NormalBufferAttributes } from 'three';
 
 interface SelectionRendererProps {
-  dimensions: ObjDimensions;
-  obj: Obj;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
+  objId: string;
 }
 
-export default function SelectionRenderer({ dimensions, obj }: SelectionRendererProps) {
+export default function SelectionRenderer({ dimensionsRef, objId }: SelectionRendererProps) {
+  const meshRef = useRef<Mesh>(null);
+  const obj = useWhiteBoard((state) => state.objMap.get(objId))!;
   const { setDrag, currentTool } = useWhiteBoard((state) => ({
     setDrag: state.setDrag,
     currentTool: state.currentTool,
@@ -27,8 +29,16 @@ export default function SelectionRenderer({ dimensions, obj }: SelectionRenderer
   const { mouse, camera } = useThree();
   const pos = () => getPos(mouse, camera);
 
-  if (dimensions.h <= 0) dimensions.h = 0;
-  if (dimensions.w <= 0) dimensions.w = 0;
+  useFrame(() => {
+    if (meshRef.current === null) return;
+    const dimensions = dimensionsRef.current;
+    meshRef.current.position.set(
+      dimensions.x + dimensions.w / 2,
+      dimensions.y + dimensions.h / 2,
+      SELECT_DEPTH,
+    );
+    meshRef.current.scale.set(dimensions.w, dimensions.h, 1);
+  });
 
   // dragEvents are dispatched here and then handled in MouseHandler
   const pointerEventHandler = (e: ThreeEvent<PointerEvent>, mode: DragMode) => {
@@ -43,45 +53,79 @@ export default function SelectionRenderer({ dimensions, obj }: SelectionRenderer
     }
   };
 
+  if (dimensionsRef.current.h <= 0) dimensionsRef.current.h = 0;
+  if (dimensionsRef.current.w <= 0) dimensionsRef.current.w = 0;
+  if (dimensionsRef.current.h === 0 && dimensionsRef.current.w === 0) return;
+
   return (
     <>
-      <mesh
-        position={[dimensions.x + dimensions.w / 2, dimensions.y + dimensions.h / 2, SELECT_DEPTH]}
-        onPointerDown={(e) => pointerEventHandler(e, 'move')}
-      >
-        <planeGeometry attach={'geometry'} args={[dimensions.w, dimensions.h]} />
+      <mesh ref={meshRef} onPointerDown={(e) => pointerEventHandler(e, 'move')}>
+        <planeGeometry attach={'geometry'} args={[1, 1]} />
         <meshStandardMaterial
           transparent={true}
-          opacity={SELECT_HIGHLIGHT_OPACITY}
+          opacity={0.4}
           color={SELECT_HIGHLIGHT}
           depthWrite={true}
           depthTest={true}
         />
       </mesh>
-      <WireFrame onPointerDown={pointerEventHandler} dimensions={dimensions} />
-      <Points obj={obj} onPointerDown={pointerEventHandler} dimensions={dimensions} />
+      <WireFrame onPointerDown={pointerEventHandler} dimensionsRef={dimensionsRef} />
+      <Points obj={obj} onPointerDown={pointerEventHandler} dimensionsRef={dimensionsRef} />
     </>
   );
 }
 
 function WireFrame({
-  dimensions,
+  dimensionsRef,
   onPointerDown,
 }: {
-  dimensions: ObjDimensions;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
   onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
 }) {
-  const [zoom, setZoom] = useState<number>(0);
+  const nRef = useRef<FlatLineRef>(null!);
+  const eRef = useRef<FlatLineRef>(null!);
+  const wRef = useRef<FlatLineRef>(null!);
+  const sRef = useRef<FlatLineRef>(null!);
+
+  const dimensions = dimensionsRef.current;
 
   useFrame((s) => {
-    setZoom(s.camera.zoom);
+    const strokeWidth = FRAME_WIDTH / s.camera.zoom;
+    nRef.current.setPoints(
+      dimensions.x,
+      dimensions.y + dimensions.h,
+      dimensions.x + dimensions.w,
+      dimensions.y + dimensions.h,
+      strokeWidth,
+    );
+    eRef.current.setPoints(
+      dimensions.x + dimensions.w,
+      dimensions.y,
+      dimensions.x + dimensions.w,
+      dimensions.y + dimensions.h,
+      strokeWidth,
+    );
+    wRef.current.setPoints(
+      dimensions.x,
+      dimensions.y,
+      dimensions.x,
+      dimensions.y + dimensions.h,
+      strokeWidth,
+    );
+    sRef.current.setPoints(
+      dimensions.x,
+      dimensions.y,
+      dimensions.x + dimensions.w,
+      dimensions.y,
+      strokeWidth,
+    );
   });
-  if (zoom === 0) return null;
 
   return (
     <>
       {/* N */}
       <FlatLine
+        ref={nRef}
         onPointerDown={(e) => onPointerDown(e, 'n')}
         x={dimensions.x}
         y={dimensions.y + dimensions.h}
@@ -89,10 +133,11 @@ function WireFrame({
         y2={dimensions.y + dimensions.h}
         depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        strokeWidth={FRAME_WIDTH / zoom}
+        strokeWidth={FRAME_WIDTH}
       />
       {/* E */}
       <FlatLine
+        ref={eRef}
         onPointerDown={(e) => onPointerDown(e, 'e')}
         x={dimensions.x + dimensions.w}
         y={dimensions.y}
@@ -100,10 +145,11 @@ function WireFrame({
         y2={dimensions.y + dimensions.h}
         depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        strokeWidth={FRAME_WIDTH / zoom}
+        strokeWidth={FRAME_WIDTH}
       />
       {/* W */}
       <FlatLine
+        ref={wRef}
         onPointerDown={(e) => onPointerDown(e, 'w')}
         x={dimensions.x}
         y={dimensions.y}
@@ -111,10 +157,11 @@ function WireFrame({
         y2={dimensions.y + dimensions.h}
         depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        strokeWidth={FRAME_WIDTH / zoom}
+        strokeWidth={FRAME_WIDTH}
       />
       {/* S */}
       <FlatLine
+        ref={sRef}
         onPointerDown={(e) => onPointerDown(e, 's')}
         x={dimensions.x}
         y={dimensions.y}
@@ -122,7 +169,7 @@ function WireFrame({
         y2={dimensions.y}
         depth={FRAME_DEPTH}
         color={FRAME_COLOR}
-        strokeWidth={FRAME_WIDTH / zoom}
+        strokeWidth={FRAME_WIDTH}
       />
     </>
   );
@@ -130,50 +177,71 @@ function WireFrame({
 
 interface PointsProps {
   obj: Obj;
-  dimensions: ObjDimensions;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
   onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
 }
 
-function Points({ obj, dimensions, onPointerDown }: PointsProps) {
+function Points({ obj, dimensionsRef, onPointerDown }: PointsProps) {
   // TODO: add support for other object types
   switch (obj.type) {
     case 'RECT':
     case 'TEXT':
     case 'ROOT':
-      return <ObjPoints dimensions={dimensions} onPointerDown={onPointerDown} />;
+      return <ObjPoints dimensionsRef={dimensionsRef} onPointerDown={onPointerDown} />;
     case 'LINE':
       return <LinePoints obj={obj as LineObj} onPointerDown={onPointerDown} />;
   }
 }
 
 interface ObjPointsProps {
-  dimensions: ObjDimensions;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
   onPointerDown: (e: ThreeEvent<PointerEvent>, mode: DragMode) => void;
 }
 
-function ObjPoints({ dimensions, onPointerDown }: ObjPointsProps) {
+function ObjPoints({ dimensionsRef, onPointerDown }: ObjPointsProps) {
+  const dimensions = dimensionsRef.current;
+  const neRef = useRef<PointRef>(null!);
+  const nwRef = useRef<PointRef>(null!);
+  const seRef = useRef<PointRef>(null!);
+  const swRef = useRef<PointRef>(null!);
+
+  useFrame(() => {
+    neRef.current.setPoint(dimensions.x + dimensions.w, dimensions.y + dimensions.h);
+    nwRef.current.setPoint(dimensions.x, dimensions.y + dimensions.h);
+    seRef.current.setPoint(dimensions.x + dimensions.w, dimensions.y);
+    swRef.current.setPoint(dimensions.x, dimensions.y);
+  });
+
   return (
     <>
       {/* NE */}
       <Point
+        ref={neRef}
         onPointerDown={(e) => onPointerDown(e, 'ne')}
         x={dimensions.x + dimensions.w}
         y={dimensions.y + dimensions.h}
       />
       {/* NW */}
       <Point
+        ref={nwRef}
         onPointerDown={(e) => onPointerDown(e, 'nw')}
         x={dimensions.x}
         y={dimensions.y + dimensions.h}
       />
       {/* SE*/}
       <Point
+        ref={seRef}
         onPointerDown={(e) => onPointerDown(e, 'se')}
         x={dimensions.x + dimensions.w}
         y={dimensions.y}
       />
       {/* SW */}
-      <Point onPointerDown={(e) => onPointerDown(e, 'sw')} x={dimensions.x} y={dimensions.y} />
+      <Point
+        ref={swRef}
+        onPointerDown={(e) => onPointerDown(e, 'sw')}
+        x={dimensions.x}
+        y={dimensions.y}
+      />
     </>
   );
 }
@@ -199,20 +267,36 @@ interface PointProps {
   y: number;
   onPointerDown: (e: ThreeEvent<PointerEvent>) => void;
 }
-function Point({ x, y, onPointerDown }: PointProps) {
-  const [zoom, setZoom] = useState(0);
-  // size attenuation false
-  useFrame((s) => setZoom(s.camera.zoom));
 
-  if (zoom === 0) return null;
+interface PointRef {
+  setPoint: (x: number, y: number) => void;
+}
+
+const Point = forwardRef<PointRef, PointProps>((props, ref) => {
+  const { x, y, onPointerDown } = props;
+  const circleRef = useRef<Mesh<BufferGeometry<NormalBufferAttributes>>>(null!);
+
+  // size attenuation false
+  useFrame((s) => {
+    const scale = 6 / s.camera.zoom;
+    circleRef.current.scale.set(scale, scale, 1);
+  });
+
+  useImperativeHandle(ref, () => ({
+    setPoint: (x: number, y: number) => {
+      circleRef.current.position.set(x, y, FRAME_CORNER_DEPTH);
+    },
+  }));
 
   return (
     <Circle
+      ref={circleRef}
       onPointerDown={(e) => onPointerDown(e)}
       position={[x, y, FRAME_CORNER_DEPTH]}
-      args={[6 / zoom]}
+      args={[1]}
     >
       <meshBasicMaterial color={FRAME_COLOR} />
     </Circle>
   );
-}
+});
+Point.displayName = 'Point';
