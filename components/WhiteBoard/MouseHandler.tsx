@@ -13,7 +13,7 @@ import {
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 import { useWhiteBoard } from '@/states/whiteboard';
-import { Line } from '@react-three/drei';
+import { FlatLine } from './LineRenderer';
 
 const MAX_OPACITY = 0.5;
 const WHEEL_DELTA_FACTOR = 100;
@@ -184,15 +184,14 @@ export default function MouseHandler() {
     case 'LINE':
       if (!selection) return null;
       return (
-        <Line
-          points={[
-            [downPos.x, downPos.y, SELECT_DEPTH],
-            [upPos.x, upPos.y, SELECT_DEPTH],
-          ]}
+        <FlatLine
+          x={downPos.x}
+          y={downPos.y}
+          x2={upPos.x}
+          y2={upPos.y}
+          depth={SELECT_DEPTH}
           color={SELECT_HIGHLIGHT}
-          lineWidth={3}
-          worldUnits={true}
-          dashed={false}
+          strokeWidth={3}
         />
       );
     case 'BUNDLE':
