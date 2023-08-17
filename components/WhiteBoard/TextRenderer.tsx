@@ -1,34 +1,58 @@
 'use client';
 import { Text } from '@react-three/drei';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { MutableRefObject } from 'react';
+import { useWhiteBoard } from '../../states/whiteboard';
+import { useThree } from '@react-three/fiber';
 
 interface TextViewProps {
-  obj: TextObj;
-  setDimensions: Dispatch<SetStateAction<ObjDimensions>>;
+  objId: string;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
 }
 
-export default function TextRenderer({ obj, setDimensions }: TextViewProps) {
-  const [height, setHeight] = useState<number>(0);
-  useEffect(() => {
-    setDimensions({ x: obj.x, y: obj.y, w: obj.w, h: height });
-  }, [height, obj.w, obj.x, obj.y, setDimensions]);
+export default function TextRenderer({ objId, dimensionsRef }: TextViewProps) {
+  const obj = useWhiteBoard((state) => state.objMap.get(objId))! as TextObj;
+  const { invalidate } = useThree();
+
+  dimensionsRef.current.w = obj.w;
+  dimensionsRef.current.x = obj.x;
+  dimensionsRef.current.y = obj.y;
+
+  const position = calculatePosition(obj);
+
   return (
     <Text
-      font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
+      font={'https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff'}
       fontSize={obj.fontSize}
       maxWidth={obj.w}
       color={obj.color}
       overflowWrap={obj.overflow}
       lineHeight={1}
-      position={[obj.x, obj.y, obj.depth]}
-      anchorX={'left'}
+      position={[position.x, position.y, obj.depth]}
+      textAlign={obj.textAlign}
+      anchorX={obj.textAlign}
       anchorY={'bottom'}
       onAfterRender={(_renderer, _scene, _camera, geometry) => {
         if (geometry.boundingBox === null) return;
-        setHeight(geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+        const newHeight = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
+        if (dimensionsRef.current.h !== newHeight) {
+          dimensionsRef.current.h = newHeight;
+          invalidate();
+        }
       }}
     >
       {obj.text}
     </Text>
   );
+}
+
+function calculatePosition(obj: TextObj) {
+  const position = { x: obj.x, y: obj.y };
+  switch (obj.textAlign) {
+    case 'center':
+      return { ...position, x: obj.x + obj.w / 2 };
+    case 'left':
+      return position;
+    case 'right':
+      return { ...position, x: obj.x + obj.w };
+  }
 }

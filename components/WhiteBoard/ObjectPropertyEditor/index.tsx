@@ -155,13 +155,20 @@ function TextPanel({ obj, onChange }: TextPanelProps) {
         type="STRING"
         span={2}
       />
-      <Property
+      <SelectProperty
         propKey={'overflow'}
         label="오버플로"
         propVal={obj.overflow}
+        options={['normal', 'break-word']}
         onChange={onChange}
-        enabled={false}
-        type="STRING"
+        span={2}
+      />
+      <SelectProperty
+        propKey={'textAlign'}
+        label="정렬"
+        propVal={obj.textAlign}
+        options={['center', 'left', 'right']}
+        onChange={onChange}
         span={2}
       />
       <Property
@@ -223,33 +230,57 @@ function Property({
   span = 1,
   enabled = true,
 }: PropertyProps) {
-  const [val, setVal] = useState<string>(propVal);
-
-  useEffect(() => {
-    setVal(propVal);
-  }, [propVal]);
-
-  const onUpdate = () => {
-    if (onChange === undefined) return;
-    const newVal = getValue(val, type);
-    setVal(newVal.toString());
-    onChange(propKey, getValue(val, type));
-  };
-
   return (
     <div className={styles.property} style={{ gridColumn: `span ${span}` }}>
       <p className={styles.label}>{label ? label : propKey}</p>
       <input
         className={styles.input}
-        value={val}
-        onChange={(e) => (enabled ? setVal(e.target.value) : e.preventDefault())}
-        onKeyUp={(e) => {
-          if (e.key === 'Enter') {
-            onUpdate();
-          }
+        value={propVal}
+        onChange={(e) => {
+          if (!enabled) return e.preventDefault();
+          if (onChange === undefined) return;
+          onChange(propKey, getValue(e.target.value, type));
         }}
-        onBlur={() => onUpdate()}
       />
+    </div>
+  );
+}
+
+interface SelectPropertyProps {
+  propKey: string;
+  label?: string;
+  propVal: string;
+  options: string[];
+  onChange?: (key: string, val: any) => void;
+  span?: number;
+  enabled?: boolean;
+}
+function SelectProperty({
+  propKey,
+  label,
+  propVal,
+  options,
+  onChange,
+  span = 1,
+  enabled = true,
+}: SelectPropertyProps) {
+  return (
+    <div className={styles.property} style={{ gridColumn: `span ${span}` }}>
+      <p className={styles.label}>{label ? label : propKey}</p>
+      <select
+        defaultValue={propVal}
+        className={styles.select}
+        onPointerDown={(e) => {
+          if (!enabled) e.preventDefault();
+        }}
+        onChange={(e) => {
+          if (onChange !== undefined) onChange(propKey, e.target.value);
+        }}
+      >
+        {options.map((v) => (
+          <option key={v}>{v}</option>
+        ))}
+      </select>
     </div>
   );
 }

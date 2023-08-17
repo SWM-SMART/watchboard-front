@@ -1,4 +1,4 @@
-import { constructRootObjTree } from '@/utils/whiteboardHelper';
+import { constructRootObjTree, objNodeSorter, translateObj } from '@/utils/whiteboardHelper';
 import { create } from 'zustand';
 
 interface WhiteBoardState {
@@ -7,21 +7,25 @@ interface WhiteBoardState {
   currentTool: Tool;
   currentObj: string | null;
   drag: DragData | null;
+  bundle: ObjBundle | null;
 }
 
 interface WhiteBoardActions {
+  addBundle: (offset: Coord) => void;
   addObj: (obj: Obj) => void;
   updateObj: (obj: Obj) => void;
   setCurrentTool: (tool: Tool) => void;
   setCurrentObj: (obj: string | null) => void;
   setDrag: (drag: DragData | null) => void;
   loadDocument: (document: WBDocument) => void;
+  setBundle: (bundle: ObjBundle) => void;
   resetWhiteBoard: () => void;
 }
 
 const ROOT_OBJ = {
   objId: 'root',
   childNodes: [],
+  depth: 0,
 } as ObjNode;
 
 const initialState = {
@@ -32,14 +36,17 @@ const initialState = {
   drag: null,
 } as WhiteBoardState;
 
-export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set) => ({
+export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set, get) => ({
   ...initialState,
   addObj: (obj: Obj) =>
     set((state) => ({
       objMap: state.objMap.set(obj.objId, obj),
       objTree: {
         ...state.objTree,
-        childNodes: [...state.objTree.childNodes, { objId: obj.objId, childNodes: [] }],
+        childNodes: [
+          { objId: obj.objId, childNodes: [], depth: obj.depth },
+          ...state.objTree.childNodes,
+        ],
       },
       currentObj: obj.objId,
     })),
@@ -52,5 +59,23 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set)
     const newObjTree = constructRootObjTree(newObjMap);
     set(() => ({ objMap: newObjMap, objTree: newObjTree }));
   },
+  setBundle: (bundle: ObjBundle) => set(() => ({ bundle: bundle })),
   resetWhiteBoard: () => set(() => ({ ...initialState })),
+  addBundle: (offset: Coord) => {
+    const bundle = get().bundle;
+    if (bundle !== null) {
+      const realOffset = { x: -bundle.x + offset.x, y: -bundle.y + offset.y };
+      for (const obj of bundle.objs) {
+        get().addObj(translateObj(obj, realOffset));
+      }
+      // sort by depth
+      set((state) => ({
+        objTree: { ...state.objTree, childNodes: state.objTree.childNodes.sort(objNodeSorter) },
+      }));
+    }
+    set(() => ({
+      currentTool: 'SELECT',
+      bundle: null,
+    }));
+  },
 }));

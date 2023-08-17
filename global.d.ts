@@ -1,6 +1,7 @@
 interface ObjNode {
   objId: string;
   childNodes: ObjNode[];
+  depth: number;
 }
 
 type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE';
@@ -28,12 +29,22 @@ interface RectObj extends Obj {
 }
 
 type OverflowType = 'normal' | 'break-word';
+type TextAlgin = 'center' | 'left' | 'right';
 interface TextObj extends Obj {
   w: number;
   fontSize: number;
   overflow: OverflowType;
   text: string;
   color: string;
+  textAlign: TextAlgin;
+}
+
+interface TextOptions {
+  fontSize?: number;
+  overflow?: OverflowType;
+  textAlign?: TextAlgin;
+  text?: string;
+  color?: string;
 }
 
 interface LineObj extends Obj {
@@ -43,12 +54,17 @@ interface LineObj extends Obj {
   strokeWidth: number;
 }
 
+interface LineOptions {
+  color?: string;
+  strokeWidth?: number;
+}
+
 interface Coord {
   x: number;
   y: number;
 }
 
-type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE';
+type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE';
 
 interface WBDocumentMetadata {
   documentId: number;
@@ -85,6 +101,20 @@ interface ToastData {
 type DragData = { mousePos: Coord; mode: DragMode; prevObj: Obj };
 type DragMode = 'move' | 'n' | 'e' | 'w' | 's' | 'ne' | 'nw' | 'sw' | 'se';
 
-interface textRequest {
+interface TextRequest {
   text: string;
+}
+
+interface MindmapResponse {
+  root: number;
+  keywords: string[];
+  graph: Map<string, number[]>;
+}
+
+interface ObjBundle {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  objs: Obj[];
 }
