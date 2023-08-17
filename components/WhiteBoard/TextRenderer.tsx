@@ -1,22 +1,21 @@
 'use client';
 import { Text } from '@react-three/drei';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { MutableRefObject } from 'react';
+import { useWhiteBoard } from '../../states/whiteboard';
+import { useThree } from '@react-three/fiber';
 
 interface TextViewProps {
-  obj: TextObj;
-  setDimensions: Dispatch<SetStateAction<ObjDimensions>>;
+  objId: string;
+  dimensionsRef: MutableRefObject<ObjDimensions>;
 }
 
-export default function TextRenderer({ obj, setDimensions }: TextViewProps) {
-  const [height, setHeight] = useState<number>(0);
+export default function TextRenderer({ objId, dimensionsRef }: TextViewProps) {
+  const obj = useWhiteBoard((state) => state.objMap.get(objId))! as TextObj;
+  const { invalidate } = useThree();
 
-  useEffect(() => {
-    setDimensions((state) => ({ ...state, x: obj.x, y: obj.y, w: obj.w }));
-  }, [obj.w, obj.x, obj.y, setDimensions]);
-
-  useEffect(() => {
-    setDimensions((state) => ({ ...state, h: height }));
-  }, [height, setDimensions]);
+  dimensionsRef.current.w = obj.w;
+  dimensionsRef.current.x = obj.x;
+  dimensionsRef.current.y = obj.y;
 
   const position = calculatePosition(obj);
 
@@ -34,7 +33,11 @@ export default function TextRenderer({ obj, setDimensions }: TextViewProps) {
       anchorY={'bottom'}
       onAfterRender={(_renderer, _scene, _camera, geometry) => {
         if (geometry.boundingBox === null) return;
-        setHeight(geometry.boundingBox.max.y - geometry.boundingBox.min.y);
+        const newHeight = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
+        if (dimensionsRef.current.h !== newHeight) {
+          dimensionsRef.current.h = newHeight;
+          invalidate();
+        }
       }}
     >
       {obj.text}
