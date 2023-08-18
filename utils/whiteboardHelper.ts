@@ -58,7 +58,6 @@ export function genDepth(objA?: Obj, objB?: Obj): number {
  * @return {number} Generated depth value.
  */
 export function topDepth(): number {
-  console.log(useWhiteBoard.getState().objTree);
   const rootObjNode = useWhiteBoard.getState().objTree;
   if (rootObjNode.childNodes.length === 0) {
     return 0.0001;
