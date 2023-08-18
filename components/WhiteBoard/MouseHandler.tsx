@@ -23,7 +23,11 @@ const PAN_MAX_DELTA = 100;
 const MAX_ZOOM = 10000;
 const MIN_ZOOM = 0.1;
 
-export default function MouseHandler() {
+interface MouseHandlerProps {
+  forceTool?: Tool;
+}
+
+export default function MouseHandler({ forceTool }: MouseHandlerProps) {
   const {
     invalidate,
     mouse,
@@ -45,7 +49,7 @@ export default function MouseHandler() {
     setDrag,
   } = useWhiteBoard((state) => ({
     bundle: state.bundle,
-    currentTool: state.currentTool,
+    currentTool: forceTool ?? state.currentTool,
     setCurrentTool: state.setCurrentTool,
     objMap: state.objMap,
     addObj: state.addObj,
