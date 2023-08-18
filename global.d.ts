@@ -4,7 +4,7 @@ interface ObjNode {
   depth: number;
 }
 
-type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE';
+type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE' | 'CIRCLE';
 
 interface Obj {
   objId: string;
@@ -20,6 +20,15 @@ interface ObjDimensions {
   y: number;
   w: number;
   h: number;
+}
+
+interface CircleObj extends Obj {
+  r: number;
+  color: string;
+}
+
+interface CircleOptions {
+  color?: string;
 }
 
 interface RectObj extends Obj {
@@ -64,7 +73,7 @@ interface Coord {
   y: number;
 }
 
-type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE';
+type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE' | 'CIRCLE';
 
 interface WBDocumentMetadata {
   documentId: number;

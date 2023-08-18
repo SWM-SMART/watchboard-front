@@ -85,5 +85,7 @@ function typeToIcon(type: ObjType) {
       return 'dashboard';
     case 'LINE':
       return 'linear_scale';
+    case 'CIRCLE':
+      return 'circle';
   }
 }

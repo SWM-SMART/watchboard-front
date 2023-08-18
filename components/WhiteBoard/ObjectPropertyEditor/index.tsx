@@ -45,6 +45,12 @@ export default function ObjectPropertyEditor({ targetObjId }: ObjectPropertyEdit
       panels.push(
         <LinePanel key={`property-panel-line`} obj={obj as LineObj} onChange={onChange} />,
       );
+      break;
+    case 'CIRCLE':
+      panels.push(
+        <CirclePanel key={`property-panel-circle`} obj={obj as CircleObj} onChange={onChange} />,
+      );
+      break;
     case 'ROOT':
   }
 
@@ -200,6 +206,27 @@ function LinePanel({ obj, onChange }: LinePanelProps) {
         onChange={onChange}
         type="NUMBER"
       />
+      <Property
+        propKey={'color'}
+        label="색상"
+        propVal={obj.color}
+        onChange={onChange}
+        type="STRING"
+        span={2}
+      />
+    </div>
+  );
+}
+
+interface CirclePanelProps {
+  obj: CircleObj;
+  onChange: (key: string, val: any) => void;
+}
+
+function CirclePanel({ obj, onChange }: CirclePanelProps) {
+  return (
+    <div className={styles.panel}>
+      <Property propKey="r" propVal={obj.r.toString()} onChange={onChange} type="NUMBER" />
       <Property
         propKey={'color'}
         label="색상"
