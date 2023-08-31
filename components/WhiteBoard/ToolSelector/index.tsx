@@ -11,6 +11,7 @@ export default function ToolSelector() {
       <ToolButton toolName={'RECT'} icon={'rectangle'} />
       <ToolButton toolName={'TEXT'} icon={'insert_text'} />
       <ToolButton toolName={'LINE'} icon={'linear_scale'} />
+      <ToolButton toolName={'CIRCLE'} icon={'circle'} />
     </div>
   );
 }

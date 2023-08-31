@@ -7,6 +7,7 @@ import { getPos } from '@/utils/whiteboardHelper';
 import SelectionRenderer from './SelectionRenderer';
 import { MutableRefObject, memo, useRef } from 'react';
 import LineRenderer from './LineRenderer';
+import CircleRenderer from './CircleRenderer';
 
 interface NodeRendererProps {
   node: ObjNode;
@@ -39,6 +40,8 @@ function RenderWrapper({ objId, type, dimensionsRef }: RenderWrapperProps) {
       return <TextRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
     case 'LINE':
       return <LineRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
+    case 'CIRCLE':
+      return <CircleRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
   }
 }
 

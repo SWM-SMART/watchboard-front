@@ -4,8 +4,9 @@ import {
   forceCollide,
   forceLink,
   forceManyBody,
-  forceRadial,
   forceSimulation,
+  hierarchy,
+  tree,
 } from 'd3';
 import { Camera, Vector2, Vector3 } from 'three';
 
@@ -58,7 +59,6 @@ export function genDepth(objA?: Obj, objB?: Obj): number {
  * @return {number} Generated depth value.
  */
 export function topDepth(): number {
-  console.log(useWhiteBoard.getState().objTree);
   const rootObjNode = useWhiteBoard.getState().objTree;
   if (rootObjNode.childNodes.length === 0) {
     return 0.0001;
@@ -142,6 +142,25 @@ export function createText(
     color: options?.color ?? genColor(),
     textAlign: options?.textAlign ?? 'left',
   } as TextObj);
+}
+
+export function createCircle(
+  x: number,
+  y: number,
+  r: number,
+  depth: number = genDepth(),
+  options?: CircleOptions,
+): CircleObj {
+  return validateCircleObj({
+    objId: genId(),
+    type: 'CIRCLE',
+    x: x,
+    y: y,
+    r: r,
+    depth: depth,
+    parentId: 'ROOT',
+    color: options?.color ?? genColor(),
+  } as CircleObj);
 }
 
 /**
@@ -296,6 +315,13 @@ function validateLineObj(obj: LineObj): LineObj {
   return obj;
 }
 
+function validateCircleObj(obj: CircleObj): CircleObj {
+  obj.x = validateValue(obj.x);
+  obj.y = validateValue(obj.y);
+  obj.r = validateValue(obj.r);
+  return obj;
+}
+
 /**
  * validates input text obj
  *
@@ -336,11 +362,76 @@ interface LinkData {
   target: number;
 }
 
+export function createTreeFromMindmap(response: MindmapResponse): ObjBundle {
+  let top = topDepth();
+  const fontSize = 30;
+  const edgeColor = '#dddddd';
+  const fontColor = '#000000';
+  const nodeColor = '#000000';
+  const unit = 0.0001;
+  const result: Obj[] = [];
+  const bounds = { minX: NaN, maxX: NaN, minY: NaN, maxY: NaN };
+
+  const updateBounds = (obj: Obj) => {
+    if (isNaN(bounds.minX)) {
+      bounds.minX = obj.x;
+      bounds.maxX = obj.x;
+      bounds.minY = obj.y;
+      bounds.maxY = obj.y;
+      return;
+    }
+    bounds.minX = Math.min(bounds.minX, obj.x);
+    bounds.maxX = Math.max(bounds.maxX, obj.x);
+    bounds.minY = Math.min(bounds.minY, obj.y);
+    bounds.maxY = Math.max(bounds.maxY, obj.y);
+  };
+
+  const appendObj = (obj: Obj) => {
+    updateBounds(obj);
+    result.push(obj);
+    top += unit;
+  };
+
+  const graph = new Map<string, number[]>(Object.entries(response.graph));
+  const root = hierarchy(response.root as unknown, (d) => {
+    return graph.get((d as number).toString());
+  });
+
+  const pointRadius = 5;
+
+  const layout = tree().nodeSize([60, 300]);
+  const data = layout(root);
+
+  data.links().map((v) => {
+    appendObj(
+      createLine(v.source.y, v.source.x, v.target.y, v.target.x, top, { color: edgeColor }),
+    );
+  });
+  data.descendants().map((v) => {
+    appendObj(
+      createText(v.y - 50, v.x + pointRadius * 2 + 5, 100, top, {
+        color: fontColor,
+        fontSize: fontSize,
+        text: response.keywords[v.data as number],
+        textAlign: 'center',
+      }),
+    );
+    appendObj(
+      createCircle(v.y - pointRadius, v.x - pointRadius, pointRadius, top, { color: nodeColor }),
+    );
+  });
+  return {
+    x: validateValue((bounds.maxX + bounds.minX) / 2),
+    y: validateValue((bounds.maxY + bounds.minY) / 2),
+    w: bounds.maxX - bounds.minX,
+    h: bounds.maxY - bounds.minY,
+    objs: result,
+  };
+}
+
 export function createForceBundleFromMindmap(response: MindmapResponse): ObjBundle {
   const fontSize = 20;
-  const nodeWidth = fontSize * 8;
-  const nodeHeight = fontSize * 2;
-  const radius = nodeWidth / 2 + 10;
+  const radius = 50;
   const edgeWidth = 2;
   const edgeColor = '#31493C';
   const fontColor = '#FFFFFF';
@@ -396,13 +487,11 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
       'link',
       forceLink<NodeData, LinkData>(links)
         .id((d) => d.id)
-        .strength(2)
-        .distance(10),
+        .strength(2),
     )
     .force('charge', forceManyBody<NodeData>().strength(-100))
     .force('center', forceCenter(0, 0).strength(1))
-    .force('collision', forceCollide(radius))
-    .force('radial', forceRadial(0, 0, 100))
+    .force('collision', forceCollide(radius * 2))
     .tick(300);
 
   for (const link of links) {
@@ -418,21 +507,22 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
 
   for (const node of nodes) {
     appendObj(
-      createRect(
-        (node.x ?? 0) - nodeWidth / 2,
-        (node.y ?? 0) - nodeHeight / 2,
-        nodeWidth,
-        nodeHeight,
-        nodeColor,
+      createCircle(
+        (node.x ?? 0) - radius,
+        (node.y ?? 0) - radius,
+        radius,
+
         top,
+        { color: nodeColor },
       ),
     );
     appendObj(
-      createText((node.x ?? 0) - nodeWidth / 2, (node.y ?? 0) - fontSize / 2, nodeWidth, top, {
+      createText((node.x ?? 0) - radius, (node.y ?? 0) - fontSize / 2, radius * 2, top, {
         textAlign: 'center',
         fontSize: fontSize,
         text: node.label,
         color: fontColor,
+        overflow: 'break-word',
       }),
     );
   }
@@ -547,6 +637,7 @@ export function translateObj(obj: Obj, offset: Coord): Obj {
       (obj as LineObj).y2 = validateValue((obj as LineObj).y2 + offset.y);
     case 'RECT':
     case 'TEXT':
+    case 'CIRCLE':
       obj.x = validateValue(obj.x + offset.x);
       obj.y = validateValue(obj.y + offset.y);
   }

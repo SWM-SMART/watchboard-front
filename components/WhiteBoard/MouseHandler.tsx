@@ -5,6 +5,7 @@ import {
   SELECT_DEPTH,
   SELECT_HIGHLIGHT,
   boundNumber,
+  createCircle,
   createLine,
   createRect,
   createText,
@@ -22,7 +23,11 @@ const PAN_MAX_DELTA = 100;
 const MAX_ZOOM = 10000;
 const MIN_ZOOM = 0.1;
 
-export default function MouseHandler() {
+interface MouseHandlerProps {
+  forceTool?: Tool;
+}
+
+export default function MouseHandler({ forceTool }: MouseHandlerProps) {
   const {
     invalidate,
     mouse,
@@ -44,7 +49,7 @@ export default function MouseHandler() {
     setDrag,
   } = useWhiteBoard((state) => ({
     bundle: state.bundle,
-    currentTool: state.currentTool,
+    currentTool: forceTool ?? state.currentTool,
     setCurrentTool: state.setCurrentTool,
     objMap: state.objMap,
     addObj: state.addObj,
@@ -153,6 +158,7 @@ export default function MouseHandler() {
   switch (currentTool) {
     case 'SELECT':
     case 'RECT':
+    case 'CIRCLE':
     case 'TEXT':
       if (drag || !selection) return null;
       return (
@@ -248,6 +254,7 @@ const usePointerUp = (
           break;
         case 'RECT':
         case 'LINE':
+        case 'CIRCLE':
         case 'TEXT':
           if (e.button == 0) {
             setUpPos(newPos);
@@ -328,6 +335,7 @@ const usePointerDown = (
         case 'RECT':
         case 'LINE':
         case 'TEXT':
+        case 'CIRCLE':
           setDraw(false);
           e.stopPropagation(); // fall through
         case 'SELECT': // selection box on left click
@@ -460,6 +468,8 @@ const useDraw = (
             return createLine(downPos.x, downPos.y, upPos.x, upPos.y);
           case 'TEXT':
             return createText(newObjPos.x, newObjPos.y, newObjSize.x);
+          case 'CIRCLE':
+            return createCircle(newObjPos.x, newObjPos.y, Math.min(newObjSize.x, newObjSize.y) / 2);
         }
         return null;
       })();
@@ -504,6 +514,8 @@ function handleDrag(obj: Obj, newPos: Coord, drag: DragData, updateObj: (obj: Ob
       break;
     case 'LINE':
       return handleLineDrag(obj as LineObj, newPos, drag, updateObj);
+    case 'CIRCLE':
+      return handleCircleDrag(obj as CircleObj, newPos, drag, updateObj);
   }
 }
 
@@ -540,6 +552,44 @@ function handleRectDrag(
       return updateObj({
         ...obj,
         h: validateValue(drag.prevObj.y + (drag.prevObj as RectObj).h - newPos.y, true),
+        y: validateValue(newPos.y),
+      } as Obj);
+  }
+}
+
+function handleCircleDrag(
+  obj: CircleObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+      } as Obj);
+    case 'n':
+      return updateObj({
+        ...obj,
+        r: validateValue((newPos.y - drag.prevObj.y) / 2, true),
+      } as Obj);
+    case 'e':
+      return updateObj({
+        ...obj,
+        r: validateValue((newPos.x - drag.prevObj.x) / 2, true),
+      } as Obj);
+    case 'w':
+      return updateObj({
+        ...obj,
+        r: validateValue(drag.prevObj.x + (drag.prevObj as CircleObj).r * 2 - newPos.x, true) / 2,
+        x: validateValue(newPos.x),
+      } as Obj);
+    case 's':
+      return updateObj({
+        ...obj,
+        r: validateValue(drag.prevObj.y + (drag.prevObj as CircleObj).r * 2 - newPos.y, true) / 2,
         y: validateValue(newPos.y),
       } as Obj);
   }
