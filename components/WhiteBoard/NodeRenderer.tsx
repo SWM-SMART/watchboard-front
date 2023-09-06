@@ -1,13 +1,19 @@
 'use client';
 import { useWhiteBoard } from '@/states/whiteboard';
-import RectangleRenderer from './RectangleRenderer';
-import TextRenderer from './TextRenderer';
+import RectangleObjRenderer from './RectangleObjRenderer';
+import TextObjRenderer from './TextObjRenderer';
 import { useThree } from '@react-three/fiber';
 import { getPos } from '@/utils/whiteboardHelper';
 import SelectionRenderer from './SelectionRenderer';
 import { MutableRefObject, memo, useRef } from 'react';
-import LineRenderer from './LineRenderer';
-import CircleRenderer from './CircleRenderer';
+import LineObjRenderer from './LineObjRenderer';
+import CircleObjRenderer from './CircleObjRenderer';
+import GraphObjRenderer from './GraphObjRenderer';
+
+export interface ObjRendererProps {
+  rawObj: Obj;
+  dimensionsRef?: MutableRefObject<ObjDimensions>;
+}
 
 interface NodeRendererProps {
   node: ObjNode;
@@ -27,27 +33,28 @@ export default function NodeRenderer({ node }: NodeRendererProps) {
 }
 
 interface RenderWrapperProps {
-  objId: string;
-  type: ObjType;
+  obj: Obj;
   dimensionsRef: MutableRefObject<ObjDimensions>;
 }
 
-function RenderWrapper({ objId, type, dimensionsRef }: RenderWrapperProps) {
-  switch (type) {
+function RenderWrapper({ obj, dimensionsRef }: RenderWrapperProps) {
+  switch (obj.type) {
     case 'RECT':
-      return <RectangleRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
+      return <RectangleObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
     case 'TEXT':
-      return <TextRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
+      return <TextObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
     case 'LINE':
-      return <LineRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
+      return <LineObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
     case 'CIRCLE':
-      return <CircleRenderer key={objId} objId={objId} dimensionsRef={dimensionsRef} />;
+      return <CircleObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
+    case 'GRAPH':
+      return <GraphObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
   }
 }
 
 const MemoizedRenderWrapper = memo(
   RenderWrapper,
-  (prev, next) => prev.objId === next.objId && prev.dimensionsRef === next.dimensionsRef,
+  (prev, next) => prev.obj.objId === next.obj.objId && prev.dimensionsRef === next.dimensionsRef,
 );
 
 interface ObjectWrapperProps {
@@ -64,14 +71,15 @@ function ObjectWrapper({ objId }: ObjectWrapperProps) {
     currentTool: state.currentTool,
   }));
   const { mouse, camera } = useThree();
-  const selection = currentObj === obj.objId;
+  const selection = currentObj === objId;
+
   return (
     <group
       onPointerDown={(e) => {
         // 첫번째 클릭만 여기서 처리, selection 이후는 selectionRenderer에서 처리
         e.stopPropagation();
         if (e.button === 0) {
-          setCurrentObj(obj.objId);
+          setCurrentObj(objId);
           if (selection) return;
           if (currentTool === 'SELECT') {
             const mousePos = getPos(mouse, camera);
@@ -84,7 +92,7 @@ function ObjectWrapper({ objId }: ObjectWrapperProps) {
         }
       }}
     >
-      <MemoizedRenderWrapper objId={objId} type={obj.type} dimensionsRef={dimensionsRef} />
+      <MemoizedRenderWrapper obj={obj} dimensionsRef={dimensionsRef} />
       {selection ? <SelectionRenderer dimensionsRef={dimensionsRef} objId={objId} /> : <></>}
     </group>
   );

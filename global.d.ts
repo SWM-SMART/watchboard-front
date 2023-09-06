@@ -4,7 +4,7 @@ interface ObjNode {
   depth: number;
 }
 
-type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE' | 'CIRCLE';
+type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE' | 'CIRCLE' | 'GRAPH';
 
 interface Obj {
   objId: string;
@@ -22,7 +22,13 @@ interface ObjDimensions {
   h: number;
 }
 
+interface GraphObj extends Obj {
+  type: 'GRAPH';
+  data: MindmapResponse;
+}
+
 interface CircleObj extends Obj {
+  type: 'CIRCLE';
   r: number;
   color: string;
 }
@@ -32,6 +38,7 @@ interface CircleOptions {
 }
 
 interface RectObj extends Obj {
+  type: 'RECT';
   w: number;
   h: number;
   color: string;
@@ -40,6 +47,7 @@ interface RectObj extends Obj {
 type OverflowType = 'normal' | 'break-word';
 type TextAlgin = 'center' | 'left' | 'right';
 interface TextObj extends Obj {
+  type: 'TEXT';
   w: number;
   fontSize: number;
   overflow: OverflowType;
@@ -57,6 +65,7 @@ interface TextOptions {
 }
 
 interface LineObj extends Obj {
+  type: 'LINE';
   x2: number;
   y2: number;
   color: string;

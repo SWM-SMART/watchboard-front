@@ -1,21 +1,17 @@
 'use client';
 import { Text } from '@react-three/drei';
-import { MutableRefObject } from 'react';
-import { useWhiteBoard } from '../../states/whiteboard';
 import { useThree } from '@react-three/fiber';
+import { ObjRendererProps } from './NodeRenderer';
 
-interface TextViewProps {
-  objId: string;
-  dimensionsRef: MutableRefObject<ObjDimensions>;
-}
-
-export default function TextRenderer({ objId, dimensionsRef }: TextViewProps) {
-  const obj = useWhiteBoard((state) => state.objMap.get(objId))! as TextObj;
+export default function TextObjRenderer({ rawObj, dimensionsRef }: ObjRendererProps) {
+  const obj = rawObj as TextObj;
   const { invalidate } = useThree();
 
-  dimensionsRef.current.w = obj.w;
-  dimensionsRef.current.x = obj.x;
-  dimensionsRef.current.y = obj.y;
+  if (dimensionsRef !== undefined) {
+    dimensionsRef.current.w = obj.w;
+    dimensionsRef.current.x = obj.x;
+    dimensionsRef.current.y = obj.y;
+  }
 
   const position = calculatePosition(obj);
 
@@ -34,6 +30,7 @@ export default function TextRenderer({ objId, dimensionsRef }: TextViewProps) {
       onAfterRender={(_renderer, _scene, _camera, geometry) => {
         if (geometry.boundingBox === null) return;
         const newHeight = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
+        if (dimensionsRef === undefined) return;
         if (dimensionsRef.current.h !== newHeight) {
           dimensionsRef.current.h = newHeight;
           invalidate();

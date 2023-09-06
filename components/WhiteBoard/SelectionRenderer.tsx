@@ -11,7 +11,7 @@ import {
 import { Circle } from '@react-three/drei';
 import { ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { MutableRefObject, forwardRef, useImperativeHandle, useRef } from 'react';
-import { FlatLine, FlatLineRef } from './LineRenderer';
+import { FlatLine, FlatLineRef } from './LineObjRenderer';
 import { BufferGeometry, Mesh, NormalBufferAttributes } from 'three';
 
 interface SelectionRendererProps {

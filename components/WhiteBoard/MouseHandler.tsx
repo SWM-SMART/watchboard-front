@@ -14,7 +14,7 @@ import {
 } from '@/utils/whiteboardHelper';
 import { Clock, Vector2 } from 'three';
 import { useWhiteBoard } from '@/states/whiteboard';
-import { FlatLine } from './LineRenderer';
+import { FlatLine } from './LineObjRenderer';
 
 const MAX_OPACITY = 0.5;
 const WHEEL_DELTA_FACTOR = 100;

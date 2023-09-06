@@ -1,21 +1,17 @@
 'use client';
 import { ThreeEvent } from '@react-three/fiber';
-import { MutableRefObject, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
-import { useWhiteBoard } from '../../states/whiteboard';
+import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import { Euler, Mesh } from 'three';
+import { ObjRendererProps } from './NodeRenderer';
 
-interface LineRendererProps {
-  objId: string;
-  dimensionsRef: MutableRefObject<ObjDimensions>;
-}
-export default function LineRenderer({ objId, dimensionsRef }: LineRendererProps) {
-  const obj = useWhiteBoard((state) => state.objMap.get(objId))! as LineObj;
-
-  dimensionsRef.current.x = Math.min(obj.x, obj.x2);
-  dimensionsRef.current.y = Math.min(obj.y, obj.y2);
-  dimensionsRef.current.w = Math.abs(obj.x - obj.x2);
-  dimensionsRef.current.h = Math.abs(obj.y - obj.y2);
-
+export default function LineObjRenderer({ rawObj, dimensionsRef }: ObjRendererProps) {
+  const obj = rawObj as LineObj;
+  if (dimensionsRef !== undefined) {
+    dimensionsRef.current.x = Math.min(obj.x, obj.x2);
+    dimensionsRef.current.y = Math.min(obj.y, obj.y2);
+    dimensionsRef.current.w = Math.abs(obj.x - obj.x2);
+    dimensionsRef.current.h = Math.abs(obj.y - obj.y2);
+  }
   return (
     <FlatLine
       x={obj.x}
