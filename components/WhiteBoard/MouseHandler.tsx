@@ -501,6 +501,25 @@ function handleDrag(obj: Obj, newPos: Coord, drag: DragData, updateObj: (obj: Ob
       return handleLineDrag(obj as LineObj, newPos, drag, updateObj);
     case 'CIRCLE':
       return handleCircleDrag(obj as CircleObj, newPos, drag, updateObj);
+    case 'GRAPHNODE':
+    case 'GRAPHROOT':
+      return handleGraphNodeDrag(obj as GraphNodeObj, newPos, drag, updateObj);
+  }
+}
+
+function handleGraphNodeDrag(
+  obj: GraphNodeObj,
+  newPos: Coord,
+  drag: DragData,
+  updateObj: (obj: Obj) => void,
+) {
+  switch (drag.mode) {
+    case 'move':
+      return updateObj({
+        ...obj,
+        x: validateValue(newPos.x + drag.prevObj.x - drag.mousePos.x),
+        y: validateValue(newPos.y + drag.prevObj.y - drag.mousePos.y),
+      });
   }
 }
 

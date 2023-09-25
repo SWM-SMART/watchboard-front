@@ -4,7 +4,15 @@ interface ObjNode {
   depth: number;
 }
 
-type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE' | 'CIRCLE' | 'GRAPH';
+type ObjType =
+  | 'RECT'
+  | 'TEXT'
+  | 'ROOT'
+  | 'LINE'
+  | 'CIRCLE'
+  | 'GRAPHROOT'
+  | 'LIVEGRAPH'
+  | 'GRAPHNODE';
 
 interface Obj {
   objId: string;
@@ -22,9 +30,18 @@ interface ObjDimensions {
   h: number;
 }
 
-interface GraphObj extends Obj {
-  type: 'GRAPH';
+interface LiveGraphObj extends Obj {
+  type: 'LIVEGRAPH';
   data: MindmapResponse;
+}
+
+interface GraphNodeObj extends Obj {
+  type: 'GRAPHNODE';
+  label: string;
+}
+
+interface GraphRootObj extends GraphNodeObj {
+  type: 'GRAPHROOT';
 }
 
 interface CircleObj extends Obj {
@@ -35,6 +52,26 @@ interface CircleObj extends Obj {
 
 interface CircleOptions {
   color?: string;
+}
+
+interface GraphData {
+  nodes: NodeData[];
+  links: LinkData[];
+}
+
+interface NodeData {
+  id: string;
+  name: string;
+  val: number;
+  color: string;
+  r: number;
+  __threeObj?: Mesh;
+}
+
+interface LinkData {
+  source: string;
+  target: string;
+  color: string;
 }
 
 interface RectObj extends Obj {

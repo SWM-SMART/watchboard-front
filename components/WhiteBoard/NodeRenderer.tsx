@@ -8,6 +8,7 @@ import { RectangleRenderer } from './RectangleObjRenderer';
 import { TextRenderer } from './TextObjRenderer';
 import { LineRenderer } from './LineObjRenderer';
 import { CircleRenderer } from './CircleObjRenderer';
+import { GraphNodeRenderer, GraphRootRenderer, LiveGraphRenderer } from './GraphRenderer';
 import { Group } from 'three';
 
 export interface ObjRendererProps {
@@ -78,6 +79,33 @@ function RenderWrapper({ obj, dimensionsRef, groupRef }: RenderWrapperProps) {
     case 'CIRCLE':
       return (
         <CircleRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
+    case 'LIVEGRAPH':
+      return (
+        <LiveGraphRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
+    case 'GRAPHNODE':
+      return (
+        <GraphNodeRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
+    case 'GRAPHROOT':
+      return (
+        <GraphRootRenderer
           key={obj.objId + obj.type}
           objId={obj.objId}
           dimensionsRef={dimensionsRef}
