@@ -17,7 +17,7 @@ export default function TextObjRenderer({ rawObj, dimensionsRef }: ObjRendererPr
 
   return (
     <Text
-      font={'https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff'}
+      font={DEFAULT_FONT}
       fontSize={obj.fontSize}
       maxWidth={obj.w}
       color={obj.color}

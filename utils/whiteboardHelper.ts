@@ -29,6 +29,8 @@ export const rootObj: Obj = {
   parentId: '',
 };
 
+export const DEFAULT_FONT = 'https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff';
+
 /**
  * Generate object id
  *
