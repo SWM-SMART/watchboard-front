@@ -16,7 +16,7 @@ export default function WhiteBoard({ style }: WhiteBoardProps) {
       flat
       frameloop="demand"
       style={style}
-      camera={{ position: [0, 0, 100], zoom: 1 }}
+      camera={{ position: [0, 0, 100], zoom: 1, far: 1000000, near: 0 }}
       orthographic
     >
       <ambientLight />
