@@ -66,7 +66,7 @@ export default function MouseHandler({ forceTool }: MouseHandlerProps) {
 
   const [bundlePos, setBundlePos] = useState<Coord>({ x: 0, y: 0 });
 
-  const { upPos, setUpPos, upTime, setUpTime } = usePointerUp(
+  const { upPos, setUpPos } = usePointerUp(
     mouse,
     camera,
     currentTool,
@@ -89,7 +89,6 @@ export default function MouseHandler({ forceTool }: MouseHandlerProps) {
     setDraw,
     setOpacity,
     setUpPos,
-    setUpTime,
     setCurrentObj,
   );
 
@@ -111,15 +110,6 @@ export default function MouseHandler({ forceTool }: MouseHandlerProps) {
   useDraw(currentTool, upPos, downPos, draw, setDraw, addObj);
 
   useFrame((s) => {
-    // update opacity (if selection is active)
-    if (drag !== null) {
-      setSelection(false);
-    } else if (upTime > 0 && selection) {
-      const newO = MAX_OPACITY - (s.clock.elapsedTime - upTime);
-      if (newO < 0) setSelection(false);
-      else setOpacity(newO);
-    }
-
     // update camera position (if pan is active)
     if (cameraPan) {
       const newPos = getPos(s.mouse, s.camera);
@@ -231,7 +221,6 @@ const usePointerUp = (
   setDrag: (drag: DragData | null) => void,
 ) => {
   const [upPos, setUpPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
-  const [upTime, setUpTime] = useState<number>(0);
 
   // pointer up
   useEffect(() => {
@@ -258,7 +247,6 @@ const usePointerUp = (
         case 'TEXT':
           if (e.button == 0) {
             setUpPos(newPos);
-            setUpTime(0);
             setSelection(false);
             setDraw(true);
           }
@@ -266,8 +254,8 @@ const usePointerUp = (
         case 'SELECT':
           if (e.button == 0) {
             setUpPos(newPos);
-            setUpTime(clock.elapsedTime);
           }
+          setSelection(false);
           break;
         case 'BUNDLE':
           if (e.button == 0) {
@@ -293,7 +281,7 @@ const usePointerUp = (
     tool,
   ]);
 
-  return { upPos, setUpPos, upTime, setUpTime };
+  return { upPos, setUpPos };
 };
 
 const usePointerDown = (
@@ -306,7 +294,6 @@ const usePointerDown = (
   setDraw: Dispatch<SetStateAction<boolean>>,
   setOpacity: Dispatch<SetStateAction<number>>,
   setUpPos: Dispatch<SetStateAction<Coord>>,
-  setUpTime: Dispatch<SetStateAction<number>>,
   setCurrentObj: (obj: string | null) => void,
 ) => {
   const [downPos, setDownPos] = useState<Coord>({ x: 0, y: 0 }); // mouse down position
@@ -344,7 +331,6 @@ const usePointerDown = (
             setOpacity(MAX_OPACITY);
             setUpPos(newPos);
             setDownPos(newPos);
-            setUpTime(0);
             setCurrentObj(null);
           }
           break;
@@ -365,7 +351,6 @@ const usePointerDown = (
     setOpacity,
     setSelection,
     setUpPos,
-    setUpTime,
     tool,
   ]);
 
