@@ -538,6 +538,12 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
   };
 }
 
+export function calculateLineGeometry(x: number, y: number, x2: number, y2: number) {
+  const w = Math.sqrt(Math.pow(x - x2, 2) + Math.pow(y - y2, 2));
+  const d = Math.atan2(y2 - y, x2 - x);
+  return { w, d };
+}
+
 // DAGRE.js tree version
 //
 // export function createTreeBundleFromMindmap(response: MindmapResponse): ObjBundle {

@@ -1,18 +1,25 @@
 'use client';
 import { useWhiteBoard } from '@/states/whiteboard';
-import RectangleObjRenderer from './RectangleObjRenderer';
-import TextObjRenderer from './TextObjRenderer';
 import { useThree } from '@react-three/fiber';
 import { getPos } from '@/utils/whiteboardHelper';
 import SelectionRenderer from './SelectionRenderer';
-import { MutableRefObject, memo, useRef } from 'react';
-import LineObjRenderer from './LineObjRenderer';
-import CircleObjRenderer from './CircleObjRenderer';
-import GraphObjRenderer from './GraphObjRenderer';
+import { MutableRefObject, RefObject, memo, useRef } from 'react';
+import { RectangleRenderer } from './RectangleObjRenderer';
+import { TextRenderer } from './TextObjRenderer';
+import { LineRenderer } from './LineObjRenderer';
+import { CircleRenderer } from './CircleObjRenderer';
+import { Group } from 'three';
 
 export interface ObjRendererProps {
   rawObj: Obj;
   dimensionsRef?: MutableRefObject<ObjDimensions>;
+  dimensions?: ObjDimensions;
+}
+
+export interface RendererProps {
+  objId: string;
+  dimensionsRef?: MutableRefObject<ObjDimensions>;
+  groupRef?: RefObject<Group>;
 }
 
 interface NodeRendererProps {
@@ -20,48 +27,81 @@ interface NodeRendererProps {
 }
 
 export default function NodeRenderer({ node }: NodeRendererProps) {
-  const obj = useWhiteBoard((state) => state.objMap.get(node.objId));
+  const objExists = useWhiteBoard((state) => state.objMap.get(node.objId) !== undefined);
+  const groupRef = useRef<Group>(null);
 
   return (
-    <>
-      {obj === undefined ? <></> : <ObjectWrapper objId={node.objId} />}
+    <group ref={groupRef}>
+      {objExists ? <ObjectWrapper objId={node.objId} groupRef={groupRef} /> : <></>}
       {node.childNodes.map((n) => {
         return <NodeRenderer key={n.objId} node={n} />;
       })}
-    </>
+    </group>
   );
 }
 
 interface RenderWrapperProps {
   obj: Obj;
   dimensionsRef: MutableRefObject<ObjDimensions>;
+  groupRef?: RefObject<Group>;
 }
 
-function RenderWrapper({ obj, dimensionsRef }: RenderWrapperProps) {
+function RenderWrapper({ obj, dimensionsRef, groupRef }: RenderWrapperProps) {
   switch (obj.type) {
     case 'RECT':
-      return <RectangleObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
+      return (
+        <RectangleRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
     case 'TEXT':
-      return <TextObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
+      return (
+        <TextRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
     case 'LINE':
-      return <LineObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
+      return (
+        <LineRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
     case 'CIRCLE':
-      return <CircleObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
-    case 'GRAPH':
-      return <GraphObjRenderer key={obj.objId} rawObj={obj} dimensionsRef={dimensionsRef} />;
+      return (
+        <CircleRenderer
+          key={obj.objId + obj.type}
+          objId={obj.objId}
+          dimensionsRef={dimensionsRef}
+          groupRef={groupRef}
+        />
+      );
   }
 }
 
 const MemoizedRenderWrapper = memo(
   RenderWrapper,
-  (prev, next) => prev.obj.objId === next.obj.objId && prev.dimensionsRef === next.dimensionsRef,
+  (prev, next) =>
+    prev.obj.objId === next.obj.objId &&
+    prev.dimensionsRef === next.dimensionsRef &&
+    prev.obj.type === next.obj.type &&
+    prev.groupRef === next.groupRef,
 );
 
 interface ObjectWrapperProps {
+  groupRef?: RefObject<Group>;
   objId: string;
 }
 
-function ObjectWrapper({ objId }: ObjectWrapperProps) {
+function ObjectWrapper({ objId, groupRef }: ObjectWrapperProps) {
   const obj = useWhiteBoard((state) => state.objMap.get(objId))!;
   const dimensionsRef = useRef<ObjDimensions>({ x: 0, y: 0, w: 0, h: 0 });
   const { currentObj, setCurrentObj, setDrag, currentTool } = useWhiteBoard((state) => ({
@@ -92,7 +132,7 @@ function ObjectWrapper({ objId }: ObjectWrapperProps) {
         }
       }}
     >
-      <MemoizedRenderWrapper obj={obj} dimensionsRef={dimensionsRef} />
+      <MemoizedRenderWrapper obj={obj} dimensionsRef={dimensionsRef} groupRef={groupRef} />
       {selection ? <SelectionRenderer dimensionsRef={dimensionsRef} objId={objId} /> : <></>}
     </group>
   );

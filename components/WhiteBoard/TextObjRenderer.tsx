@@ -1,20 +1,33 @@
 'use client';
 import { Text } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
-import { ObjRendererProps } from './NodeRenderer';
+import { invalidate, useFrame } from '@react-three/fiber';
+import { ObjRendererProps, RendererProps } from './NodeRenderer';
+import { useWhiteBoard } from '@/states/whiteboard';
+import { DEFAULT_FONT } from '@/utils/whiteboardHelper';
+
+export function TextRenderer({ objId, dimensionsRef, groupRef }: RendererProps) {
+  const obj = useWhiteBoard((state) => state.objMap.get(objId) as TextObj);
+  useFrame(() => {
+    const position = calculatePosition(obj);
+    if (groupRef !== undefined && groupRef.current !== null) {
+      groupRef.current.position.setX(position.x);
+      groupRef.current.position.setY(position.y);
+      groupRef.current.position.setZ(obj.depth);
+    }
+    if (dimensionsRef !== undefined) {
+      dimensionsRef.current.w = obj.w;
+      dimensionsRef.current.x = 0;
+      dimensionsRef.current.y = 0;
+    }
+  });
+
+  if (obj === undefined) return <></>;
+
+  return <TextObjRenderer rawObj={obj} dimensionsRef={dimensionsRef} />;
+}
 
 export default function TextObjRenderer({ rawObj, dimensionsRef }: ObjRendererProps) {
   const obj = rawObj as TextObj;
-  const { invalidate } = useThree();
-
-  if (dimensionsRef !== undefined) {
-    dimensionsRef.current.w = obj.w;
-    dimensionsRef.current.x = obj.x;
-    dimensionsRef.current.y = obj.y;
-  }
-
-  const position = calculatePosition(obj);
-
   return (
     <Text
       font={DEFAULT_FONT}
@@ -23,15 +36,14 @@ export default function TextObjRenderer({ rawObj, dimensionsRef }: ObjRendererPr
       color={obj.color}
       overflowWrap={obj.overflow}
       lineHeight={1}
-      position={[position.x, position.y, obj.depth]}
+      position={[0, 0, 0]}
       textAlign={obj.textAlign}
       anchorX={obj.textAlign}
       anchorY={'bottom'}
       onAfterRender={(_renderer, _scene, _camera, geometry) => {
-        if (geometry.boundingBox === null) return;
+        if (geometry.boundingBox === null || dimensionsRef === undefined) return;
         const newHeight = geometry.boundingBox.max.y - geometry.boundingBox.min.y;
-        if (dimensionsRef === undefined) return;
-        if (dimensionsRef.current.h !== newHeight) {
+        if (dimensionsRef.current.h != newHeight) {
           dimensionsRef.current.h = newHeight;
           invalidate();
         }
