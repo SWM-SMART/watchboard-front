@@ -11,7 +11,7 @@ import {
 import { Circle } from '@react-three/drei';
 import { ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { MutableRefObject, forwardRef, useImperativeHandle, useRef } from 'react';
-import { FlatLine, FlatLineRef } from './LineRenderer';
+import { FlatLine, FlatLineRef } from './LineObjRenderer';
 import { BufferGeometry, Mesh, NormalBufferAttributes } from 'three';
 
 interface SelectionRendererProps {
@@ -55,7 +55,6 @@ export default function SelectionRenderer({ dimensionsRef, objId }: SelectionRen
 
   if (dimensionsRef.current.h <= 0) dimensionsRef.current.h = 0;
   if (dimensionsRef.current.w <= 0) dimensionsRef.current.w = 0;
-  if (dimensionsRef.current.h === 0 && dimensionsRef.current.w === 0) return;
 
   return (
     <>
@@ -252,12 +251,14 @@ interface LinePointsProps {
 }
 
 function LinePoints({ obj, onPointerDown }: LinePointsProps) {
+  const baseX = Math.min(obj.x, obj.x2);
+  const baseY = Math.min(obj.y, obj.y2);
   return (
     <>
       {/* NE */}
-      <Point onPointerDown={(e) => onPointerDown(e, 'ne')} x={obj.x} y={obj.y} />
+      <Point onPointerDown={(e) => onPointerDown(e, 'ne')} x={obj.x - baseX} y={obj.y - baseY} />
       {/* SW */}
-      <Point onPointerDown={(e) => onPointerDown(e, 'sw')} x={obj.x2} y={obj.y2} />
+      <Point onPointerDown={(e) => onPointerDown(e, 'sw')} x={obj.x2 - baseX} y={obj.y2 - baseY} />
     </>
   );
 }

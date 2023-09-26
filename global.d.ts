@@ -4,7 +4,15 @@ interface ObjNode {
   depth: number;
 }
 
-type ObjType = 'RECT' | 'TEXT' | 'ROOT' | 'LINE' | 'CIRCLE';
+type ObjType =
+  | 'RECT'
+  | 'TEXT'
+  | 'ROOT'
+  | 'LINE'
+  | 'CIRCLE'
+  | 'GRAPHROOT'
+  | 'LIVEGRAPH'
+  | 'GRAPHNODE';
 
 interface Obj {
   objId: string;
@@ -22,7 +30,22 @@ interface ObjDimensions {
   h: number;
 }
 
+interface LiveGraphObj extends Obj {
+  type: 'LIVEGRAPH';
+  data: MindmapResponse;
+}
+
+interface GraphNodeObj extends Obj {
+  type: 'GRAPHNODE';
+  label: string;
+}
+
+interface GraphRootObj extends GraphNodeObj {
+  type: 'GRAPHROOT';
+}
+
 interface CircleObj extends Obj {
+  type: 'CIRCLE';
   r: number;
   color: string;
 }
@@ -31,7 +54,28 @@ interface CircleOptions {
   color?: string;
 }
 
+interface GraphData {
+  nodes: NodeData[];
+  links: LinkData[];
+}
+
+interface NodeData {
+  id: string;
+  name: string;
+  val: number;
+  color: string;
+  r: number;
+  __threeObj?: Mesh;
+}
+
+interface LinkData {
+  source: string;
+  target: string;
+  color: string;
+}
+
 interface RectObj extends Obj {
+  type: 'RECT';
   w: number;
   h: number;
   color: string;
@@ -40,6 +84,7 @@ interface RectObj extends Obj {
 type OverflowType = 'normal' | 'break-word';
 type TextAlgin = 'center' | 'left' | 'right';
 interface TextObj extends Obj {
+  type: 'TEXT';
   w: number;
   fontSize: number;
   overflow: OverflowType;
@@ -57,6 +102,7 @@ interface TextOptions {
 }
 
 interface LineObj extends Obj {
+  type: 'LINE';
   x2: number;
   y2: number;
   color: string;

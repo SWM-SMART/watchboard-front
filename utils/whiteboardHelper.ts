@@ -29,6 +29,8 @@ export const rootObj: Obj = {
   parentId: '',
 };
 
+export const DEFAULT_FONT = 'https://fonts.gstatic.com/ea/notosanskr/v2/NotoSansKR-Regular.woff';
+
 /**
  * Generate object id
  *
@@ -534,6 +536,12 @@ export function createForceBundleFromMindmap(response: MindmapResponse): ObjBund
     h: bounds.maxY - bounds.minY,
     objs: result,
   };
+}
+
+export function calculateLineGeometry(x: number, y: number, x2: number, y2: number) {
+  const w = Math.sqrt(Math.pow(x - x2, 2) + Math.pow(y - y2, 2));
+  const d = Math.atan2(y2 - y, x2 - x);
+  return { w, d };
 }
 
 // DAGRE.js tree version

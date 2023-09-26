@@ -14,6 +14,7 @@ interface WhiteBoardActions {
   addBundle: (offset: Coord) => void;
   addObj: (obj: Obj, global?: boolean) => void;
   updateObj: (obj: Obj) => void;
+  syncObjTree: () => void;
   setCurrentTool: (tool: Tool) => void;
   setCurrentObj: (obj: string | null) => void;
   setDrag: (drag: DragData | null) => void;
@@ -57,6 +58,9 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set,
     }
   },
   updateObj: (obj: Obj) => set((state) => ({ objMap: state.objMap.set(obj.objId, obj) })),
+  syncObjTree: () => {
+    set({ objTree: constructRootObjTree(get().objMap) });
+  },
   setCurrentTool: (tool: Tool) => set(() => ({ currentTool: tool })),
   setCurrentObj: (obj: string | null) => set(() => ({ currentObj: obj })),
   setDrag: (drag: DragData | null) => set(() => ({ drag: drag })),
