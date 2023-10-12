@@ -12,6 +12,7 @@ import TreeViewer from '@/components/WhiteBoard/TreeViewer';
 import ToolSelector from '@/components/WhiteBoard/ToolSelector';
 import LoadingScreen from '../../../components/LoadingScreen';
 import OverlayWrapper from '@/components/OverlayWrapper';
+import PdfViewer from '@/components/PdfViewer';
 const WhiteBoard = dynamic(() => import('@/components/WhiteBoard'), { ssr: false });
 
 interface DocumentPageProps {
@@ -25,7 +26,24 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     resetWhiteBoard: state.resetWhiteBoard,
   }));
 
-  const document = useDocument(parseInt(params.documentId));
+  const [sideBarWidth, setSideBarWidth] = useState<number>(500);
+  const [dividerActive, setDividerActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!dividerActive) return;
+    const onPointerUp = () => setDividerActive(false);
+    const onPointerMove = (e: MouseEvent) => {
+      setSideBarWidth(e.clientX - 5);
+    };
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointermove', onPointerMove);
+    return () => {
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('pointermove', onPointerMove);
+    };
+  }, [dividerActive]);
+
+  const documentData = useDocument(parseInt(params.documentId));
 
   const [overlay, setOverlay] = useState<ReactNode | null>(null);
 
@@ -34,21 +52,26 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     resetWhiteBoard();
   }, [resetWhiteBoard]);
 
-  if (document === null) return <LoadingScreen message={'Loading document'} />;
+  if (documentData === null) return <LoadingScreen message={'Loading document'} />;
 
   return (
     <div className={styles.rootContainer}>
       <div className={styles.container}>
-        <div className={styles.sideBar}>
+        <div
+          className={styles.sideBar}
+          style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
+        >
           <div className={styles.sideBarUp}>
-            <DocumentTitle documentName={document.documentName} />
-            <ActionButtonGroup setOverlay={setOverlay} document={document} />
+            <DocumentTitle documentName={documentData.documentName} />
+            <ActionButtonGroup setOverlay={setOverlay} document={documentData} />
           </div>
-          <Tab labels={['레이어', '속성']}>
+          <Tab labels={['레이어', '속성', '문서']}>
             <TreeViewer root={objTree} />
             <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />
+            <PdfViewer url={documentData.data.url} />
           </Tab>
         </div>
+        <div className={styles.divider} onPointerDown={() => setDividerActive(true)} />
         <div className={styles.content}>
           <div className={styles.toolBar}>
             <ToolSelector />

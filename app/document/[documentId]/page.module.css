@@ -4,6 +4,13 @@
   background-color: var(--secondary-dark);
 }
 
+.divider {
+  background-color: var(--primary-light);
+  width: 10px;
+  cursor: col-resize;
+  user-select: none;
+}
+
 .container {
   animation: var(--intro-animation);
   background-color: var(--secondary-dark);
@@ -18,8 +25,6 @@
 .sideBar {
   display: flex;
   flex-direction: column;
-  width: 350px;
-  flex: 0 0 350px;
 }
 
 .sideBarUp {
