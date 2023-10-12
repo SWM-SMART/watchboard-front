@@ -124,6 +124,7 @@ type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE' | 'CIRCLE' |
 interface WBDocumentMetadata {
   documentId: number;
   documentName: string;
+  data: WBSourceData;
   createdAt: number;
   modifiedAt: number;
 }
@@ -164,6 +165,11 @@ interface MindmapResponse {
   root: number;
   keywords: string[];
   graph: Map<string, number[]>;
+}
+
+interface WBSourceData {
+  type: 'pdf' | 'audio';
+  url: string;
 }
 
 interface ObjBundle {
