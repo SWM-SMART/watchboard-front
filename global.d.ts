@@ -119,7 +119,7 @@ interface Coord {
   y: number;
 }
 
-type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE' | 'CIRCLE';
+type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE' | 'CIRCLE' | 'HIGHLIGHT';
 
 interface WBDocumentMetadata {
   documentId: number;
