@@ -29,7 +29,8 @@
 
 .viewerContainer {
   background-color: var(--background);
-  height: 100%;
+  flex-grow: 1;
+  overflow: auto;
 }
 
 .sideBarUp {
