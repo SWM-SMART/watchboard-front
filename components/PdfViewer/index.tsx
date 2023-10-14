@@ -11,9 +11,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
-const SCALE_MAX = 10;
-const SCALE_MIN = 0.8;
-
 interface PdfViewerProps {
   url: string;
 }

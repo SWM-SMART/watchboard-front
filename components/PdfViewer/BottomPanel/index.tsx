@@ -4,6 +4,8 @@ import { SmallIconButton, ToolButton } from '@/components/WhiteBoard/ToolSelecto
 import 'material-symbols';
 
 const DEFAULT_HEIGHT = 66;
+const SCALE_MAX = 10;
+const SCALE_MIN = 1;
 
 interface BottomPanelProps {
   currentTool: Tool;
@@ -74,7 +76,7 @@ export default function BottomPanel({
             icon="zoom_out"
             selected={false}
             onClick={() => {
-              setScale((scale) => scale - 0.1);
+              setScale((scale) => Math.max(scale - 0.1, SCALE_MIN));
             }}
           />
           <p style={{ width: '50px' }}>{`${Math.round(scale * 100)}%`}</p>
@@ -82,7 +84,7 @@ export default function BottomPanel({
             icon="zoom_in"
             selected={false}
             onClick={() => {
-              setScale((scale) => scale + 0.1);
+              setScale((scale) => Math.min(scale + 0.1, SCALE_MAX));
             }}
           />
           <p>|</p>
