@@ -1,17 +1,12 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { ReactNode, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { useWhiteBoard } from '@/states/whiteboard';
 import { getDocument } from '@/utils/api';
 import DocumentTitle from './components/DocumentTitle';
-import ActionButtonGroup from './components/ActionButtonGroup';
-import Tab from './components/Tab';
-import ObjectPropertyEditor from '@/components/WhiteBoard/ObjectPropertyEditor';
-import TreeViewer from '@/components/WhiteBoard/TreeViewer';
 import ToolSelector from '@/components/WhiteBoard/ToolSelector';
 import LoadingScreen from '../../../components/LoadingScreen';
-import OverlayWrapper from '@/components/OverlayWrapper';
 import PdfViewer from '@/components/PdfViewer';
 const WhiteBoard = dynamic(() => import('@/components/WhiteBoard'), { ssr: false });
 
@@ -44,8 +39,6 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   }, [dividerActive]);
 
   const documentData = useDocument(parseInt(params.documentId));
-
-  const [overlay, setOverlay] = useState<ReactNode | null>(null);
 
   // reset whiteboard
   useEffect(() => {
@@ -81,7 +74,6 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           </div>
         </div>
       </div>
-      <OverlayWrapper>{overlay}</OverlayWrapper>
     </div>
   );
 }
