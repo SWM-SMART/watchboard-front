@@ -167,8 +167,10 @@ interface MindmapResponse {
   graph: Map<string, number[]>;
 }
 
+type WBSourceDataType = 'pdf' | 'audio';
+
 interface WBSourceData {
-  type: 'pdf' | 'audio';
+  type: WBSourceDataType;
   url: string;
 }
 
