@@ -1,13 +1,13 @@
 .container {
   cursor: default;
   box-sizing: border-box;
-  height: 50px;
+  height: 46px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 0 0 30px;
-  gap: 3px;
+  padding: 0 0 0 10px;
+  gap: 10px;
 }
 
 .label {
@@ -17,7 +17,7 @@
 
 .icon {
   color: var(--background);
-  width: 30px;
-  font-size: 30px;
-  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+  width: 24px;
+  font-size: 24px;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

@@ -61,7 +61,10 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           className={styles.sideBar}
           style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
         >
-          <DocumentTitle documentName={documentData.documentName} />
+          <DocumentTitle
+            documentName={documentData.documentName}
+            sourceDataType={documentData.data.type}
+          />
           <div className={styles.viewerContainer}>
             <PdfViewer url={documentData.data.url} />
           </div>
