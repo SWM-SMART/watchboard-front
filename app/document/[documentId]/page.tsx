@@ -61,15 +61,10 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           className={styles.sideBar}
           style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
         >
-          <div className={styles.sideBarUp}>
-            <DocumentTitle documentName={documentData.documentName} />
-            <ActionButtonGroup setOverlay={setOverlay} document={documentData} />
-          </div>
-          <Tab labels={['레이어', '속성', '문서']}>
-            <TreeViewer root={objTree} />
-            <ObjectPropertyEditor key={currentObj} targetObjId={currentObj} />
+          <DocumentTitle documentName={documentData.documentName} />
+          <div className={styles.viewerContainer}>
             <PdfViewer url={documentData.data.url} />
-          </Tab>
+          </div>
         </div>
         <div className={styles.divider} onPointerDown={() => setDividerActive(true)} />
         <div className={styles.content}>

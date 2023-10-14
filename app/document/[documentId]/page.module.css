@@ -27,6 +27,11 @@
   flex-direction: column;
 }
 
+.viewerContainer {
+  background-color: var(--background);
+  height: 100%;
+}
+
 .sideBarUp {
   display: flex;
   flex-direction: column;
