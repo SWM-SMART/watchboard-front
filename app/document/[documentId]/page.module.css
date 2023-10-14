@@ -27,6 +27,12 @@
   flex-direction: column;
 }
 
+.viewerContainer {
+  background-color: var(--background);
+  flex-grow: 1;
+  overflow: auto;
+}
+
 .sideBarUp {
   display: flex;
   flex-direction: column;
