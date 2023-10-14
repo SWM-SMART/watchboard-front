@@ -1,7 +1,7 @@
 .container {
   cursor: default;
   box-sizing: border-box;
-  height: 46px;
+  min-height: 46px;
   display: flex;
   flex-direction: row;
   align-items: center;
