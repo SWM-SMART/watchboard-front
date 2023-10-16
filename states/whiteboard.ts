@@ -12,13 +12,15 @@ interface WhiteBoardState {
 
 interface WhiteBoardActions {
   addBundle: (offset: Coord) => void;
-  addObj: (obj: Obj) => void;
+  addObj: (obj: Obj, global?: boolean) => void;
   updateObj: (obj: Obj) => void;
+  syncObjTree: () => void;
   setCurrentTool: (tool: Tool) => void;
   setCurrentObj: (obj: string | null) => void;
   setDrag: (drag: DragData | null) => void;
   loadDocument: (document: WBDocument) => void;
   setBundle: (bundle: ObjBundle) => void;
+  removeObj: (obj: Obj, global?: boolean) => void;
   resetWhiteBoard: () => void;
 }
 
@@ -38,19 +40,27 @@ const initialState = {
 
 export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set, get) => ({
   ...initialState,
-  addObj: (obj: Obj) =>
+  addObj: (obj: Obj, global: boolean = true) => {
     set((state) => ({
       objMap: state.objMap.set(obj.objId, obj),
-      objTree: {
-        ...state.objTree,
-        childNodes: [
-          { objId: obj.objId, childNodes: [], depth: obj.depth },
-          ...state.objTree.childNodes,
-        ],
-      },
-      currentObj: obj.objId,
-    })),
+    }));
+    if (global) {
+      set((state) => ({
+        objTree: {
+          ...state.objTree,
+          childNodes: [
+            { objId: obj.objId, childNodes: [], depth: obj.depth },
+            ...state.objTree.childNodes,
+          ],
+        },
+        currentObj: obj.objId,
+      }));
+    }
+  },
   updateObj: (obj: Obj) => set((state) => ({ objMap: state.objMap.set(obj.objId, obj) })),
+  syncObjTree: () => {
+    set({ objTree: constructRootObjTree(get().objMap) });
+  },
   setCurrentTool: (tool: Tool) => set(() => ({ currentTool: tool })),
   setCurrentObj: (obj: string | null) => set(() => ({ currentObj: obj })),
   setDrag: (drag: DragData | null) => set(() => ({ drag: drag })),
@@ -77,5 +87,15 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set,
       currentTool: 'SELECT',
       bundle: null,
     }));
+  },
+  removeObj: (obj: Obj, global: boolean = true) => {
+    set((state) => {
+      const map = new Map(state.objMap);
+      map.delete(obj.objId);
+      return { objMap: map };
+    });
+    if (global) {
+      // TODO: remove from objTree
+    }
   },
 }));

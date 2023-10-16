@@ -104,3 +104,11 @@ div.loading-bar {
     scale: 100%;
   }
 }
+
+mark {
+  text-decoration: underline;
+  text-decoration-color: red;
+  text-decoration-thickness: 2px;
+  color: transparent;
+  background: transparent;
+}
