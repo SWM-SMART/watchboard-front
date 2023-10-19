@@ -209,7 +209,7 @@ export function createLine(
 const vector3 = new Vector3();
 export function getPos(mouse: Vector2, camera: Camera, validate: boolean = false) {
   const { x, y } = vector3.set(mouse.x, mouse.y, 0).unproject(camera);
-  return { x: validate ? validateValue(x) : x, y: validate ? validateValue(y) : y };
+  return new Vector2(validate ? validateValue(x) : x, validate ? validateValue(y) : y);
 }
 
 /**
@@ -364,7 +364,7 @@ interface LinkData {
   target: number;
 }
 
-export function createTreeFromMindmap(response: MindmapResponse): ObjBundle {
+export function createTreeFromMindmap(response: GraphData): ObjBundle {
   let top = topDepth();
   const fontSize = 30;
   const edgeColor = '#dddddd';
@@ -431,7 +431,7 @@ export function createTreeFromMindmap(response: MindmapResponse): ObjBundle {
   };
 }
 
-export function createForceBundleFromMindmap(response: MindmapResponse): ObjBundle {
+export function createForceBundleFromMindmap(response: GraphData): ObjBundle {
   const fontSize = 20;
   const radius = 50;
   const edgeWidth = 2;
