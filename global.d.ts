@@ -32,7 +32,7 @@ interface ObjDimensions {
 
 interface LiveGraphObj extends Obj {
   type: 'LIVEGRAPH';
-  data: MindmapResponse;
+  data: GraphData;
 }
 
 interface GraphNodeObj extends Obj {
@@ -54,12 +54,27 @@ interface CircleOptions {
   color?: string;
 }
 
-interface GraphData {
-  nodes: NodeData[];
-  links: LinkData[];
+interface ThreeGraphData {
+  nodes: NodeDataLegacy[];
+  links: LinkDataLegacy[];
 }
 
 interface NodeData {
+  id: number;
+  label: string;
+  labelMesh: THREE.Mesh;
+  circleMesh: THREE.Mesh;
+  group: THREE.Group;
+  scale: number;
+  x?: number;
+  y?: number;
+  fx?: number;
+  fy?: number;
+  vx?: number;
+  vy?: number;
+}
+
+interface NodeDataLegacy {
   id: string;
   name: string;
   val: number;
@@ -69,6 +84,12 @@ interface NodeData {
 }
 
 interface LinkData {
+  source: number | NodeData;
+  target: number | NodeData;
+  mesh: THREE.Mesh;
+}
+
+interface LinkDataLegacy {
   source: string;
   target: string;
   color: string;
@@ -133,6 +154,7 @@ type WBDocumentData = Map<string, Obj>;
 
 interface WBDocument extends WBDocumentMetadata {
   documentData: WBDocumentData;
+  graphData: GraphData;
 }
 
 type WBDocumentListReponse = WBDocumentMetaData[];
@@ -161,7 +183,7 @@ interface TextRequest {
   text: string;
 }
 
-interface MindmapResponse {
+interface GraphData {
   root: number;
   keywords: string[];
   graph: Map<string, number[]>;

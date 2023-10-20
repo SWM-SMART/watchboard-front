@@ -3,6 +3,7 @@ import { create } from 'zustand';
 
 interface WhiteBoardState {
   objMap: Map<string, Obj>;
+  graphData: GraphData | null;
   objTree: ObjNode;
   currentTool: Tool;
   currentObj: string | null;
@@ -22,6 +23,7 @@ interface WhiteBoardActions {
   setBundle: (bundle: ObjBundle) => void;
   removeObj: (obj: Obj, global?: boolean) => void;
   resetWhiteBoard: () => void;
+  removeNode: (node: NodeData) => void;
 }
 
 const ROOT_OBJ = {
@@ -32,6 +34,7 @@ const ROOT_OBJ = {
 
 const initialState = {
   objMap: new Map<string, Obj>(),
+  graphData: null,
   objTree: ROOT_OBJ,
   currentTool: 'SELECT',
   currentObj: null,
@@ -67,7 +70,7 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set,
   loadDocument: async (document: WBDocument) => {
     const newObjMap = new Map<string, Obj>(Object.entries(document.documentData));
     const newObjTree = constructRootObjTree(newObjMap);
-    set(() => ({ objMap: newObjMap, objTree: newObjTree }));
+    set(() => ({ objMap: newObjMap, objTree: newObjTree, graphData: document.graphData }));
   },
   setBundle: (bundle: ObjBundle) => set(() => ({ bundle: bundle })),
   resetWhiteBoard: () => set(() => ({ ...initialState })),
@@ -97,5 +100,13 @@ export const useWhiteBoard = create<WhiteBoardState & WhiteBoardActions>()((set,
     if (global) {
       // TODO: remove from objTree
     }
+  },
+  removeNode: (node) => {
+    const data = get().graphData;
+    if (data === null) return;
+    //get index of node
+    const targetIndex = data.keywords.findIndex((value) => value === node.label);
+    if (targetIndex === -1) return;
+    // delete keyword;
   },
 }));

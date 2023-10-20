@@ -25,7 +25,7 @@ type PreviewMode = 'tree' | 'force';
 export default function GenerateDialouge({ onCancel }: GenerateDialogueProps) {
   const [text, setText] = useState<string>('');
   const [state, setState] = useState<ScreenState>('input');
-  const [rawGraphData, setRawGraphData] = useState<MindmapResponse | null>(null);
+  const [rawGraphData, setRawGraphData] = useState<ThreeGraphData | null>(null);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('tree');
   const [previewBundle, setPreviewBundle] = useState<ObjBundle | null>(null);
   const [previewTree, setPreviewTree] = useState<ObjNode | null>(null);
