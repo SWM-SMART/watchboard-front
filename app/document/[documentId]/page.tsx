@@ -8,7 +8,7 @@ import DocumentTitle from './components/DocumentTitle';
 import ToolSelector from '@/components/WhiteBoard/ToolSelector';
 import LoadingScreen from '../../../components/LoadingScreen';
 import PdfViewer from '@/components/PdfViewer';
-const WhiteBoard = dynamic(() => import('@/components/WhiteBoard'), { ssr: false });
+const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: false });
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -69,7 +69,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           </div>
           <div className={styles.whiteBoardContainer}>
             <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
-              <WhiteBoard />
+              <GraphCanvas />
             </Suspense>
           </div>
         </div>
