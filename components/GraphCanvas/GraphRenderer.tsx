@@ -373,8 +373,9 @@ function intersectingNode(
   rayCaster: THREE.Raycaster,
   mesh: THREE.InstancedMesh,
 ) {
-  if (mesh === undefined) return undefined;
   // check intersection
+  if (mesh === undefined) return undefined;
+  // circle
   const points = rayCaster.intersectObjects([mesh]);
   if (points.length > 0) {
     const id = points[0].instanceId;
@@ -386,6 +387,20 @@ function intersectingNode(
         (nodes[id].y ?? 0) - points[0].point.y,
       ),
     };
+  }
+  // label
+  for (const node of nodes) {
+    if (node.labelMesh === undefined) continue;
+    const points = rayCaster.intersectObject(node.labelMesh);
+    if (points.length > 0) {
+      return {
+        node: node,
+        offset: new THREE.Vector2(
+          (node.x ?? 0) - points[0].point.x,
+          (node.y ?? 0) - points[0].point.y,
+        ),
+      };
+    }
   }
   return undefined;
 }
