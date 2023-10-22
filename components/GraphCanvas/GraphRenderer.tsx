@@ -1,5 +1,13 @@
 'use client';
-import { MutableRefObject, RefObject, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  MutableRefObject,
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { invalidate, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { DEFAULT_FONT, boundNumber, calculateLineGeometry, getPos } from '@/utils/whiteboardHelper';
@@ -18,6 +26,8 @@ const WHEEL_MAX_DELTA = 20;
 const PAN_MAX_DELTA = 100;
 const MAX_ZOOM = 10000;
 const MIN_ZOOM = 0.1;
+const COLOR_STALE = new THREE.Color('grey');
+const COLOR_HIGHLIGHT = new THREE.Color('blue');
 
 interface GraphRendererProps {
   data: GraphData;
@@ -28,23 +38,20 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   const [fontLoaded, setFontLoaded] = useState<boolean>(false);
   const geometry = useMemo(() => new THREE.CircleGeometry(1, 32), []);
   const lineGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
-  const nodeMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 'grey' }), []);
+  const nodeMaterial = useMemo(() => new THREE.MeshBasicMaterial(), []);
   const lineMaterial = useMemo(
     () => new THREE.MeshBasicMaterial({ color: 'grey', opacity: 0.3, transparent: true }),
     [],
   );
-  const selectedNodeMaterial = useMemo(() => new THREE.MeshBasicMaterial({ color: 'blue' }), []);
 
-  const nodeDataFactory = useMemo(
-    () =>
-      ([id, keyword]: [number, string]) => {
-        // group
-        const group = new THREE.Group();
+  const lineMesh = useRef<THREE.InstancedMesh>();
+  const circleMesh = useRef<THREE.InstancedMesh>();
+
+  const nodeDataFactory = useCallback(
+    (entries: IterableIterator<[number, string]>) => {
+      const nodes: NodeData[] = [];
+      for (const [id, keyword] of entries) {
         // circle
-        const circle = new THREE.Mesh(geometry, nodeMaterial);
-        circle.position.setZ(10);
-        circle.scale.set(RADIUS, RADIUS, 1);
-        group.add(circle);
         // label
         const text = new Text();
         text.font = DEFAULT_FONT;
@@ -58,38 +65,45 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
         text.transparent = false;
         text.outlineWidth = 2;
         text.outlineColor = 'white';
-        group.add(text);
+        groupRef.current!.add(text);
 
-        // mount mesh
-        groupRef.current!.add(group);
-
-        return {
+        nodes.push({
           id: id,
           label: keyword,
           labelMesh: text,
-          circleMesh: circle,
           scale: 1,
-          group: group,
           selected: false,
-        } as NodeData;
-      },
+        } as NodeData);
+      }
+
+      // create instancedMesh
+      circleMesh.current = new THREE.InstancedMesh(geometry, nodeMaterial, nodes.length);
+      circleMesh.current.position.setZ(10);
+      circleMesh.current.frustumCulled = false;
+      // need to set color once before render!
+      circleMesh.current.setColorAt(0, COLOR_STALE);
+      groupRef.current!.add(circleMesh.current);
+
+      return nodes;
+    },
     [geometry, nodeMaterial],
   );
 
-  const linkDataFactory = useMemo(
-    () =>
-      ([key, children]: [string, number[]]) => {
+  const linkDataFactory = useCallback(
+    (entries: IterableIterator<[string, number[]]>) => {
+      const links: LinkData[] = [];
+      for (const [key, children] of entries) {
         const id = parseInt(key);
-        const links: LinkData[] = [];
         for (const child of children) {
-          const line = new THREE.Mesh(lineGeometry, lineMaterial);
-          line.scale.setX(0);
-          line.rotation.set(0, 0, 0);
-          groupRef.current!.add(line);
-          links.push({ source: id, target: child, mesh: line } as LinkData);
+          links.push({ source: id, target: child } as LinkData);
         }
-        return links;
-      },
+      }
+      // create instancedMesh
+      lineMesh.current = new THREE.InstancedMesh(lineGeometry, lineMaterial, links.length);
+      lineMesh.current.frustumCulled = false;
+      groupRef.current!.add(lineMesh.current);
+      return links;
+    },
     [lineGeometry, lineMaterial],
   );
 
@@ -101,35 +115,44 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     linkDataFactory,
   );
 
-  const { selectedNodeRef } = usePointer(simulationRef);
+  const { selectedNodeRef } = usePointer(simulationRef, circleMesh);
 
   // simulation begins after font preload
   preloadFont({ font: DEFAULT_FONT }, () => setFontLoaded(true));
 
   // update scene
   useFrame(({ camera }) => {
-    if (groupRef.current === null) return;
+    if (
+      groupRef.current === null ||
+      lineMesh.current === undefined ||
+      circleMesh.current === undefined
+    )
+      return;
     const nodes = simulationRef.current.nodes();
     const links = linksRef.current;
     const inverseZoom = 1 / camera.zoom;
 
     // update node meshes
-    for (const node of nodes) {
-      node.circleMesh.material = nodeMaterial;
-      node.group.position.setX(node.x ?? 0);
-      node.group.position.setY(node.y ?? 0);
-      node.labelMesh.position.setY(RADIUS * node.scale);
-      node.labelMesh.scale.set(node.scale, node.scale, 1);
-      node.circleMesh.scale.set(node.scale * RADIUS, node.scale * RADIUS, 1);
-    }
+    nodes.forEach((node, i) => {
+      const m = new THREE.Matrix4()
+        .setPosition(node.x ?? 0, node.y ?? 0, 0)
+        .scale(new THREE.Vector3(node.scale * RADIUS, node.scale * RADIUS, 1));
+      circleMesh.current?.setMatrixAt(i, m);
+      if (node === selectedNodeRef.current?.node) {
+        circleMesh.current?.setColorAt(i, COLOR_HIGHLIGHT);
+      } else {
+        circleMesh.current?.setColorAt(i, COLOR_STALE);
+      }
 
-    // highlight current selected node
-    if (selectedNodeRef.current !== undefined) {
-      selectedNodeRef.current.node.circleMesh.material = selectedNodeMaterial;
-    }
+      node.labelMesh?.position.setX(node.x ?? 0);
+      node.labelMesh?.position.setY((node.y ?? 0) + RADIUS * node.scale);
+      node.labelMesh?.scale.set(node.scale, node.scale, 1);
+    });
+    circleMesh.current.instanceColor!.needsUpdate = true;
+    circleMesh.current.instanceMatrix.needsUpdate = true;
 
     // update link meshes
-    for (const link of links) {
+    links.forEach((link, i) => {
       const source = link.source as NodeData;
       const target = link.target as NodeData;
       const x = source.x ?? 0;
@@ -137,24 +160,30 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
       const x2 = target.x ?? 0;
       const y2 = target.y ?? 0;
       const { w, d } = calculateLineGeometry(x, y, x2, y2);
-      link.mesh.position.set((x + x2) / 2, (y + y2) / 2, 10);
-      link.mesh.scale.setY(inverseZoom);
-      link.mesh.scale.setX(w);
-      link.mesh.rotation.set(0, 0, d);
-    }
+      const m = new THREE.Matrix4()
+        .makeRotationZ(d)
+        .setPosition((x + x2) / 2, (y + y2) / 2, 0)
+        .scale(new THREE.Vector3(w, inverseZoom, 1));
+      lineMesh.current?.setMatrixAt(i, m);
+    });
+    lineMesh.current.instanceMatrix.needsUpdate = true;
   });
 
   return <group ref={groupRef}></group>;
 }
 
-function usePointer(simulationRef: MutableRefObject<d3.Simulation<NodeData, undefined>>) {
+function usePointer(
+  simulationRef: MutableRefObject<d3.Simulation<NodeData, undefined>>,
+  nodeMeshRef?: MutableRefObject<THREE.InstancedMesh | undefined>,
+) {
   const {
     gl: { domElement },
     mouse,
     camera,
   } = useThree();
-  const rayCaster = useMemo(() => new THREE.Raycaster(), []);
+  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
   const selectedNodeRef = useRef<RayCastResult>(); // current selection
+  const hoverNodeRef = useRef<RayCastResult>();
   const pointerDownRef = useRef<PointerHistory>();
 
   const setSelected = useGraph((state) => state.setSelected);
@@ -162,6 +191,7 @@ function usePointer(simulationRef: MutableRefObject<d3.Simulation<NodeData, unde
   // pointer event handlers
   useEffect(() => {
     const pointerMove = () => invalidate();
+
     const wheel = (e: WheelEvent) => {
       e.preventDefault();
       // pinch zoom
@@ -203,8 +233,12 @@ function usePointer(simulationRef: MutableRefObject<d3.Simulation<NodeData, unde
     };
 
     const pointerDown = (e: MouseEvent) => {
-      rayCaster.setFromCamera(mouse, camera);
-      const intersection = intersectingNode(simulationRef.current.nodes(), rayCaster);
+      if (nodeMeshRef?.current === undefined) return;
+      const intersection = intersectingNode(
+        simulationRef.current.nodes(),
+        raycasterRef.current,
+        nodeMeshRef.current,
+      );
       pointerDownRef.current = {
         realPos: getPos(mouse, camera),
         pos: new THREE.Vector2(e.clientX, e.clientY),
@@ -214,7 +248,6 @@ function usePointer(simulationRef: MutableRefObject<d3.Simulation<NodeData, unde
       // pointer down on node
       setSelected(intersection.node);
       selectedNodeRef.current = intersection;
-      selectedNodeRef.current.node.group.position.setZ(100);
       simulationRef.current.alphaTarget(0.1).restart();
     };
     domElement.addEventListener('pointermove', pointerMove);
@@ -227,11 +260,25 @@ function usePointer(simulationRef: MutableRefObject<d3.Simulation<NodeData, unde
       domElement.removeEventListener('pointerdown', pointerDown);
       domElement.removeEventListener('wheel', wheel);
     };
-  }, [camera, domElement, mouse, rayCaster, setSelected, simulationRef]);
+  }, [camera, domElement, mouse, nodeMeshRef, raycasterRef, setSelected, simulationRef]);
+
+  useEffect(() => {
+    const raycast = setInterval(() => {
+      raycasterRef.current.setFromCamera(mouse, camera);
+      // get hovering node
+      if (nodeMeshRef?.current == undefined) return;
+      nodeMeshRef.current.computeBoundingSphere();
+      hoverNodeRef.current = intersectingNode(
+        simulationRef.current.nodes(),
+        raycasterRef.current,
+        nodeMeshRef.current,
+      );
+    }, 10);
+    return () => clearInterval(raycast);
+  }, [camera, mouse, nodeMeshRef, raycasterRef, simulationRef, domElement]);
 
   // mouse handler
   useFrame(({ camera, mouse }) => {
-    rayCaster.setFromCamera(mouse, camera);
     const nodes = simulationRef.current.nodes();
     const inverseZoom = 1 / camera.zoom;
 
@@ -254,23 +301,16 @@ function usePointer(simulationRef: MutableRefObject<d3.Simulation<NodeData, unde
       }
     }
 
-    // scale up intersecting nodes
     const node_scale_max = Math.max(MAXSCALE * inverseZoom, MAXSCALE);
     for (const node of nodes) {
-      // check intersection
-      if (
-        rayCaster.intersectObject(node.group).length > 0 ||
-        node === selectedNodeRef.current?.node
-      ) {
-        // intersect
+      if (node === selectedNodeRef.current?.node || node === hoverNodeRef.current?.node) {
         if (node.scale < node_scale_max) {
           // scale needs update
           node.scale += Math.max((node_scale_max - node.scale) / 5, MINDELTA);
           invalidate();
         } else node.scale = node_scale_max;
       } else {
-        // does not intersect
-        node.group.position.setZ(0);
+        // node.group.position.setZ(0);
         if (node.scale > MINSCALE) {
           // scale needs update
           node.scale -= Math.max((node.scale - MINSCALE) / 5, MINDELTA);
@@ -287,8 +327,8 @@ function useSimulation(
   data: GraphData,
   groupRef: RefObject<THREE.Group>,
   fontLoaded: boolean,
-  nodeDataFactory: ([id, keyword]: [number, string]) => NodeData,
-  linkDataFactory: ([key, children]: [string, number[]]) => LinkData[],
+  nodeDataFactory: (entries: IterableIterator<[number, string]>) => NodeData[],
+  linkDataFactory: (entries: IterableIterator<[string, number[]]>) => LinkData[],
 ) {
   const simulationRef = useRef<d3.Simulation<NodeData, undefined>>(d3.forceSimulation<NodeData>());
   const linksRef = useRef<LinkData[]>([]);
@@ -311,18 +351,11 @@ function useSimulation(
     if (!fontLoaded) return;
 
     // generate nodes
-    const nodes: NodeData[] = [];
-    for (const entry of data.keywords.entries()) {
-      nodes.push(nodeDataFactory(entry));
-    }
+    const nodes: NodeData[] = nodeDataFactory(data.keywords.entries());
 
     // generate links
     const graph = new Map<string, number[]>(Object.entries(data.graph));
-    linksRef.current = [];
-    for (const entry of graph.entries()) {
-      const links = linkDataFactory(entry);
-      for (const link of links) linksRef.current.push(link);
-    }
+    linksRef.current = linkDataFactory(graph.entries());
 
     simulationRef.current
       .nodes(nodes)
@@ -338,29 +371,37 @@ function useSimulation(
       .force('collision', d3.forceCollide(GAP))
       .tick(50);
 
-    simulationRef.current.on('tick', () => {
-      // rerender
-      invalidate();
-    });
-
-    simulationRef.current.alpha(1).restart();
+    simulationRef.current.alpha(1).stop();
+    invalidate();
   }, [data.graph, data.keywords, fontLoaded, groupRef, linkDataFactory, nodeDataFactory]);
+
+  // simulation tick on frame
+  useFrame((_state, delta) => {
+    if (simulationRef.current.alpha() < simulationRef.current.alphaMin()) return;
+    simulationRef.current.tick(delta);
+    invalidate();
+  });
   return { simulationRef, linksRef };
 }
 
-function intersectingNode(nodes: NodeData[], rayCaster: THREE.Raycaster) {
-  for (const node of nodes) {
-    // check intersection
-    const points = rayCaster.intersectObject(node.group);
-    if (points.length > 0) {
-      return {
-        node: node,
-        offset: new THREE.Vector2(
-          (node.x ?? 0) - points[0].point.x,
-          (node.y ?? 0) - points[0].point.y,
-        ),
-      };
-    }
+function intersectingNode(
+  nodes: NodeData[],
+  rayCaster: THREE.Raycaster,
+  mesh: THREE.InstancedMesh,
+) {
+  if (mesh === undefined) return undefined;
+  // check intersection
+  const points = rayCaster.intersectObjects([mesh]);
+  if (points.length > 0) {
+    const id = points[0].instanceId;
+    if (id === undefined) return undefined;
+    return {
+      node: nodes[id],
+      offset: new THREE.Vector2(
+        (nodes[id].x ?? 0) - points[0].point.x,
+        (nodes[id].y ?? 0) - points[0].point.y,
+      ),
+    };
   }
   return undefined;
 }

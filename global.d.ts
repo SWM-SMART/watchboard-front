@@ -62,9 +62,7 @@ interface ThreeGraphData {
 interface NodeData {
   id: number;
   label: string;
-  labelMesh: THREE.Mesh;
-  circleMesh: THREE.Mesh;
-  group: THREE.Group;
+  labelMesh?: THREE.Mesh;
   scale: number;
   x?: number;
   y?: number;
@@ -86,7 +84,6 @@ interface NodeDataLegacy {
 interface LinkData {
   source: number | NodeData;
   target: number | NodeData;
-  mesh: THREE.Mesh;
 }
 
 interface LinkDataLegacy {
