@@ -1,20 +1,11 @@
 'use client';
-import {
-  MutableRefObject,
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { MutableRefObject, RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import { invalidate, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { DEFAULT_FONT, boundNumber, calculateLineGeometry, getPos } from '@/utils/whiteboardHelper';
+import { boundNumber, calculateLineGeometry, getPos } from '@/utils/whiteboardHelper';
 import * as d3 from 'd3';
-// @ts-ignore
-import { Text, preloadFont } from 'troika-three-text';
 import { useGraph } from '@/states/graph';
+import SpriteText from 'three-spritetext';
 
 const GAP = 10;
 const RADIUS = 5;
@@ -35,7 +26,6 @@ interface GraphRendererProps {
 
 export default function GraphRenderer({ data }: GraphRendererProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const [fontLoaded, setFontLoaded] = useState<boolean>(false);
   const geometry = useMemo(() => new THREE.CircleGeometry(1, 32), []);
   const lineGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
   const nodeMaterial = useMemo(() => new THREE.MeshBasicMaterial(), []);
@@ -51,20 +41,12 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     (entries: IterableIterator<[number, string]>) => {
       const nodes: NodeData[] = [];
       for (const [id, keyword] of entries) {
-        // circle
         // label
-        const text = new Text();
-        text.font = DEFAULT_FONT;
-        text.fontSize = 15;
-        text.text = keyword;
-        text.color = 'black';
+        const text = new SpriteText(keyword, 30, 'black') as ExtendedSpriteText;
         text.position.setZ(15);
-        text.position.setY(RADIUS);
-        text.anchorX = 'center';
-        text.anchorY = 'bottom';
-        text.transparent = false;
-        text.outlineWidth = 2;
-        text.outlineColor = 'white';
+        text.strokeColor = 'white';
+        text.strokeWidth = 2;
+        text.initialScale = { x: text.scale.x, y: text.scale.y };
         groupRef.current!.add(text);
 
         nodes.push({
@@ -110,15 +92,11 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   const { simulationRef, linksRef } = useSimulation(
     data,
     groupRef,
-    fontLoaded,
     nodeDataFactory,
     linkDataFactory,
   );
 
   const { selectedNodeRef } = usePointer(simulationRef, circleMesh);
-
-  // simulation begins after font preload
-  preloadFont({ font: DEFAULT_FONT }, () => setFontLoaded(true));
 
   // update scene
   useFrame(({ camera }) => {
@@ -133,20 +111,29 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     const inverseZoom = 1 / camera.zoom;
 
     // update node meshes
+    const labelScale = Math.min(inverseZoom, 1);
     nodes.forEach((node, i) => {
-      const m = new THREE.Matrix4()
-        .setPosition(node.x ?? 0, node.y ?? 0, 0)
-        .scale(new THREE.Vector3(node.scale * RADIUS, node.scale * RADIUS, 1));
-      circleMesh.current?.setMatrixAt(i, m);
+      const m = new THREE.Matrix4();
       if (node === selectedNodeRef.current?.node) {
         circleMesh.current?.setColorAt(i, COLOR_HIGHLIGHT);
+        node.labelMesh?.position.setZ(20);
+        m.setPosition(node.x ?? 0, node.y ?? 0, 18);
+        circleMesh.current?.setMatrixAt(i, m);
       } else {
         circleMesh.current?.setColorAt(i, COLOR_STALE);
+        node.labelMesh?.position.setZ(15);
+        m.setPosition(node.x ?? 0, node.y ?? 0, 0);
       }
 
+      m.scale(new THREE.Vector3(node.scale * RADIUS, node.scale * RADIUS, 1));
+      circleMesh.current?.setMatrixAt(i, m);
       node.labelMesh?.position.setX(node.x ?? 0);
-      node.labelMesh?.position.setY((node.y ?? 0) + RADIUS * node.scale);
-      node.labelMesh?.scale.set(node.scale, node.scale, 1);
+      node.labelMesh?.position.setY((node.y ?? 0) + (RADIUS + 15) * node.scale);
+      node.labelMesh?.scale.set(
+        labelScale * node.scale * node.labelMesh.initialScale.x,
+        labelScale * node.scale * node.labelMesh.initialScale.y,
+        1,
+      );
     });
     circleMesh.current.instanceColor!.needsUpdate = true;
     circleMesh.current.instanceMatrix.needsUpdate = true;
@@ -326,7 +313,6 @@ function usePointer(
 function useSimulation(
   data: GraphData,
   groupRef: RefObject<THREE.Group>,
-  fontLoaded: boolean,
   nodeDataFactory: (entries: IterableIterator<[number, string]>) => NodeData[],
   linkDataFactory: (entries: IterableIterator<[string, number[]]>) => LinkData[],
 ) {
@@ -347,8 +333,6 @@ function useSimulation(
     }
 
     groupRef.current.clear();
-
-    if (!fontLoaded) return;
 
     // generate nodes
     const nodes: NodeData[] = nodeDataFactory(data.keywords.entries());
@@ -373,7 +357,7 @@ function useSimulation(
 
     simulationRef.current.alpha(1).stop();
     invalidate();
-  }, [data.graph, data.keywords, fontLoaded, groupRef, linkDataFactory, nodeDataFactory]);
+  }, [data.graph, data.keywords, groupRef, linkDataFactory, nodeDataFactory]);
 
   // simulation tick on frame
   useFrame((_state, delta) => {

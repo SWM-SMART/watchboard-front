@@ -59,10 +59,14 @@ interface ThreeGraphData {
   links: LinkDataLegacy[];
 }
 
+type ExtendedSpriteText = import('three-spritetext').default & {
+  initialScale: { x: number; y: number };
+};
+
 interface NodeData {
   id: number;
   label: string;
-  labelMesh?: THREE.Mesh;
+  labelMesh?: ExtendedSpriteText;
   scale: number;
   x?: number;
   y?: number;
