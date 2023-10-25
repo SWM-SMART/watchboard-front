@@ -1,9 +1,9 @@
 'use client';
 import { CSSProperties, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { useWhiteBoard } from '@/states/whiteboard';
 import { useGraph } from '@/states/graph';
 import dynamic from 'next/dynamic';
+import { useViewer } from '@/states/viewer';
 const GraphRenderer = dynamic(() => import('./GraphRenderer'), { ssr: false });
 
 interface GraphCanvasProps {
@@ -11,13 +11,9 @@ interface GraphCanvasProps {
 }
 
 export default function GraphCanvas({ style }: GraphCanvasProps) {
-  const graphData = useWhiteBoard((state) => state.graphData);
-  const selected = useGraph((state) => state.selected);
-  useEffect(() => {
-    console.log(selected);
-  }, [selected]);
+  const graphData = useViewer((state) => state.document?.graphData);
 
-  if (graphData === null) return <></>;
+  if (graphData === undefined) return <></>;
 
   return (
     <Canvas
