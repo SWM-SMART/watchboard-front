@@ -4,7 +4,8 @@ import styles from './PdfViewer.module.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { useCallback, useState } from 'react';
-import BottomPanel from './BottomPanel';
+import OptionPanel from './OptionPanel';
+import { useViewer } from '@/states/viewer';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.js',
@@ -16,26 +17,30 @@ interface PdfViewerProps {
 }
 
 export default function PdfViewer({ url }: PdfViewerProps) {
-  const [keywords, setKeywords] = useState<string[]>([]);
   const [tool, setTool] = useState<Tool>('SELECT');
   const [scale, setScale] = useState<number>(1);
   const [page, setPage] = useState<number>(0);
   const [numPages, setNumPages] = useState<number>(0);
+  const { keywords, addKeyword } = useViewer((state) => ({
+    keywords: state.keywords,
+    addKeyword: state.addKeyword,
+  }));
 
   const onPointerUp = () => {
     if (tool !== 'HIGHLIGHT') return;
     // add selection to keywords
     const word = window.getSelection()?.toString() ?? '';
     if (word.length === 0) return;
-    setKeywords((keywords) => [...keywords, word]);
+    addKeyword(word, true);
   };
 
   const textRenderer = useCallback(
     (textItem: any) => {
       // highlights keywords
       const pos: Pos[] = [];
-      for (const s of keywords) {
+      for (const [s, f] of keywords.entries()) {
         // find all occurences
+        if (!f) continue;
         const matches = (textItem.str as string).matchAll(new RegExp(s, 'gi'));
         for (const m of matches) {
           if (m.index === undefined) continue;
@@ -68,11 +73,10 @@ export default function PdfViewer({ url }: PdfViewerProps) {
           </Document>
         </div>
       </div>
-      <BottomPanel
+
+      <OptionPanel
         currentTool={tool}
         setCurrentTool={setTool}
-        keywords={keywords}
-        setKeywords={setKeywords}
         scale={scale}
         setScale={setScale}
         page={page}
