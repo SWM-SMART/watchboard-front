@@ -54,6 +54,8 @@ interface CircleOptions {
   color?: string;
 }
 
+type ViewerPage = 'HOME' | 'DATA';
+
 interface ThreeGraphData {
   nodes: NodeDataLegacy[];
   links: LinkDataLegacy[];
