@@ -4,13 +4,13 @@ import { invalidate, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { boundNumber, calculateLineGeometry, getPos } from '@/utils/whiteboardHelper';
 import * as d3 from 'd3';
-import { useGraph } from '@/states/graph';
 import SpriteText from 'three-spritetext';
+import { useViewer } from '@/states/viewer';
 
 const GAP = 10;
 const RADIUS = 5;
-const MAXSCALE = 2;
-const MINSCALE = 1;
+const MAXSCALE = 1.3;
+const MINSCALE = 0.5;
 const MINDELTA = 0.01;
 const WHEEL_DELTA_FACTOR = 100;
 const WHEEL_MAX_DELTA = 20;
@@ -33,7 +33,6 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     () => new THREE.MeshBasicMaterial({ color: 'grey', opacity: 0.3, transparent: true }),
     [],
   );
-
   const lineMesh = useRef<THREE.InstancedMesh>();
   const circleMesh = useRef<THREE.InstancedMesh>();
 
@@ -51,6 +50,7 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
 
         nodes.push({
           id: id,
+          children: [],
           label: keyword,
           labelMesh: text,
           scale: 1,
@@ -97,6 +97,8 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   );
 
   const { selectedNodeRef } = usePointer(simulationRef, circleMesh);
+
+  useFocusCallback(selectedNodeRef);
 
   // update scene
   useFrame(({ camera }) => {
@@ -173,7 +175,17 @@ function usePointer(
   const hoverNodeRef = useRef<RayCastResult>();
   const pointerDownRef = useRef<PointerHistory>();
 
-  const setSelected = useGraph((state) => state.setSelected);
+  const { setSelectedNode, selectedNode } = useViewer((state) => ({
+    setSelectedNode: state.setSelectedNode,
+    selectedNode: state.selectedNode,
+  }));
+
+  // synchronize selectedNode with global state
+  useEffect(() => {
+    if (selectedNode === undefined) return;
+    selectedNodeRef.current = { node: selectedNode, offset: new THREE.Vector2(0, 0) };
+    invalidate();
+  }, [selectedNode]);
 
   // pointer event handlers
   useEffect(() => {
@@ -212,7 +224,6 @@ function usePointer(
       const isBlankClick =
         upPos.x === down.pos.x && upPos.y === down.pos.y && down.intersection === undefined;
       if (isBlankClick) {
-        setSelected(undefined);
         selectedNodeRef.current = undefined;
       }
       simulationRef.current.alphaTarget(0);
@@ -233,7 +244,7 @@ function usePointer(
       };
       if (intersection === undefined) return;
       // pointer down on node
-      setSelected(intersection.node);
+      setSelectedNode(intersection.node);
       selectedNodeRef.current = intersection;
       simulationRef.current.alphaTarget(0.1).restart();
     };
@@ -247,7 +258,7 @@ function usePointer(
       domElement.removeEventListener('pointerdown', pointerDown);
       domElement.removeEventListener('wheel', wheel);
     };
-  }, [camera, domElement, mouse, nodeMeshRef, raycasterRef, setSelected, simulationRef]);
+  }, [camera, domElement, mouse, nodeMeshRef, raycasterRef, setSelectedNode, simulationRef]);
 
   useEffect(() => {
     const raycast = setInterval(() => {
@@ -341,6 +352,12 @@ function useSimulation(
     const graph = new Map<string, number[]>(Object.entries(data.graph));
     linksRef.current = linkDataFactory(graph.entries());
 
+    // save links in nodes for future use
+    for (const link of linksRef.current) {
+      nodes[link.source as number].children?.push(nodes[link.target as number]);
+      nodes[link.target as number].parent = nodes[link.source as number];
+    }
+
     simulationRef.current
       .nodes(nodes)
       .force('charge', d3.forceManyBody<NodeData>().strength(-1000).distanceMax(500))
@@ -414,4 +431,17 @@ interface PointerHistory {
   pos: THREE.Vector2;
   realPos: THREE.Vector2;
   intersection?: RayCastResult;
+}
+
+function useFocusCallback(selectedNodeRef: MutableRefObject<RayCastResult | undefined>) {
+  const { camera } = useThree();
+  const setFocusCallback = useViewer((state) => state.setFocusNodeCallback);
+  const vector = useMemo(() => new THREE.Vector2(0, 0), []);
+  useEffect(() => {
+    setFocusCallback((node) => {
+      selectedNodeRef.current = { node: node, offset: vector };
+      camera.position.set(node.x ?? 0, node.y ?? 0, camera.position.z);
+      invalidate();
+    });
+  }, [camera, selectedNodeRef, setFocusCallback, vector]);
 }
