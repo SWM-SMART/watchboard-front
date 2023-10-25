@@ -1,25 +1,30 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { Suspense, useEffect, useState } from 'react';
+import { ReactNode, SetStateAction, Suspense, useEffect, useState } from 'react';
 import styles from './page.module.css';
-import { useWhiteBoard } from '@/states/whiteboard';
 import { getDocument } from '@/utils/api';
-import DocumentTitle from './components/DocumentTitle';
-import ToolSelector from '@/components/WhiteBoard/ToolSelector';
 import LoadingScreen from '../../../components/LoadingScreen';
+import OverlayWrapper from '@/components/OverlayWrapper';
+import BottomToolBar from './components/BottomToolBar';
+import { useViewer } from '@/states/viewer';
 import PdfViewer from '@/components/PdfViewer';
+import NodeInfo from '@/components/NodeInfo';
 const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: false });
+import 'material-symbols';
 
 interface DocumentPageProps {
   params: { documentId: string };
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const { currentObj, objTree, resetWhiteBoard } = useWhiteBoard((state) => ({
-    currentObj: state.currentObj,
-    objTree: state.objTree,
-    resetWhiteBoard: state.resetWhiteBoard,
-  }));
+  const [overlay, setOverlay] = useState<ReactNode | null>(null);
+  const documentData = useDocument(parseInt(params.documentId));
+
+  const resetViewer = useViewer((state) => state.reset);
+  // reset viewer
+  useEffect(() => {
+    resetViewer();
+  }, [resetViewer]);
 
   const [sideBarWidth, setSideBarWidth] = useState<number>(500);
   const [dividerActive, setDividerActive] = useState<boolean>(false);
@@ -38,12 +43,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     };
   }, [dividerActive]);
 
-  const documentData = useDocument(parseInt(params.documentId));
-
-  // reset whiteboard
-  useEffect(() => {
-    resetWhiteBoard();
-  }, [resetWhiteBoard]);
+  const selectedNode = useViewer((state) => state.selectedNode);
 
   if (documentData === null) return <LoadingScreen message={'Loading document'} />;
 
@@ -54,47 +54,72 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           className={styles.sideBar}
           style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
         >
-          <DocumentTitle
-            documentName={documentData.documentName}
-            sourceDataType={documentData.data.type}
-          />
-          <div className={styles.viewerContainer}>
-            <PdfViewer url={documentData.data.url} />
-          </div>
+          <NodeInfo node={selectedNode} />
         </div>
-        <div className={styles.divider} onPointerDown={() => setDividerActive(true)} />
+        <div className={styles.divider} onPointerDown={() => setDividerActive(true)}>
+          <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
+        </div>
         <div className={styles.content}>
-          <div className={styles.toolBar}>
-            <ToolSelector />
-          </div>
-          <div className={styles.whiteBoardContainer}>
-            <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
-              <GraphCanvas />
-            </Suspense>
-          </div>
+          <SwitchView viewTypes={['HOME', 'DATA']}>
+            <GraphViewer />
+            <PdfViewer url={documentData.data.url} sideBar={true} />
+          </SwitchView>
         </div>
       </div>
+      <BottomToolBar />
     </div>
   );
 }
 
+function GraphViewer() {
+  return (
+    <>
+      <div className={styles.whiteBoardContainer}>
+        <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
+          <GraphCanvas />
+        </Suspense>
+      </div>
+    </>
+  );
+}
+
+interface SwitchViewProps {
+  children: ReactNode[];
+  viewTypes: ViewerPage[];
+}
+function SwitchView({ children, viewTypes }: SwitchViewProps) {
+  const view = useViewer((state) => state.view);
+  return (
+    <>
+      {children.map((v, i) => {
+        return (
+          <div
+            key={`view_${viewTypes[i]}`}
+            className={styles.container}
+            style={viewTypes[i] !== view ? { display: 'none' } : undefined}
+          >
+            {v}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function useDocument(documentId: number) {
-  const [document, setDocument] = useState<WBDocument | null>(null);
-  const loadDocument = useWhiteBoard((state) => state.loadDocument);
+  const { document, setDocument } = useViewer((state) => ({
+    document: state.document,
+    setDocument: state.setDocument,
+  }));
 
   useEffect(() => {
-    // reset
-    setDocument(null);
-
     (async () => {
       // get raw document data
       const newDocument = await getDocument(documentId);
-
       // construct tree
-      loadDocument(newDocument);
       setDocument(newDocument);
     })();
-  }, [documentId, loadDocument]);
+  }, [documentId, setDocument]);
 
   return document;
 }
