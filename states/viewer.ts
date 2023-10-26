@@ -8,6 +8,8 @@ interface ViewerState {
   searchQuery: string;
   focusNodeCallback: ((node: NodeData) => void) | undefined;
   keywords: Map<string, boolean>;
+  dataStr: string[][];
+  focusKeywordCallback: ((keyword: string, location: number[]) => void) | undefined;
 }
 
 interface ViewerActions {
@@ -20,8 +22,12 @@ interface ViewerActions {
   addKeyword: (keyword: string, state?: boolean) => void;
   deleteKeyword: (keyword: string) => void;
   setKeyword: (keyword: string, state: boolean) => void;
-  singleOutKeyword: (keyword: string) => void;
   setAllKeyword: (state: boolean) => void;
+  setDataStr: (dataStr: string[][]) => void;
+  findDataStr: (from: number[], keyword: string) => KeywordSourceResult | undefined;
+  setFocusKeywordCallback: (
+    callback: ((keyword: string, location: number[]) => void) | undefined,
+  ) => void;
 }
 
 const initialState = {
@@ -31,6 +37,8 @@ const initialState = {
   searchQuery: '',
   focusNodeCallback: undefined,
   keywords: new Map<string, boolean>(),
+  dataStr: [],
+  focusKeywordCallback: undefined,
 } as ViewerState;
 
 export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
@@ -57,6 +65,36 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
   setKeyword: (keyword, state) => {
     set({ keywords: new Map([...get().keywords]).set(keyword, state) });
   },
-  singleOutKeyword: (keyword) => {},
-  setAllKeyword: (state) => {},
+  setAllKeyword: (state) => {
+    const keywords = get().keywords;
+    for (const k of keywords.keys()) {
+      keywords.set(k, state);
+    }
+    set({ keywords });
+  },
+  setDataStr: (dataStr) => set({ dataStr }),
+  findDataStr: (from, keyword) => {
+    let [ib, jb] = from;
+    const data = get().dataStr;
+    for (let i = ib; i < data.length; i++) {
+      const strs = data[i];
+      for (let j = jb + 1; j < strs.length; j++) {
+        const str = strs[j];
+        const index = str.indexOf(keyword);
+        if (index > -1) {
+          // match
+          return {
+            str: str,
+            keyword: keyword,
+            index: index,
+            location: [i, j],
+          };
+        }
+      }
+      jb = 0;
+    }
+    // no match
+    return undefined;
+  },
+  setFocusKeywordCallback: (callback) => set({ focusKeywordCallback: callback }),
 }));
