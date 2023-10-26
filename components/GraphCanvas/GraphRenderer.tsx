@@ -443,5 +443,6 @@ function useFocusCallback(selectedNodeRef: MutableRefObject<RayCastResult | unde
       camera.position.set(node.x ?? 0, node.y ?? 0, camera.position.z);
       invalidate();
     });
+    return () => setFocusCallback(undefined);
   }, [camera, selectedNodeRef, setFocusCallback, vector]);
 }
