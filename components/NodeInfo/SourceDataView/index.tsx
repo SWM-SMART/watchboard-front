@@ -1,8 +1,8 @@
 import { useViewer } from '@/states/viewer';
 import styles from './sourceDataView.module.css';
 import { useEffect, useState } from 'react';
-import ToolSelector, { SmallIconButton, ToolButton } from '@/components/WhiteBoard/ToolSelector';
 import SmallActionButton from '@/components/Button/SmallActionButton';
+import SmallIconButton from '@/components/Button/SmallIconButton';
 interface SourceDataViewProps {
   hidden?: boolean;
 }

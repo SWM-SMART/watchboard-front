@@ -1,8 +1,8 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import styles from './optionPanel.module.css';
-import { SmallIconButton, ToolButton } from '@/components/WhiteBoard/ToolSelector';
 import 'material-symbols';
 import { useViewer } from '@/states/viewer';
+import SmallIconButton from '@/components/Button/SmallIconButton';
 
 const DEFAULT_WIDTH = 300;
 const SCALE_MAX = 10;
@@ -100,16 +100,14 @@ export default function OptionPanel({
             />
           </div>
           <div className={styles.tools}>
-            <ToolButton
-              currentTool={currentTool}
-              setCurrentTool={setCurrentTool}
-              toolName={'SELECT'}
+            <SmallIconButton
+              onClick={() => setCurrentTool('SELECT')}
+              selected={currentTool === 'SELECT'}
               icon={'text_select_start'}
             />
-            <ToolButton
-              currentTool={currentTool}
-              setCurrentTool={setCurrentTool}
-              toolName={'HIGHLIGHT'}
+            <SmallIconButton
+              onClick={() => setCurrentTool('HIGHLIGHT')}
+              selected={currentTool === 'HIGHLIGHT'}
               icon={'ink_highlighter'}
             />
           </div>

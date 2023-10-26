@@ -1,15 +1,3 @@
-.container {
-  background-color: #00000020;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding-left: 10px;
-  gap: 10px;
-  height: 46px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
 .buttonContainer {
   display: flex;
   justify-content: center;

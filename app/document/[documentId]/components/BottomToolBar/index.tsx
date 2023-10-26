@@ -2,8 +2,8 @@ import styles from './bottomToolBar.module.css';
 import { useEffect, useRef, useState } from 'react';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { useViewer } from '@/states/viewer';
-import { SmallIconButton } from '@/components/WhiteBoard/ToolSelector';
 import 'material-symbols';
+import SmallIconButton from '@/components/Button/SmallIconButton';
 
 export default function BottomToolBar() {
   const elementRef = useRef<HTMLDivElement>(null);
