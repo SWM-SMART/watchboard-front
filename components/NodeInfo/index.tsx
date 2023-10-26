@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import styles from './nodeInfo.module.css';
 import { lipsum } from '@/utils/whiteboardHelper';
 import SmallActionButton from '../Button/SmallActionButton';
-import { useThree } from '@react-three/fiber';
 import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
+import SourceDataView from './SourceDataView';
 
 interface NodeInfoProps {
   node?: NodeData;
 }
 export default function NodeInfo({ node }: NodeInfoProps) {
   const [data, setData] = useState<string>();
+  const [sourceView, setSourceView] = useState<boolean>(true);
+  const [relationView, setRelationView] = useState<boolean>(true);
 
   useEffect(() => {
     // TODO: fetch node data
@@ -30,7 +32,16 @@ export default function NodeInfo({ node }: NodeInfoProps) {
     <div className={styles.container}>
       <h1>{node?.label}</h1>
       <div className={styles.actions}>
-        <SmallActionButton label={'키워드 출처'} icon={'find_in_page'} />
+        <SmallActionButton
+          label={'관계도'}
+          icon={'network_node'}
+          onClick={() => setRelationView((show) => !show)}
+        />
+        <SmallActionButton
+          label={'키워드 출처'}
+          icon={'find_in_page'}
+          onClick={() => setSourceView((show) => !show)}
+        />
         <SmallActionButton
           label={'노드로 이동'}
           icon={'my_location'}
@@ -41,7 +52,9 @@ export default function NodeInfo({ node }: NodeInfoProps) {
           }}
         />
       </div>
-      <RelationView node={node} />
+      <RelationView node={node} hidden={!relationView} />
+
+      <SourceDataView hidden={!sourceView} />
       <p>{data}</p>
     </div>
   );
