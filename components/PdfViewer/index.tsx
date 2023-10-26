@@ -3,7 +3,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import styles from './PdfViewer.module.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
-import { useCallback, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import OptionPanel from './OptionPanel';
 import { useViewer } from '@/states/viewer';
 
@@ -21,10 +21,13 @@ export default function PdfViewer({ url }: PdfViewerProps) {
   const [scale, setScale] = useState<number>(1);
   const [page, setPage] = useState<number>(0);
   const [numPages, setNumPages] = useState<number>(0);
-  const { keywords, addKeyword } = useViewer((state) => ({
+  const { keywords, addKeyword, setDataStr } = useViewer((state) => ({
     keywords: state.keywords,
     addKeyword: state.addKeyword,
+    setDataStr: state.setDataStr,
   }));
+
+  useFocusKeyword(setPage);
 
   const onPointerUp = () => {
     if (tool !== 'HIGHLIGHT') return;
@@ -60,7 +63,18 @@ export default function PdfViewer({ url }: PdfViewerProps) {
         <div className={styles.viewer}>
           <Document
             file={url}
-            onLoadSuccess={(d) => {
+            onLoadSuccess={async (d) => {
+              // save all text
+              const data: string[][] = [];
+              for (let i = 1; i <= d.numPages; i++) {
+                data.push(
+                  (await (await d.getPage(i)).getTextContent()).items.map<string>((v) => {
+                    return (v as any).str;
+                  }),
+                );
+              }
+              console.log(data);
+              setDataStr(data);
               setNumPages(d.numPages);
             }}
           >
@@ -85,6 +99,22 @@ export default function PdfViewer({ url }: PdfViewerProps) {
       />
     </div>
   );
+}
+
+function useFocusKeyword(setPage: Dispatch<SetStateAction<number>>) {
+  const { setCallback, setKeyWord, setAllKeyword } = useViewer((state) => ({
+    setCallback: state.setFocusKeywordCallback,
+    setKeyWord: state.setKeyword,
+    setAllKeyword: state.setAllKeyword,
+  }));
+  useEffect(() => {
+    setCallback((keyword, location) => {
+      setPage(location[0]);
+      setAllKeyword(false);
+      setKeyWord(keyword, true);
+    });
+    return () => setCallback(undefined);
+  }, [setAllKeyword, setCallback, setKeyWord, setPage]);
 }
 
 interface Pos {
