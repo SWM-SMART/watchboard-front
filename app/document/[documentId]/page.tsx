@@ -1,10 +1,9 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { ReactNode, SetStateAction, Suspense, useEffect, useState } from 'react';
+import { ReactNode, Suspense, useEffect, useState } from 'react';
 import styles from './page.module.css';
 import { getDocument } from '@/utils/api';
 import LoadingScreen from '../../../components/LoadingScreen';
-import OverlayWrapper from '@/components/OverlayWrapper';
 import BottomToolBar from './components/BottomToolBar';
 import { useViewer } from '@/states/viewer';
 import PdfViewer from '@/components/PdfViewer';
@@ -17,7 +16,6 @@ interface DocumentPageProps {
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const [overlay, setOverlay] = useState<ReactNode | null>(null);
   const documentData = useDocument(parseInt(params.documentId));
 
   const resetViewer = useViewer((state) => state.reset);
@@ -62,7 +60,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
         <div className={styles.content}>
           <SwitchView viewTypes={['HOME', 'DATA']}>
             <GraphViewer />
-            <PdfViewer url={documentData.data.url} sideBar={true} />
+            <PdfViewer url={documentData.data.url} />
           </SwitchView>
         </div>
       </div>
