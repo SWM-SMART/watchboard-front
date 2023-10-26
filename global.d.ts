@@ -208,3 +208,9 @@ interface ObjBundle {
   h: number;
   objs: Obj[];
 }
+
+interface KeywordSourceResult {
+  str: string;
+  keyword: string;
+  location: number[];
+}
