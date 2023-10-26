@@ -16,13 +16,19 @@ interface DocumentPageProps {
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const documentData = useDocument(parseInt(params.documentId));
+  const { resetViewer, dataSource, loadDocument, documentData } = useViewer((state) => ({
+    documentData: state.document,
+    resetViewer: state.reset,
+    dataSource: state.dataSource,
+    loadDocument: state.loadDocument,
+  }));
 
-  const resetViewer = useViewer((state) => state.reset);
   // reset viewer
   useEffect(() => {
     resetViewer();
-  }, [resetViewer]);
+    // load document
+    loadDocument(parseInt(params.documentId));
+  }, [loadDocument, params.documentId, resetViewer]);
 
   const [sideBarWidth, setSideBarWidth] = useState<number>(500);
   const [dividerActive, setDividerActive] = useState<boolean>(false);
@@ -60,13 +66,28 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
         <div className={styles.content}>
           <SwitchView viewTypes={['HOME', 'DATA']}>
             <GraphViewer />
-            <PdfViewer url={documentData.data.url} />
+            <DataViewer type={documentData.dataType} />
           </SwitchView>
         </div>
       </div>
       <BottomToolBar />
     </div>
   );
+}
+
+interface DataViewerProps {
+  type: WBSourceDataType;
+}
+
+function DataViewer({ type }: DataViewerProps) {
+  const dataSource = useViewer((state) => state.dataSource);
+  if (dataSource === null) return <></>;
+  switch (type) {
+    case 'pdf':
+      return <PdfViewer url={dataSource.url} />;
+    case 'audio':
+    case 'none':
+  }
 }
 
 function GraphViewer() {
@@ -102,22 +123,4 @@ function SwitchView({ children, viewTypes }: SwitchViewProps) {
       })}
     </>
   );
-}
-
-function useDocument(documentId: number) {
-  const { document, setDocument } = useViewer((state) => ({
-    document: state.document,
-    setDocument: state.setDocument,
-  }));
-
-  useEffect(() => {
-    (async () => {
-      // get raw document data
-      const newDocument = await getDocument(documentId);
-      // construct tree
-      setDocument(newDocument);
-    })();
-  }, [documentId, setDocument]);
-
-  return document;
 }
