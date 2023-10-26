@@ -11,9 +11,9 @@ interface GraphCanvasProps {
 }
 
 export default function GraphCanvas({ style }: GraphCanvasProps) {
-  const graphData = useViewer((state) => state.document?.graphData);
+  const mindMapData = useViewer((state) => state.mindMapData);
 
-  if (graphData === undefined) return <></>;
+  if (mindMapData === null) return <></>;
 
   return (
     <Canvas
@@ -24,7 +24,7 @@ export default function GraphCanvas({ style }: GraphCanvasProps) {
       orthographic
     >
       <ambientLight />
-      <GraphRenderer data={graphData} />
+      <GraphRenderer data={mindMapData} />
     </Canvas>
   );
 }

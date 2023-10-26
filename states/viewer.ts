@@ -1,7 +1,10 @@
+import { getDataSource, getDocument, getMindMapData } from '@/utils/api';
 import { constructRootObjTree, objNodeSorter, translateObj } from '@/utils/whiteboardHelper';
 import { create } from 'zustand';
 
 interface ViewerState {
+  dataSource: WBSourceData | null;
+  mindMapData: GraphData | null;
   view: ViewerPage;
   document: WBDocument | null;
   selectedNode?: NodeData;
@@ -28,9 +31,12 @@ interface ViewerActions {
   setFocusKeywordCallback: (
     callback: ((keyword: string, location: number[]) => void) | undefined,
   ) => void;
+  loadDocument: (documentId: number) => void;
 }
 
 const initialState = {
+  dataSource: null,
+  mindMapData: null,
   selectedNode: undefined,
   view: 'HOME',
   document: null,
@@ -97,4 +103,14 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     return undefined;
   },
   setFocusKeywordCallback: (callback) => set({ focusKeywordCallback: callback }),
+  loadDocument: async (documentId) => {
+    // fetch document
+    const newDocument = await getDocument(documentId);
+    // fetch sourceData
+    const newDataSource = await getDataSource(documentId, newDocument.dataType);
+    // fetch mindMapData
+    const newMindMapData = await getMindMapData(documentId);
+
+    set({ document: newDocument, dataSource: newDataSource, mindMapData: newMindMapData });
+  },
 }));

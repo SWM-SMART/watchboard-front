@@ -30,12 +30,13 @@ export async function refreshToken(): Promise<string | null> {
   );
 }
 
-export async function generateGraph(text: TextRequest): Promise<GraphData> {
-  return (await httpPost(`${AI_BASE_URL}/mindmap`, text))?.json();
+export async function getMindMapData(documentId: number): Promise<GraphData> {
+  return (await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap`))?.json();
 }
 
-export async function saveDocument(documentId: number, documentData: WBDocumentData) {
-  // TODO: validation before sending
-  const documentDataObject = Object.fromEntries(documentData);
-  await httpPost(`${API_BASE_URL}/documents/${documentId}/data`, documentDataObject);
+export async function getDataSource(
+  documentId: number,
+  type: WBSourceDataType,
+): Promise<WBSourceData> {
+  return (await httpGet(`${API_BASE_URL}/documents/${documentId}/${type}`))?.json();
 }
