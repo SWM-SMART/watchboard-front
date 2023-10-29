@@ -10,6 +10,7 @@ import PdfViewer from '@/components/DataViewer/PdfViewer';
 import NodeInfo from '@/components/NodeInfo';
 const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: false });
 import 'material-symbols';
+import AudioViewer from '@/components/DataViewer/AudioViewer';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -86,6 +87,7 @@ function DataViewer({ type }: DataViewerProps) {
     case 'pdf':
       return <PdfViewer dataSource={dataSource} />;
     case 'audio':
+      return <AudioViewer dataSource={dataSource} />;
     case 'none':
   }
 }
