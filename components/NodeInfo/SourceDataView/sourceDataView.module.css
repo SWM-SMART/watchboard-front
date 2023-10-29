@@ -1,0 +1,20 @@
+.container {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--primary-dark);
+  color: var(--foreground);
+  border-radius: 10px;
+}
+
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+}
+
+.buttonContainer {
+  display: flex;
+  text-align: center;
+  flex-direction: row;
+}

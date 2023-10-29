@@ -54,6 +54,8 @@ interface CircleOptions {
   color?: string;
 }
 
+type ViewerPage = 'HOME' | 'DATA';
+
 interface ThreeGraphData {
   nodes: NodeDataLegacy[];
   links: LinkDataLegacy[];
@@ -64,6 +66,8 @@ type ExtendedSpriteText = import('three-spritetext').default & {
 };
 
 interface NodeData {
+  children: NodeData[];
+  parent?: NodeData;
   id: number;
   label: string;
   labelMesh?: ExtendedSpriteText;
@@ -143,26 +147,21 @@ interface Coord {
 
 type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE' | 'CIRCLE' | 'HIGHLIGHT';
 
-interface WBDocumentMetadata {
+interface WBDocument {
   documentId: number;
   documentName: string;
-  data: WBSourceData;
+  dataType: WBSourceDataType;
   createdAt: number;
   modifiedAt: number;
 }
 
 type WBDocumentData = Map<string, Obj>;
 
-interface WBDocument extends WBDocumentMetadata {
-  documentData: WBDocumentData;
-  graphData: GraphData;
-}
-
 type WBDocumentListReponse = WBDocumentMetaData[];
 
 type WBDocumentReponse = WBDocument;
 
-type WBDocumentCreateResponse = WBDocumentMetadata;
+type WBDocumentCreateResponse = WBDocument;
 interface UserData {
   userId: number;
   nickname: string;
@@ -190,11 +189,22 @@ interface GraphData {
   graph: Map<string, number[]>;
 }
 
-type WBSourceDataType = 'pdf' | 'audio';
+type WBSourceDataType = 'pdf' | 'audio' | 'none';
 
 interface WBSourceData {
-  type: WBSourceDataType;
   url: string;
+}
+
+type WBSourcePdfData = WBSourceData;
+
+interface WBSourceAudioData extends WBSourceData {
+  data: SpeechData[];
+}
+
+interface SpeechData {
+  start: number;
+  end: number;
+  text: string;
 }
 
 interface ObjBundle {
@@ -203,4 +213,10 @@ interface ObjBundle {
   w: number;
   h: number;
   objs: Obj[];
+}
+
+interface KeywordSourceResult {
+  str: string;
+  keyword: string;
+  location: number[];
 }

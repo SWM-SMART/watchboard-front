@@ -1,0 +1,119 @@
+.container {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  gap: 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--foreground);
+  border-radius: 10px;
+}
+
+.nodeContainer:first-child .node::before {
+  content: none;
+}
+
+.nodeContainer:last-child .node::after {
+  content: none;
+}
+
+.nodeChildContainer {
+  flex: 1 1 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  height: 200px;
+}
+
+.nodeChildContainer .nodeContainer:first-child .node::before {
+  content: '';
+}
+
+.nodeContainer {
+  list-style-type: none;
+  position: relative;
+  display: flex;
+  padding: 0;
+  justify-content: center;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.node {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+}
+
+.node:first-child::before {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 100%;
+  width: 50%;
+  border-left: solid var(--secondary-light) 1px;
+  border-top: solid var(--secondary-light) 1px;
+  border-bottom: none;
+}
+
+.node:last-child::before {
+  position: absolute;
+  left: 0;
+  top: -50%;
+  height: 100%;
+  width: 50%;
+  border-left: solid var(--secondary-light) 1px;
+  border-bottom: solid var(--secondary-light) 1px;
+  border-top: none;
+}
+
+.node:only-child::before {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 0;
+  width: 50%;
+  border-bottom: solid var(--secondary-light) 1px;
+}
+
+.node::before {
+  z-index: 0;
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 100%;
+  width: 50%;
+  border-left: solid var(--secondary-light) 1px;
+  border-top: solid var(--secondary-light) 1px;
+}
+
+.node::after {
+  z-index: 0;
+  content: '';
+  width: 50%;
+  position: absolute;
+  top: 50%;
+  right: 0;
+  border-bottom: solid var(--secondary-light) 1px;
+}
+
+.label {
+  margin: 3px;
+  cursor: pointer;
+  z-index: 1;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background-color: var(--secondary-light);
+  color: var(--foreground);
+  text-align: center;
+  position: relative;
+}
+
+.current {
+  cursor: default;
+  background-color: var(--secondary-dark);
+}

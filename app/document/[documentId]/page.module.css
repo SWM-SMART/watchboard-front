@@ -6,9 +6,18 @@
 
 .divider {
   background-color: var(--primary-light);
-  width: 10px;
+  width: 15px;
   cursor: col-resize;
   user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  text-align: center;
+  color: var(--background);
+  rotate: 90deg;
 }
 
 .container {

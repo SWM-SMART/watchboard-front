@@ -1,0 +1,7 @@
+.documentControls {
+  gap: 5px;
+  height: 46px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}

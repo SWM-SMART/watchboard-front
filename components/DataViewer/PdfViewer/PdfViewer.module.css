@@ -1,9 +1,10 @@
 .container {
+  background-color: var(--background);
   display: flex;
   height: 100%;
   width: 100%;
-  flex: 0;
-  flex-direction: column;
+  flex: 1;
+  flex-direction: row;
 }
 
 .viewerContainer {
@@ -17,4 +18,11 @@
 
 .viewer {
   margin: 0 auto;
+}
+
+.dialogue {
+  width: 100%;
+  background-color: var(--background);
+  flex-grow: 1;
+  overflow: auto;
 }
