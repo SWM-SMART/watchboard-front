@@ -28,6 +28,7 @@
 }
 
 .utils {
+  padding: 10px 0;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -38,21 +39,6 @@
   --background: var(--foreground);
   color: var(--background);
   text-align: center;
-}
-
-.documentControls {
-  gap: 5px;
-  height: 46px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.tools {
-  gap: 10px;
-  height: 46px;
-  display: flex;
-  align-items: center;
 }
 
 .keywords {
@@ -84,4 +70,11 @@
   text-align: center;
   color: var(--background);
   rotate: 90deg;
+}
+
+.tools {
+  gap: 10px;
+  height: 46px;
+  display: flex;
+  align-items: center;
 }

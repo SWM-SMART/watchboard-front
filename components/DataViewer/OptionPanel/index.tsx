@@ -1,35 +1,23 @@
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react';
 import styles from './optionPanel.module.css';
 import 'material-symbols';
 import { useViewer } from '@/states/viewer';
 import SmallIconButton from '@/components/Button/SmallIconButton';
 
-const DEFAULT_WIDTH = 300;
-const SCALE_MAX = 10;
-const SCALE_MIN = 1;
+const DEFAULT_WIDTH = 350;
 
 interface OptionPanelProps {
-  currentTool: Tool;
-  setCurrentTool: (tool: Tool) => void;
-  scale: number;
-  setScale: Dispatch<SetStateAction<number>>;
-  page: number;
-  setPage: Dispatch<SetStateAction<number>>;
-  numPages: number;
+  children?: ReactNode;
 }
 
-export default function OptionPanel({
-  currentTool,
-  setCurrentTool,
-  scale,
-  setScale,
-  page,
-  setPage,
-  numPages,
-}: OptionPanelProps) {
+export default function OptionPanel({ children }: OptionPanelProps) {
   const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
   const [drag, setDrag] = useState<boolean>(false);
-  const keywords = useViewer((state) => state.keywords);
+  const { keywords, currentTool, setCurrentTool } = useViewer((state) => ({
+    keywords: state.keywords,
+    currentTool: state.currentTool,
+    setCurrentTool: state.setCurrentTool,
+  }));
 
   useEffect(() => {
     if (!drag) return;
@@ -58,47 +46,7 @@ export default function OptionPanel({
       </div>
       <div className={styles.content}>
         <div className={styles.utils}>
-          <div className={styles.documentControls}>
-            <SmallIconButton
-              icon="zoom_out"
-              selected={false}
-              onClick={() => {
-                setScale((scale) => Math.max(scale - 0.1, SCALE_MIN));
-              }}
-            />
-            <p style={{ width: '50px' }}>{`${Math.round(scale * 100)}%`}</p>
-            <SmallIconButton
-              icon="zoom_in"
-              selected={false}
-              onClick={() => {
-                setScale((scale) => Math.min(scale + 0.1, SCALE_MAX));
-              }}
-            />
-            <p>|</p>
-            <SmallIconButton
-              icon="navigate_before"
-              selected={false}
-              onClick={() => {
-                setPage((page) => {
-                  const newPage = page - 1;
-                  if (newPage < 0) return 0;
-                  return newPage;
-                });
-              }}
-            />
-            <p style={{ width: '50px' }}>{page + 1}</p>
-            <SmallIconButton
-              icon="navigate_next"
-              selected={false}
-              onClick={() => {
-                setPage((page) => {
-                  const newPage = page + 1;
-                  if (newPage >= numPages) return numPages - 1;
-                  return newPage;
-                });
-              }}
-            />
-          </div>
+          {children}
           <div className={styles.tools}>
             <SmallIconButton
               onClick={() => setCurrentTool('SELECT')}

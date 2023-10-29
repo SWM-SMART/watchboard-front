@@ -6,7 +6,7 @@ import { getDocument } from '@/utils/api';
 import LoadingScreen from '../../../components/LoadingScreen';
 import BottomToolBar from './components/BottomToolBar';
 import { useViewer } from '@/states/viewer';
-import PdfViewer from '@/components/PdfViewer';
+import PdfViewer from '@/components/DataViewer/PdfViewer';
 import NodeInfo from '@/components/NodeInfo';
 const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: false });
 import 'material-symbols';
@@ -84,7 +84,7 @@ function DataViewer({ type }: DataViewerProps) {
   if (dataSource === null) return <></>;
   switch (type) {
     case 'pdf':
-      return <PdfViewer url={dataSource.url} />;
+      return <PdfViewer dataSource={dataSource} />;
     case 'audio':
     case 'none':
   }
