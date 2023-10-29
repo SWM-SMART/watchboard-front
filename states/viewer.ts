@@ -1,5 +1,4 @@
 import { getDataSource, getDocument, getMindMapData } from '@/utils/api';
-import { constructRootObjTree, objNodeSorter, translateObj } from '@/utils/whiteboardHelper';
 import { create } from 'zustand';
 
 interface ViewerState {
@@ -13,6 +12,7 @@ interface ViewerState {
   keywords: Map<string, boolean>;
   dataStr: string[][];
   focusKeywordCallback: ((keyword: string, location: number[]) => void) | undefined;
+  currentTool: Tool;
 }
 
 interface ViewerActions {
@@ -32,6 +32,7 @@ interface ViewerActions {
     callback: ((keyword: string, location: number[]) => void) | undefined,
   ) => void;
   loadDocument: (documentId: number) => void;
+  setCurrentTool: (tool: Tool) => void;
 }
 
 const initialState = {
@@ -45,6 +46,7 @@ const initialState = {
   keywords: new Map<string, boolean>(),
   dataStr: [],
   focusKeywordCallback: undefined,
+  currentTool: 'SELECT',
 } as ViewerState;
 
 export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
@@ -97,7 +99,7 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
           };
         }
       }
-      jb = 0;
+      jb = -1;
     }
     // no match
     return undefined;
@@ -111,6 +113,20 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     // fetch mindMapData
     const newMindMapData = await getMindMapData(documentId);
 
-    set({ document: newDocument, dataSource: newDataSource, mindMapData: newMindMapData });
+    // local keyword map
+    const newKeywords = new Map<string, boolean>();
+    for (const keyword of newMindMapData.keywords) {
+      newKeywords.set(keyword, false);
+    }
+
+    set({
+      document: newDocument,
+      dataSource: newDataSource,
+      mindMapData: newMindMapData,
+      keywords: newKeywords,
+    });
+  },
+  setCurrentTool: (tool) => {
+    set({ currentTool: tool });
   },
 }));
