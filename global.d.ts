@@ -195,6 +195,18 @@ interface WBSourceData {
   url: string;
 }
 
+type WBSourcePdfData = WBSourceData;
+
+interface WBSourceAudioData extends WBSourceData {
+  data: SpeechData[];
+}
+
+interface SpeechData {
+  start: number;
+  end: number;
+  text: string;
+}
+
 interface ObjBundle {
   x: number;
   y: number;
