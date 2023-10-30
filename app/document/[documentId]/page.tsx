@@ -2,7 +2,6 @@
 import dynamic from 'next/dynamic';
 import { ReactNode, Suspense, useEffect, useState } from 'react';
 import styles from './page.module.css';
-import { getDocument } from '@/utils/api';
 import LoadingScreen from '../../../components/LoadingScreen';
 import BottomToolBar from './components/BottomToolBar';
 import { useViewer } from '@/states/viewer';
@@ -11,16 +10,16 @@ import NodeInfo from '@/components/NodeInfo';
 const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: false });
 import 'material-symbols';
 import AudioViewer from '@/components/DataViewer/AudioViewer';
+import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 
 interface DocumentPageProps {
   params: { documentId: string };
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const { resetViewer, dataSource, loadDocument, documentData } = useViewer((state) => ({
+  const { resetViewer, loadDocument, documentData } = useViewer((state) => ({
     documentData: state.document,
     resetViewer: state.reset,
-    dataSource: state.dataSource,
     loadDocument: state.loadDocument,
   }));
 
@@ -72,6 +71,40 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
         </div>
       </div>
       <BottomToolBar />
+      <UpdateAlert />
+    </div>
+  );
+}
+
+function UpdateAlert() {
+  const { ready, apply } = useViewer((state) => ({
+    ready: state.newMindMapData !== null,
+    apply: state.applySyncDocument,
+  }));
+  const [open, setOpen] = useState<boolean>(false);
+  useEffect(() => {
+    setOpen(ready);
+    return () => setOpen(false);
+  }, [ready]);
+
+  if (!ready) return <></>;
+
+  return (
+    <div
+      className={styles.alertContainer}
+      style={{ transform: open ? 'translateX(0)' : 'translateX(100%) translateX(-24px)' }}
+    >
+      <span
+        style={{ cursor: 'pointer' }}
+        className={`material-symbols-outlined ${styles.icon}`}
+        onClick={() => setOpen((open) => !open)}
+      >
+        drag_handle
+      </span>
+      <div className={styles.alertContent}>
+        <p>{'변경사항이 반영된 마인드맵이 준비되었습니다!'}</p>
+        <ClickableBackgroundButton invert={true} text={'적용'} onClick={() => apply()} />
+      </div>
     </div>
   );
 }
@@ -108,6 +141,7 @@ interface SwitchViewProps {
   children: ReactNode[];
   viewTypes: ViewerPage[];
 }
+
 function SwitchView({ children, viewTypes }: SwitchViewProps) {
   const view = useViewer((state) => state.view);
   return (
