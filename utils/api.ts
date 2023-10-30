@@ -1,4 +1,4 @@
-import { httpDelete, httpGet, httpPost } from './http';
+import { httpDelete, httpGet, httpPost, httpPut } from './http';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
@@ -41,10 +41,9 @@ export async function getDataSource(
   return (await httpGet(`${API_BASE_URL}/documents/${documentId}/${type}`))?.json();
 }
 
-export async function deleteKeywords(documentId: number, keywords: string[]) {
-  return await httpDelete(`${API_BASE_URL}/mindmap/keyword`, { keywords }, true);
-}
-
-export async function addKeywords(documentId: number, keywords: string[]) {
-  return await httpPost(`${API_BASE_URL}/mindmap/keyword`, { keywords }, true);
+export async function updateKeywords(documentId: number, addition: string[], deletion: string[]) {
+  return await httpPut(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword`, {
+    add: addition,
+    delete: deletion,
+  });
 }
