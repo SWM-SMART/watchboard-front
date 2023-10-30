@@ -17,7 +17,7 @@ export async function createDocument(documentName: string): Promise<WBDocumentCr
 }
 
 export async function deleteDocument(documentId: number) {
-  await httpDelete(`${API_BASE_URL}/documents/${documentId}`);
+  await httpDelete(`${API_BASE_URL}/documents/${documentId}`, null);
 }
 
 export async function getUserData(): Promise<UserDataResponse> {
@@ -39,4 +39,12 @@ export async function getDataSource(
   type: WBSourceDataType,
 ): Promise<WBSourceData> {
   return (await httpGet(`${API_BASE_URL}/documents/${documentId}/${type}`))?.json();
+}
+
+export async function deleteKeywords(documentId: number, keywords: string[]) {
+  return await httpDelete(`${API_BASE_URL}/mindmap/keyword`, { keywords }, true);
+}
+
+export async function addKeywords(documentId: number, keywords: string[]) {
+  return await httpPost(`${API_BASE_URL}/mindmap/keyword`, { keywords }, true);
 }
