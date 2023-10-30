@@ -102,7 +102,11 @@ function TextBubble({
   }));
 
   const keywordPos = useMemo(() => {
-    return mergePos(getKeywordPos(data.text, keywords)).reverse();
+    const keywordStr: string[] = [];
+    for (const [k, v] of keywords.entries()) {
+      if (v.enabled) keywordStr.push(k);
+    }
+    return mergePos(getKeywordPos(data.text, keywordStr)).reverse();
   }, [data.text, keywords]);
 
   const highlightedText = keywordPos.map((v, i) => {

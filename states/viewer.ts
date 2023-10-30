@@ -9,7 +9,7 @@ interface ViewerState {
   selectedNode?: NodeData;
   searchQuery: string;
   focusNodeCallback: ((node: NodeData) => void) | undefined;
-  keywords: Map<string, boolean>;
+  keywords: Map<string, KeywordState>;
   dataStr: string[][];
   focusKeywordCallback: ((keyword: string, location: number[]) => void) | undefined;
   currentTool: Tool;
@@ -43,7 +43,7 @@ const initialState = {
   document: null,
   searchQuery: '',
   focusNodeCallback: undefined,
-  keywords: new Map<string, boolean>(),
+  keywords: new Map<string, KeywordState>(),
   dataStr: [],
   focusKeywordCallback: undefined,
   currentTool: 'SELECT',
@@ -64,19 +64,30 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
   setFocusNodeCallback: (callback) => set({ focusNodeCallback: callback }),
   addKeyword: (keyword, state) =>
-    set({ keywords: new Map([...get().keywords, [keyword, state === true]]) }),
+    set({
+      keywords: new Map([...get().keywords, [keyword, { type: 'ADD', enabled: state === true }]]),
+    }),
   deleteKeyword: (keyword) => {
-    const newMap = new Map([...get().keywords]);
-    newMap.delete(keyword);
-    set({ keywords: newMap });
+    const keywords = get().keywords;
+    set({
+      keywords: new Map([...keywords]).set(keyword, {
+        enabled: false,
+        type: 'DELETE',
+      }),
+    });
   },
   setKeyword: (keyword, state) => {
-    set({ keywords: new Map([...get().keywords]).set(keyword, state) });
+    const keywords = get().keywords;
+    const prevState = keywords.get(keyword);
+    if (prevState === undefined) return;
+    set({
+      keywords: new Map([...keywords]).set(keyword, { ...prevState, enabled: state }),
+    });
   },
   setAllKeyword: (state) => {
     const keywords = get().keywords;
-    for (const k of keywords.keys()) {
-      keywords.set(k, state);
+    for (const [k, v] of keywords.entries()) {
+      keywords.set(k, { ...v, enabled: state });
     }
     set({ keywords });
   },
@@ -114,9 +125,12 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     const newMindMapData = await getMindMapData(documentId);
 
     // local keyword map
-    const newKeywords = new Map<string, boolean>();
+    const newKeywords = new Map<string, KeywordState>();
     for (const keyword of newMindMapData.keywords) {
-      newKeywords.set(keyword, false);
+      newKeywords.set(keyword, {
+        enabled: false,
+        type: 'STABLE',
+      });
     }
 
     set({
