@@ -4,6 +4,7 @@ import { create } from 'zustand';
 interface ViewerState {
   dataSource: WBSourceData | null;
   mindMapData: GraphData | null;
+  newMindMapData: GraphData | null;
   view: ViewerPage;
   document: WBDocument | null;
   selectedNode?: NodeData;
@@ -33,6 +34,9 @@ interface ViewerActions {
   ) => void;
   loadDocument: (documentId: number) => void;
   setCurrentTool: (tool: Tool) => void;
+  syncDocument: () => void;
+  applySyncDocument: () => void;
+  clearSyncDocument: () => void;
 }
 
 const initialState = {
@@ -47,6 +51,7 @@ const initialState = {
   dataStr: [],
   focusKeywordCallback: undefined,
   currentTool: 'SELECT',
+  newMindMapData: null,
 } as ViewerState;
 
 export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
@@ -142,5 +147,34 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
   },
   setCurrentTool: (tool) => {
     set({ currentTool: tool });
+  },
+  syncDocument: async () => {
+    const document = get().document;
+    if (document === null) return;
+    // fetch mindMapData
+    const newMindMapData = await getMindMapData(document.documentId);
+    set({ newMindMapData: newMindMapData });
+  },
+  applySyncDocument: () => {
+    const newMindMapData = get().newMindMapData;
+    if (newMindMapData === null) return;
+    // local keyword map
+    const newKeywords = new Map<string, KeywordState>();
+    for (const keyword of newMindMapData.keywords) {
+      newKeywords.set(keyword, {
+        enabled: false,
+        type: 'STABLE',
+      });
+    }
+    set({
+      selectedNode: undefined,
+      mindMapData: newMindMapData,
+      keywords: newKeywords,
+      newMindMapData: null,
+      view: 'HOME',
+    });
+  },
+  clearSyncDocument: () => {
+    set({ newMindMapData: null });
   },
 }));
