@@ -226,3 +226,7 @@ interface KeywordState {
   enabled: boolean;
   type: KeywordType;
 }
+
+interface KeywordResponse {
+  text: string;
+}

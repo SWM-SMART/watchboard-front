@@ -47,3 +47,12 @@ export async function updateKeywords(documentId: number, addition: string[], del
     delete: deletion,
   });
 }
+
+export async function getKeywordInfo(
+  documentId: number,
+  keyword: string,
+): Promise<KeywordResponse> {
+  return (
+    await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`)
+  )?.json();
+}
