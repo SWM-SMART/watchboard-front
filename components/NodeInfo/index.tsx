@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import styles from './nodeInfo.module.css';
-import { lipsum } from '@/utils/whiteboardHelper';
 import SmallActionButton from '../Button/SmallActionButton';
 import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
 import SourceDataView from './SourceDataView';
+import { getKeywordInfo } from '@/utils/api';
 
 interface NodeInfoProps {
   node?: NodeData;
@@ -13,13 +13,17 @@ export default function NodeInfo({ node }: NodeInfoProps) {
   const [data, setData] = useState<string>();
   const [sourceView, setSourceView] = useState<boolean>(true);
   const [relationView, setRelationView] = useState<boolean>(true);
+  const documentId = useViewer((state) => state.document?.documentId);
 
   useEffect(() => {
-    // TODO: fetch node data
-    if (node === undefined) return;
-    setData(lipsum);
+    if (node === undefined || documentId === undefined) return;
+    (async () => {
+      const data = await getKeywordInfo(documentId, node.label);
+      setData(data.text);
+    })();
+
     return () => setData(undefined);
-  }, [node]);
+  }, [documentId, node]);
 
   const { setFocus, setView } = useViewer((state) => ({
     setFocus: state.focusNodeCallback,

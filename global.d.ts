@@ -54,7 +54,7 @@ interface CircleOptions {
   color?: string;
 }
 
-type ViewerPage = 'HOME' | 'DATA';
+type ViewerPage = 'HOME' | 'DATA' | 'LOAD';
 
 interface ThreeGraphData {
   nodes: NodeDataLegacy[];
@@ -219,4 +219,14 @@ interface KeywordSourceResult {
   str: string;
   keyword: string;
   location: number[];
+}
+
+type KeywordType = 'ADD' | 'STABLE' | 'DELETE';
+interface KeywordState {
+  enabled: boolean;
+  type: KeywordType;
+}
+
+interface KeywordResponse {
+  text: string;
 }

@@ -28,9 +28,18 @@ export async function httpPost(url: string, body: any, retry: boolean = true) {
   return doGetRes(getRes, headers, retry);
 }
 
-export async function httpDelete(url: string, retry: boolean = true) {
+export async function httpPut(url: string, body: any, retry: boolean = true) {
   const headers = createHeaders();
-  const getRes = (headers: Headers) => fetch(url, { method: 'DELETE', headers: headers });
+  const getRes = (headers: Headers) =>
+    fetch(url, { method: 'PUT', headers: headers, body: JSON.stringify(body) });
+
+  return doGetRes(getRes, headers, retry);
+}
+
+export async function httpDelete(url: string, body: any, retry: boolean = true) {
+  const headers = createHeaders();
+  const getRes = (headers: Headers) =>
+    fetch(url, { method: 'DELETE', headers: headers, body: JSON.stringify(body) });
 
   return doGetRes(getRes, headers, retry);
 }

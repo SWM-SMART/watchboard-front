@@ -1,4 +1,10 @@
-export function highlightKeywordStr(input: string, keywords: Map<string, boolean>) {
+export function highlightKeywordStr(input: string, keywordStates: Map<string, KeywordState>) {
+  // get keywords
+  const keywords: string[] = [];
+  for (const [k, v] of keywordStates.entries()) {
+    if (v.enabled) keywords.push(k);
+  }
+
   // highlights keywords
   const pos = getKeywordPos(input, keywords);
 
@@ -11,15 +17,14 @@ export function highlightKeywordStr(input: string, keywords: Map<string, boolean
   return str;
 }
 
-export function getKeywordPos(input: string, keywords: Map<string, boolean>) {
+export function getKeywordPos(input: string, keywords: string[]) {
   const pos: Pos[] = [];
-  for (const [s, f] of keywords.entries()) {
+  for (const keyword of keywords) {
     // find all occurences
-    if (!f) continue;
-    const matches = input.matchAll(new RegExp(s, 'gi'));
+    const matches = input.matchAll(new RegExp(keyword, 'gi'));
     for (const m of matches) {
       if (m.index === undefined) continue;
-      pos.push({ start: m.index, end: m.index + s.length });
+      pos.push({ start: m.index, end: m.index + keyword.length });
     }
   }
   return pos;

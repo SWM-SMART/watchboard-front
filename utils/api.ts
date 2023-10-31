@@ -1,4 +1,4 @@
-import { httpDelete, httpGet, httpPost } from './http';
+import { httpDelete, httpGet, httpPost, httpPut } from './http';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
@@ -17,7 +17,7 @@ export async function createDocument(documentName: string): Promise<WBDocumentCr
 }
 
 export async function deleteDocument(documentId: number) {
-  await httpDelete(`${API_BASE_URL}/documents/${documentId}`);
+  await httpDelete(`${API_BASE_URL}/documents/${documentId}`, null);
 }
 
 export async function getUserData(): Promise<UserDataResponse> {
@@ -39,4 +39,20 @@ export async function getDataSource(
   type: WBSourceDataType,
 ): Promise<WBSourceData> {
   return (await httpGet(`${API_BASE_URL}/documents/${documentId}/${type}`))?.json();
+}
+
+export async function updateKeywords(documentId: number, addition: string[], deletion: string[]) {
+  return await httpPut(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword`, {
+    add: addition,
+    delete: deletion,
+  });
+}
+
+export async function getKeywordInfo(
+  documentId: number,
+  keyword: string,
+): Promise<KeywordResponse> {
+  return (
+    await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`)
+  )?.json();
 }

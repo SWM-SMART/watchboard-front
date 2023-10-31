@@ -12,11 +12,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--background);
 }
 
 .icon {
   text-align: center;
-  color: var(--background);
   rotate: 90deg;
 }
 
@@ -70,4 +70,30 @@
   flex-direction: row;
   min-height: 0;
   min-width: 0;
+}
+
+.alertContainer {
+  transition: transform 0.3s ease-out;
+  opacity: 0.9;
+  flex-direction: row;
+  margin-top: 10px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  color: var(--primary-dark);
+  position: fixed;
+  background-color: var(--background);
+  border: 1px solid #c5c5c583;
+  border-radius: 10px 0 0 10px;
+  top: 0;
+  right: 0;
+}
+
+.alertContent {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
 }
