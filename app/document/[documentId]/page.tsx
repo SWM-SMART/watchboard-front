@@ -11,6 +11,10 @@ const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: fal
 import 'material-symbols';
 import AudioViewer from '@/components/DataViewer/AudioViewer';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
+import Dialogue from '@/components/Dialogue';
+import FileInput from '@/components/Dialogue/Input/FileInput';
+import { useToast } from '@/states/toast';
+import { uploadFile } from '@/utils/api';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -122,7 +126,38 @@ function DataViewer({ type }: DataViewerProps) {
     case 'audio':
       return <AudioViewer dataSource={dataSource} />;
     case 'none':
+      return <DataUploadDialogue />;
   }
+}
+
+function DataUploadDialogue() {
+  const pushToast = useToast((state) => state.pushToast);
+  const documentId = useViewer((state) => state.document?.documentId);
+  return (
+    <div className={styles.uploadDialogue}>
+      <Dialogue
+        enabled={true}
+        title={'자료 업로드'}
+        onSubmit={(e) => {
+          if (documentId === undefined) return;
+          const fileInput = (e.target as any).file as HTMLInputElement;
+          // upload file (if exists)
+          (async () => {
+            if (fileInput.files !== null && fileInput.files.length > 0) {
+              await uploadFile(documentId, fileInput.files[0]);
+            }
+          })();
+        }}
+      >
+        <FileInput
+          name="file"
+          types={['application/pdf', 'audio/mpeg']}
+          typeNames={['pdf', 'mp3']}
+          onError={(msg) => pushToast({ id: new Date().getTime(), duraton: 3000, msg: msg })}
+        />
+      </Dialogue>
+    </div>
+  );
 }
 
 function GraphViewer() {
