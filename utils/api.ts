@@ -1,4 +1,5 @@
 import { httpDelete, httpGet, httpPost, httpPut } from './http';
+import { throwError } from './ui';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
@@ -55,4 +56,19 @@ export async function getKeywordInfo(
   return (
     await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`)
   )?.json();
+}
+
+export async function uploadFile(documentId: number, file: File) {
+  const type = uploadFileType(file.type);
+  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, file, true, false);
+}
+
+function uploadFileType(type: string) {
+  switch (type) {
+    case 'application/pdf':
+      return 'pdf';
+    case 'audio/mpeg':
+      return 'audio';
+  }
+  throwError('지원하지 않는 파일형식 입니다.');
 }

@@ -4,6 +4,7 @@ import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBa
 import { useViewer } from '@/states/viewer';
 import 'material-symbols';
 import SmallIconButton from '@/components/Button/SmallIconButton';
+import { useRouter } from 'next/navigation';
 
 export default function BottomToolBar() {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -48,7 +49,9 @@ export default function BottomToolBar() {
       >
         <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
       </div>
+
       <Title />
+
       <ClickableBackgroundButton
         text={'마인드맵'}
         invert={view !== 'HOME'}
@@ -67,8 +70,17 @@ function Title() {
   const { title } = useViewer((state) => ({
     title: state.document?.documentName,
   }));
+  const router = useRouter();
 
-  return <p className={styles.title}>{title}</p>;
+  return (
+    <div className={styles.titleContainer}>
+      <div className={styles.backToList} onClick={() => router.push('/')}>
+        <span>문서</span>
+        <span className={`material-symbols-outlined`}>chevron_right</span>
+      </div>
+      <p className={styles.title}>{title}</p>
+    </div>
+  );
 }
 
 function Search() {

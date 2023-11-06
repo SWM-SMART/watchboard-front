@@ -25,3 +25,18 @@ export default function ClickableBackgroundButton({
     </div>
   );
 }
+
+interface BackgroundSubmitButtonProps {
+  text: string;
+  invert?: boolean;
+}
+
+export function BackgroundSubmitButton({ text, invert }: BackgroundSubmitButtonProps) {
+  return (
+    <input
+      type="submit"
+      className={`${styles.submit} ${invert ? styles.invert : null}`}
+      value={text}
+    />
+  );
+}
