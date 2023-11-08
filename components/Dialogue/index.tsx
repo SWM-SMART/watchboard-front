@@ -1,15 +1,19 @@
 'use client';
-import { ReactNode } from 'react';
+import { FormEvent, ReactNode, createContext } from 'react';
 import styles from './Dialogue.module.css';
-import ClickableBackgroundButton from '../BackgroundButton/ClickableBackgroundButton';
+import ClickableBackgroundButton, {
+  BackgroundSubmitButton,
+} from '../BackgroundButton/ClickableBackgroundButton';
 
 interface DialogueProps {
   enabled: boolean;
   title: string;
   children?: ReactNode;
   onCancel?: () => void;
-  onSubmit?: () => void;
+  onSubmit?: (e: FormEvent<HTMLFormElement>) => void;
 }
+
+const FormContext = createContext({});
 
 export default function Dialogue({
   enabled = true,
@@ -19,17 +23,17 @@ export default function Dialogue({
   onSubmit,
 }: DialogueProps) {
   return (
-    <div className={styles.container}>
+    <form className={styles.container} onSubmit={onSubmit}>
       <p className={styles.title}>{title}</p>
       <div className={styles.itemContainer}>{children}</div>
       {enabled ? (
         <div className={styles.buttonContainer}>
           <ClickableBackgroundButton text={'취소'} onClick={onCancel} invert={false} />
-          <ClickableBackgroundButton text={'확인'} onClick={onSubmit} invert={true} />
+          <BackgroundSubmitButton text={'확인'} invert={true} />
         </div>
       ) : (
         <></>
       )}
-    </div>
+    </form>
   );
 }

@@ -32,7 +32,7 @@ interface ObjDimensions {
 
 interface LiveGraphObj extends Obj {
   type: 'LIVEGRAPH';
-  data: MindmapResponse;
+  data: GraphData;
 }
 
 interface GraphNodeObj extends Obj {
@@ -54,12 +54,33 @@ interface CircleOptions {
   color?: string;
 }
 
-interface GraphData {
-  nodes: NodeData[];
-  links: LinkData[];
+type ViewerPage = 'HOME' | 'DATA' | 'LOAD';
+
+interface ThreeGraphData {
+  nodes: NodeDataLegacy[];
+  links: LinkDataLegacy[];
 }
 
+type ExtendedSpriteText = import('three-spritetext').default & {
+  initialScale: { x: number; y: number };
+};
+
 interface NodeData {
+  children: NodeData[];
+  parent?: NodeData;
+  id: number;
+  label: string;
+  labelMesh?: ExtendedSpriteText;
+  scale: number;
+  x?: number;
+  y?: number;
+  fx?: number;
+  fy?: number;
+  vx?: number;
+  vy?: number;
+}
+
+interface NodeDataLegacy {
   id: string;
   name: string;
   val: number;
@@ -69,6 +90,11 @@ interface NodeData {
 }
 
 interface LinkData {
+  source: number | NodeData;
+  target: number | NodeData;
+}
+
+interface LinkDataLegacy {
   source: string;
   target: string;
   color: string;
@@ -121,25 +147,21 @@ interface Coord {
 
 type Tool = 'HAND' | 'SELECT' | 'RECT' | 'TEXT' | 'LINE' | 'BUNDLE' | 'CIRCLE' | 'HIGHLIGHT';
 
-interface WBDocumentMetadata {
+interface WBDocument {
   documentId: number;
   documentName: string;
-  data: WBSourceData;
+  dataType: WBSourceDataType;
   createdAt: number;
   modifiedAt: number;
 }
 
 type WBDocumentData = Map<string, Obj>;
 
-interface WBDocument extends WBDocumentMetadata {
-  documentData: WBDocumentData;
-}
-
 type WBDocumentListReponse = WBDocumentMetaData[];
 
 type WBDocumentReponse = WBDocument;
 
-type WBDocumentCreateResponse = WBDocumentMetadata;
+type WBDocumentCreateResponse = WBDocument;
 interface UserData {
   userId: number;
   nickname: string;
@@ -161,17 +183,28 @@ interface TextRequest {
   text: string;
 }
 
-interface MindmapResponse {
+interface GraphData {
   root: number;
   keywords: string[];
   graph: Map<string, number[]>;
 }
 
-type WBSourceDataType = 'pdf' | 'audio';
+type WBSourceDataType = 'pdf' | 'audio' | 'none';
 
 interface WBSourceData {
-  type: WBSourceDataType;
   url: string;
+}
+
+type WBSourcePdfData = WBSourceData;
+
+interface WBSourceAudioData extends WBSourceData {
+  data: SpeechData[];
+}
+
+interface SpeechData {
+  start: number;
+  end: number;
+  text: string;
 }
 
 interface ObjBundle {
@@ -180,4 +213,20 @@ interface ObjBundle {
   w: number;
   h: number;
   objs: Obj[];
+}
+
+interface KeywordSourceResult {
+  str: string;
+  keyword: string;
+  location: number[];
+}
+
+type KeywordType = 'ADD' | 'STABLE' | 'DELETE';
+interface KeywordState {
+  enabled: boolean;
+  type: KeywordType;
+}
+
+interface KeywordResponse {
+  text: string;
 }

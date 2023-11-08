@@ -1,0 +1,118 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-radius: 0;
+  width: 100%;
+  background-color: var(--primary-dark);
+  overflow: clip;
+  user-select: none;
+}
+
+.handle {
+  cursor: col-resize;
+  height: 100%;
+  width: 24px;
+  flex: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.utils {
+  padding: 10px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px;
+  color: var(--background);
+  text-align: center;
+}
+
+.keywordsContainer {
+  padding: 0 5px 5px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  overflow: auto;
+  width: 100%;
+}
+
+.keywords {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.keyword {
+  padding: 2px 5px;
+  border-radius: 5px;
+  background-color: var(--secondary-light);
+  color: var(--primary-dark);
+  transition: background-color ease-out 0.3s;
+}
+
+.enabled {
+  background-color: var(--foreground);
+  color: var(--primary-dark);
+}
+
+.icon {
+  text-align: center;
+  color: var(--background);
+  rotate: 90deg;
+  user-select: none;
+}
+
+.tools {
+  gap: 10px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+}
+
+.keywordHeaderContainer {
+  background-color: var(--primary-dark);
+  min-height: 60px;
+  flex-wrap: wrap;
+  flex-grow: 1;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+
+.keywordHeaderActions {
+  gap: 10px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.keywordsHeader {
+  color: var(--foreground);
+  margin: 0;
+  flex-grow: 0;
+}

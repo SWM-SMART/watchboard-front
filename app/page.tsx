@@ -1,25 +1,15 @@
-import BackgroundButton from '../components/BackgroundButton';
+'use client';
 import DocumentCount from './components/DocumentCount';
 import DocumentList from './components/DocumentList';
 import LoginButton from './components/LoginButton';
 import styles from './page.module.css';
 import DocumentCreateDialogue from './components/DocumentCreateDialogue';
-import RecordDialogue from './components/RecordDialogue';
 import OverlayWrapper from '@/components/OverlayWrapper';
+import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
+import { ReactNode, useState } from 'react';
 
-export default function HomePage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const overlay = (() => {
-    switch (searchParams.create) {
-      case '':
-        return <DocumentCreateDialogue />;
-      case 'record':
-        return <RecordDialogue />;
-    }
-  })();
+export default function HomePage() {
+  const [overlay, setOverlay] = useState<ReactNode>(null);
 
   return (
     <>
@@ -29,13 +19,14 @@ export default function HomePage({
             <LoginButton />
           </div>
           <div className={styles.headerRight}>
-            <BackgroundButton
-              text={'녹음으로 생성'}
-              href="/?create=record"
+            <ClickableBackgroundButton
               invert={true}
+              text={'문서 생성'}
               icon="add"
+              onClick={() =>
+                setOverlay(<DocumentCreateDialogue onCancel={() => setOverlay(null)} />)
+              }
             />
-            <BackgroundButton text={'문서 생성'} href="/?create" icon="add" />
           </div>
         </div>
         <div className={styles.content}>

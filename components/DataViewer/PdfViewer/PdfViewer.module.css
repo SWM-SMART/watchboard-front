@@ -1,0 +1,28 @@
+.container {
+  background-color: var(--background);
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex: 1;
+  flex-direction: row;
+}
+
+.viewerContainer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  overflow: auto;
+}
+
+.viewer {
+  margin: 0 auto;
+}
+
+.dialogue {
+  width: 100%;
+  background-color: var(--background);
+  flex-grow: 1;
+  overflow: auto;
+}

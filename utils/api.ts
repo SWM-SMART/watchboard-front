@@ -1,7 +1,7 @@
-import { httpDelete, httpGet, httpPost } from './http';
+import { httpDelete, httpGet, httpPost, httpPut } from './http';
+import { throwError } from './ui';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
 export const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
 
 export async function getDocumentList(): Promise<WBDocumentListReponse> {
@@ -17,7 +17,7 @@ export async function createDocument(documentName: string): Promise<WBDocumentCr
 }
 
 export async function deleteDocument(documentId: number) {
-  await httpDelete(`${API_BASE_URL}/documents/${documentId}`);
+  await httpDelete(`${API_BASE_URL}/documents/${documentId}`, null);
 }
 
 export async function getUserData(): Promise<UserDataResponse> {
@@ -30,12 +30,44 @@ export async function refreshToken(): Promise<string | null> {
   );
 }
 
-export async function generateGraph(text: TextRequest): Promise<MindmapResponse> {
-  return (await httpPost(`${AI_BASE_URL}/mindmap`, text))?.json();
+export async function getMindMapData(documentId: number): Promise<GraphData> {
+  return (await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap`))?.json();
 }
 
-export async function saveDocument(documentId: number, documentData: WBDocumentData) {
-  // TODO: validation before sending
-  const documentDataObject = Object.fromEntries(documentData);
-  await httpPost(`${API_BASE_URL}/documents/${documentId}/data`, documentDataObject);
+export async function getDataSource(
+  documentId: number,
+  type: WBSourceDataType,
+): Promise<WBSourceData> {
+  return (await httpGet(`${API_BASE_URL}/documents/${documentId}/${type}`))?.json();
+}
+
+export async function updateKeywords(documentId: number, addition: string[], deletion: string[]) {
+  return await httpPut(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword`, {
+    add: addition,
+    delete: deletion,
+  });
+}
+
+export async function getKeywordInfo(
+  documentId: number,
+  keyword: string,
+): Promise<KeywordResponse> {
+  return (
+    await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`)
+  )?.json();
+}
+
+export async function uploadFile(documentId: number, file: File) {
+  const type = uploadFileType(file.type);
+  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, file, true, false);
+}
+
+function uploadFileType(type: string) {
+  switch (type) {
+    case 'application/pdf':
+      return 'pdf';
+    case 'audio/mpeg':
+      return 'audio';
+  }
+  throwError('지원하지 않는 파일형식 입니다.');
 }

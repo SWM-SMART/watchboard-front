@@ -1,25 +1,38 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { Suspense, useEffect, useState } from 'react';
+import { ReactNode, Suspense, useEffect, useState } from 'react';
 import styles from './page.module.css';
-import { useWhiteBoard } from '@/states/whiteboard';
-import { getDocument } from '@/utils/api';
-import DocumentTitle from './components/DocumentTitle';
-import ToolSelector from '@/components/WhiteBoard/ToolSelector';
 import LoadingScreen from '../../../components/LoadingScreen';
-import PdfViewer from '@/components/PdfViewer';
-const WhiteBoard = dynamic(() => import('@/components/WhiteBoard'), { ssr: false });
+import BottomToolBar from './components/BottomToolBar';
+import { useViewer } from '@/states/viewer';
+import PdfViewer from '@/components/DataViewer/PdfViewer';
+import NodeInfo from '@/components/NodeInfo';
+const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: false });
+import 'material-symbols';
+import AudioViewer from '@/components/DataViewer/AudioViewer';
+import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
+import Dialogue from '@/components/Dialogue';
+import FileInput from '@/components/Dialogue/Input/FileInput';
+import { useToast } from '@/states/toast';
+import { uploadFile } from '@/utils/api';
 
 interface DocumentPageProps {
   params: { documentId: string };
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const { currentObj, objTree, resetWhiteBoard } = useWhiteBoard((state) => ({
-    currentObj: state.currentObj,
-    objTree: state.objTree,
-    resetWhiteBoard: state.resetWhiteBoard,
+  const { resetViewer, loadDocument, documentData } = useViewer((state) => ({
+    documentData: state.document,
+    resetViewer: state.reset,
+    loadDocument: state.loadDocument,
   }));
+
+  // reset viewer
+  useEffect(() => {
+    resetViewer();
+    // load document
+    loadDocument(parseInt(params.documentId));
+  }, [loadDocument, params.documentId, resetViewer]);
 
   const [sideBarWidth, setSideBarWidth] = useState<number>(500);
   const [dividerActive, setDividerActive] = useState<boolean>(false);
@@ -38,12 +51,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     };
   }, [dividerActive]);
 
-  const documentData = useDocument(parseInt(params.documentId));
-
-  // reset whiteboard
-  useEffect(() => {
-    resetWhiteBoard();
-  }, [resetWhiteBoard]);
+  const selectedNode = useViewer((state) => state.selectedNode);
 
   if (documentData === null) return <LoadingScreen message={'Loading document'} />;
 
@@ -54,47 +62,136 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
           className={styles.sideBar}
           style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
         >
-          <DocumentTitle
-            documentName={documentData.documentName}
-            sourceDataType={documentData.data.type}
-          />
-          <div className={styles.viewerContainer}>
-            <PdfViewer url={documentData.data.url} />
-          </div>
+          <NodeInfo node={selectedNode} />
         </div>
-        <div className={styles.divider} onPointerDown={() => setDividerActive(true)} />
+        <div className={styles.divider} onPointerDown={() => setDividerActive(true)}>
+          <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
+        </div>
         <div className={styles.content}>
-          <div className={styles.toolBar}>
-            <ToolSelector />
-          </div>
-          <div className={styles.whiteBoardContainer}>
-            <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
-              <WhiteBoard />
-            </Suspense>
-          </div>
+          <SwitchView viewTypes={['HOME', 'DATA']}>
+            <GraphViewer />
+            <DataViewer type={documentData.dataType} />
+          </SwitchView>
         </div>
+      </div>
+      <BottomToolBar />
+      <UpdateAlert />
+    </div>
+  );
+}
+
+function UpdateAlert() {
+  const { ready, apply } = useViewer((state) => ({
+    ready: state.newMindMapData !== null,
+    apply: state.applySyncDocument,
+  }));
+  const [open, setOpen] = useState<boolean>(false);
+  useEffect(() => {
+    setOpen(ready);
+    return () => setOpen(false);
+  }, [ready]);
+
+  if (!ready) return <></>;
+
+  return (
+    <div
+      className={styles.alertContainer}
+      style={{ transform: open ? 'translateX(0)' : 'translateX(100%) translateX(-24px)' }}
+    >
+      <span
+        style={{ cursor: 'pointer' }}
+        className={`material-symbols-outlined ${styles.icon}`}
+        onClick={() => setOpen((open) => !open)}
+      >
+        drag_handle
+      </span>
+      <div className={styles.alertContent}>
+        <p>{'변경사항이 반영된 마인드맵이 준비되었습니다!'}</p>
+        <ClickableBackgroundButton invert={true} text={'적용'} onClick={() => apply()} />
       </div>
     </div>
   );
 }
 
-function useDocument(documentId: number) {
-  const [document, setDocument] = useState<WBDocument | null>(null);
-  const loadDocument = useWhiteBoard((state) => state.loadDocument);
+interface DataViewerProps {
+  type: WBSourceDataType;
+}
 
-  useEffect(() => {
-    // reset
-    setDocument(null);
+function DataViewer({ type }: DataViewerProps) {
+  const dataSource = useViewer((state) => state.dataSource);
+  if (dataSource === null) return <></>;
+  switch (type) {
+    case 'pdf':
+      return <PdfViewer dataSource={dataSource} />;
+    case 'audio':
+      return <AudioViewer dataSource={dataSource} />;
+    case 'none':
+      return <DataUploadDialogue />;
+  }
+}
 
-    (async () => {
-      // get raw document data
-      const newDocument = await getDocument(documentId);
+function DataUploadDialogue() {
+  const pushToast = useToast((state) => state.pushToast);
+  const documentId = useViewer((state) => state.document?.documentId);
+  return (
+    <div className={styles.uploadDialogue}>
+      <Dialogue
+        enabled={true}
+        title={'자료 업로드'}
+        onSubmit={(e) => {
+          if (documentId === undefined) return;
+          const fileInput = (e.target as any).file as HTMLInputElement;
+          // upload file (if exists)
+          (async () => {
+            if (fileInput.files !== null && fileInput.files.length > 0) {
+              await uploadFile(documentId, fileInput.files[0]);
+            }
+          })();
+        }}
+      >
+        <FileInput
+          name="file"
+          types={['application/pdf', 'audio/mpeg']}
+          typeNames={['pdf', 'mp3']}
+          onError={(msg) => pushToast({ id: new Date().getTime(), duraton: 3000, msg: msg })}
+        />
+      </Dialogue>
+    </div>
+  );
+}
 
-      // construct tree
-      loadDocument(newDocument);
-      setDocument(newDocument);
-    })();
-  }, [documentId, loadDocument]);
+function GraphViewer() {
+  return (
+    <>
+      <div className={styles.whiteBoardContainer}>
+        <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
+          <GraphCanvas />
+        </Suspense>
+      </div>
+    </>
+  );
+}
 
-  return document;
+interface SwitchViewProps {
+  children: ReactNode[];
+  viewTypes: ViewerPage[];
+}
+
+function SwitchView({ children, viewTypes }: SwitchViewProps) {
+  const view = useViewer((state) => state.view);
+  return (
+    <>
+      {children.map((v, i) => {
+        return (
+          <div
+            key={`view_${viewTypes[i]}`}
+            className={styles.container}
+            style={viewTypes[i] !== view ? { display: 'none' } : undefined}
+          >
+            {v}
+          </div>
+        );
+      })}
+    </>
+  );
 }
