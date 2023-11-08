@@ -2,7 +2,6 @@ import { httpDelete, httpGet, httpPost, httpPut } from './http';
 import { throwError } from './ui';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-export const AI_BASE_URL = process.env.NEXT_PUBLIC_AI_BASE_URL;
 export const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
 
 export async function getDocumentList(): Promise<WBDocumentListReponse> {
