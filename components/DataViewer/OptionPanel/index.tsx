@@ -16,15 +16,20 @@ export default function OptionPanel({ children }: OptionPanelProps) {
   const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
   const [drag, setDrag] = useState<boolean>(false);
   const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
-  const { keywords, currentTool, setCurrentTool, documentId, syncDocument, clearSyncDocument } =
+  const { keywords, currentTool, setCurrentTool, documentId, clearSyncDocument, nextState } =
     useViewer((state) => ({
       keywords: state.keywords,
       currentTool: state.currentTool,
       setCurrentTool: state.setCurrentTool,
       documentId: state.document?.documentId,
-      syncDocument: state.syncDocument,
       clearSyncDocument: state.clearSyncDocument,
+      nextState: state.nextState,
     }));
+
+  useEffect(() => {
+    // on nextMindmap load complete, disable sync in progress
+    if (nextState !== null) setSyncInProgress(false);
+  }, [nextState]);
 
   useEffect(() => {
     if (!drag) return;
@@ -61,12 +66,6 @@ export default function OptionPanel({ children }: OptionPanelProps) {
       await updateKeywords(documentId, addedKeys, removedKeys);
       // wait for sync to finish
       // TODO: implement this
-      setTimeout(() => {
-        // done!
-        setSyncInProgress(false);
-        // reload document
-        syncDocument();
-      }, 3000);
     })();
   };
 
