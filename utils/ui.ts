@@ -1,5 +1,6 @@
 'use client';
 import { useEffect } from 'react';
+import { API_BASE_URL } from './api';
 
 const DAY = 86400000;
 const HOUR = 3600000;
@@ -36,4 +37,20 @@ export function useError(callback: (msg: string) => void) {
     document.addEventListener(ERROR_EVENT_TYPE, errorHandler);
     return () => document.removeEventListener(ERROR_EVENT_TYPE, errorHandler);
   }, [callback]);
+}
+
+export function useViewerEvents(
+  documentId: number,
+  callback: (eventType: ViewerEventType) => void,
+) {
+  useEffect(() => {
+    const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
+      withCredentials: true,
+    });
+    // TODO: 이벤트 구분
+    eventSource.onmessage = (e) => {
+      callback('reload');
+    };
+    return () => eventSource.close();
+  }, [callback, documentId]);
 }
