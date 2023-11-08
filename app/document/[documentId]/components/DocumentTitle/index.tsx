@@ -25,4 +25,5 @@ function typeToIcon(type: WBSourceDataType): string {
     case 'audio':
       return 'text_to_speech';
   }
+  return '';
 }
