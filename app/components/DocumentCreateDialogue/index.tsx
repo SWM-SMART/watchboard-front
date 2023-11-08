@@ -47,15 +47,13 @@ export default function DocumentCreateDialogue({ onCancel }: DocumentCreateDialo
               await uploadFile(documentId, fileInput.files[0]);
             }
 
-            // TODO: implement this
-            setTimeout(() => {
-              pushToast({
-                id: new Date().getTime(),
-                duraton: 3000,
-                msg: `문서 "${newDocument.documentName}" (이)가 생성되었습니다!`,
-              });
-              router.push(`/document/${newDocument.documentId}`);
-            }, 3000);
+            pushToast({
+              id: new Date().getTime(),
+              duraton: 3000,
+              msg: `문서 "${newDocument.documentName}" (이)가 생성되었습니다!`,
+            });
+
+            router.push(`/document/${newDocument.documentId}`);
           })();
         }}
       >
