@@ -230,3 +230,5 @@ interface KeywordState {
 interface KeywordResponse {
   text: string;
 }
+
+type ViewerEventType = 'create' | 'reload';
