@@ -9,6 +9,38 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push to DockerHub
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+
       - name: Deploy with AWS SSM Send-Command
         uses: peterkimzz/aws-ssm-send-command@v1.1.1
         id: ssm
@@ -17,13 +49,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           instance-ids: ${{ secrets.INSTANCE_ID }}
-          working-directory: /
+          working-directory: /usr/bin
           command: |
-            #!/bin/bash
-            export HOME=${{ secrets.ENV_HOME }}
-            cd ~/watchboard-front
-            git checkout -- .
-            git pull
-            yarn install
-            yarn build
-            pm2 startOrRestart ecosystem.config.js
+            docker pull ${{ steps.meta.outputs.tags }}
+            docker stop $(docker ps -a -q -f "NAME=${{ secrets.DOCKER_NAME }}")
+            docker rm $(docker ps -a -q -f "NAME=${{ secrets.DOCKER_NAME }}")
+            docker run -d -p 3000:3000 --name ${{ secrets.DOCKER_NAME }} ${{ steps.meta.outputs.tags }}
+            docker image prune -f
