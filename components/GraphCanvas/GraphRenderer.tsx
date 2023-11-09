@@ -8,8 +8,8 @@ import SpriteText from 'three-spritetext';
 import { useViewer } from '@/states/viewer';
 
 const GAP = 10;
-const RADIUS = 5;
-const MAXSCALE = 1.3;
+const RADIUS = 10;
+const MAXSCALE = 1.2;
 const MINSCALE = 0.5;
 const MINDELTA = 0.01;
 const WHEEL_DELTA_FACTOR = 100;
@@ -17,8 +17,13 @@ const WHEEL_MAX_DELTA = 20;
 const PAN_MAX_DELTA = 100;
 const MAX_ZOOM = 10000;
 const MIN_ZOOM = 0.1;
-const COLOR_STALE = new THREE.Color('grey');
-const COLOR_HIGHLIGHT = new THREE.Color('blue');
+const LABEL_COLOR_STRING = '#383b40';
+const COLOR_STALE_STRING = 'grey';
+const COLOR_STALE = new THREE.Color(COLOR_STALE_STRING);
+const COLOR_STALE_BACK_STRING = '#d8dadd';
+const COLOR_STALE_BACK = new THREE.Color(COLOR_STALE_BACK_STRING);
+const COLOR_HIGHLIGHT_STRING = '#027373';
+const COLOR_HIGHLIGHT = new THREE.Color(COLOR_HIGHLIGHT_STRING);
 
 interface GraphRendererProps {
   data: GraphData;
@@ -30,7 +35,8 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   const lineGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
   const nodeMaterial = useMemo(() => new THREE.MeshBasicMaterial(), []);
   const lineMaterial = useMemo(
-    () => new THREE.MeshBasicMaterial({ color: 'grey', opacity: 0.3, transparent: true }),
+    () =>
+      new THREE.MeshBasicMaterial({ color: LABEL_COLOR_STRING, opacity: 0.3, transparent: true }),
     [],
   );
   const lineMesh = useRef<THREE.InstancedMesh>();
@@ -41,7 +47,7 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
       const nodes: NodeData[] = [];
       for (const [id, keyword] of entries) {
         // label
-        const text = new SpriteText(keyword, 30, 'black') as ExtendedSpriteText;
+        const text = new SpriteText(keyword, 28, 'black') as ExtendedSpriteText;
         text.position.setZ(15);
         text.strokeColor = 'white';
         text.strokeWidth = 2;
@@ -96,7 +102,7 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     linkDataFactory,
   );
 
-  const { selectedNodeRef } = usePointer(simulationRef, circleMesh);
+  const { selectedNodeRef, hoverNodeRef, pointerDownRef } = usePointer(simulationRef, circleMesh);
 
   useFocusCallback(selectedNodeRef);
 
@@ -114,15 +120,35 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
 
     // update node meshes
     const labelScale = Math.min(inverseZoom, 1);
+    const needFocusOnNode =
+      pointerDownRef.current?.intersection?.node !== undefined ||
+      hoverNodeRef.current !== undefined;
+    const labelOpacityBasedOnZoom = Math.max(0, Math.min(1, (camera.zoom - 0.5) / 0.2));
+    const labelOpacity = needFocusOnNode
+      ? Math.min(0.4, labelOpacityBasedOnZoom)
+      : labelOpacityBasedOnZoom;
+    const defaultColor = needFocusOnNode ? COLOR_STALE_BACK : COLOR_STALE;
     nodes.forEach((node, i) => {
       const m = new THREE.Matrix4();
       if (node === selectedNodeRef.current?.node) {
+        // selected node
+        node.labelMesh!.material.opacity = 1;
         circleMesh.current?.setColorAt(i, COLOR_HIGHLIGHT);
         node.labelMesh?.position.setZ(20);
         m.setPosition(node.x ?? 0, node.y ?? 0, 18);
         circleMesh.current?.setMatrixAt(i, m);
-      } else {
+      } else if (
+        node === hoverNodeRef.current?.node ||
+        node === pointerDownRef.current?.intersection?.node
+      ) {
+        // hovering node
+        node.labelMesh!.material.opacity = 1;
         circleMesh.current?.setColorAt(i, COLOR_STALE);
+        m.setPosition(node.x ?? 0, node.y ?? 0, 18);
+      } else {
+        // stale node
+        node.labelMesh!.material.opacity = labelOpacity;
+        circleMesh.current?.setColorAt(i, defaultColor);
         node.labelMesh?.position.setZ(15);
         m.setPosition(node.x ?? 0, node.y ?? 0, 0);
       }
@@ -318,7 +344,7 @@ function usePointer(
     }
   });
 
-  return { selectedNodeRef };
+  return { selectedNodeRef, hoverNodeRef, pointerDownRef };
 }
 
 function useSimulation(
@@ -360,7 +386,7 @@ function useSimulation(
 
     simulationRef.current
       .nodes(nodes)
-      .force('charge', d3.forceManyBody<NodeData>().strength(-1000).distanceMax(500))
+      .force('charge', d3.forceManyBody<NodeData>().strength(-500).distanceMax(500))
       .force(
         'link',
         d3
@@ -368,7 +394,6 @@ function useSimulation(
           .id((d) => d.id)
           .strength(1),
       )
-      .force('center', d3.forceCenter(0, 0).strength(1))
       .force('collision', d3.forceCollide(GAP))
       .tick(50);
 
@@ -406,19 +431,19 @@ function intersectingNode(
     };
   }
   // label
-  for (const node of nodes) {
-    if (node.labelMesh === undefined) continue;
-    const points = rayCaster.intersectObject(node.labelMesh);
-    if (points.length > 0) {
-      return {
-        node: node,
-        offset: new THREE.Vector2(
-          (node.x ?? 0) - points[0].point.x,
-          (node.y ?? 0) - points[0].point.y,
-        ),
-      };
-    }
-  }
+  // for (const node of nodes) {
+  //   if (node.labelMesh === undefined) continue;
+  //   const points = rayCaster.intersectObject(node.labelMesh);
+  //   if (points.length > 0) {
+  //     return {
+  //       node: node,
+  //       offset: new THREE.Vector2(
+  //         (node.x ?? 0) - points[0].point.x,
+  //         (node.y ?? 0) - points[0].point.y,
+  //       ),
+  //     };
+  //   }
+  // }
   return undefined;
 }
 
