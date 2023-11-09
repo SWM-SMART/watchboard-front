@@ -1,0 +1,30 @@
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: var(--foreground);
+  box-sizing: border-box;
+  border-bottom: 1px solid #e5e8ec;
+  align-items: center;
+  width: 100%;
+  flex: 0 0 65px;
+  padding: 0 20px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+}
+
+.headerRight {
+  box-sizing: border-box;
+  padding-right: 5px;
+  height: 45px;
+  display: flex;
+  flex-direction: row;
+  justify-content: right;
+  column-gap: 5px;
+  align-items: center;
+}
