@@ -1,12 +1,21 @@
 :root {
+  --black: black;
   --highlight: #b3efb2;
-  --secondary-light: #7a9e7e;
-  --secondary-dark: #31493c;
-  --primary-dark: #001a23;
-  --primary-light: #1e3036;
+  --secondary-light: #59c284;
+  --secondary-dark: ;
+  --tetiary-light: ;
+  --tetiary-dark: ;
+  --primary-dark: #004444;
+  --primary-light: #027373;
+  --grey-light: #e5e8ec;
+  --grey-normal: #d8dadd;
+  --grey-dark: #adb2bb;
+  --grey-mild-darker: #747983;
+  --grey-darker: #383b40;
   --foreground-disabled: #c7cfd0;
   --foreground: #ffffff;
-  --background: #e8f1f2;
+  --background: #f4f6f8;
+  --background-accent: #e6f5f5;
   --intro-animation: show 0.5s;
 }
 
@@ -38,6 +47,7 @@ div.error-container {
   align-items: center;
   background-color: var(--foreground);
   position: absolute;
+  top: 100px;
   left: 50%;
   gap: 30px;
   transform: translateX(-50%);
@@ -50,7 +60,7 @@ div.error-container {
 }
 
 div.loading-container {
-  background-color: var(--secondary-dark);
+  background-color: var(--background);
   width: 100%;
   height: 100%;
   box-sizing: border-box;
@@ -60,19 +70,19 @@ div.loading-container {
   justify-content: center;
 
   .text {
-    color: var(--secondary-light);
+    color: var(--primary-dark);
   }
 }
 
 @keyframes barAnimation {
   0% {
-    background-color: var(--highlight);
+    background-color: var(--primary-light);
   }
   50% {
     background-color: var(--primary-dark);
   }
   100% {
-    background-color: var(--highlight);
+    background-color: var(--primary-light);
   }
 }
 
@@ -83,15 +93,6 @@ div.loading-bar {
   animation-name: barAnimation;
   animation-duration: 3s;
   animation-iteration-count: infinite;
-}
-
-@keyframes progress-bar {
-  0% {
-    width: 0;
-  }
-  100% {
-    width: 100%;
-  }
 }
 
 @keyframes show {
@@ -106,9 +107,14 @@ div.loading-bar {
 }
 
 mark {
-  text-decoration: underline;
+  text-decoration: dotted;
   text-decoration-color: red;
   text-decoration-thickness: 2px;
   color: transparent;
   background: transparent;
+}
+
+* {
+  transition: color 0.1s ease-out, background-color 0.1s ease-out, border 0.1s ease-out,
+    opacity 0.1s ease-out;
 }
