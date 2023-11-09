@@ -7,13 +7,13 @@
   min-width: 33px;
   min-height: 33px;
   flex: 0;
-  color: var(--background);
+  color: var(--foreground);
   background-color: transparent;
 }
 
 .buttonSelection {
-  color: var(--primary-dark);
-  background-color: var(--background);
+  color: var(--grey-darker);
+  background-color: var(--foreground);
 }
 
 .icon {

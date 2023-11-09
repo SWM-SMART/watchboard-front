@@ -1,28 +1,40 @@
 .container {
+  box-sizing: border-box;
   user-select: none;
   cursor: pointer;
   border-radius: 20px;
   box-sizing: border-box;
   display: flex;
   gap: 3px;
+  height: 40px;
   flex-direction: row;
   align-items: center;
-  padding: 5px 10px;
-  background-color: var(--primary-dark);
+  padding: 5px 20px;
+  background-color: transparent;
   color: var(--foreground);
+}
+
+.disabled {
+  --primary-light: var(--grey-dark);
 }
 
 .icon {
   text-align: center;
-  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 100;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 100;
   vertical-align: middle;
   line-height: 18px;
   font-size: 18px;
   width: 18px;
 }
 
+.border {
+  border: solid 1px var(--primary-light) !important;
+  background-color: var(--foreground) !important;
+  color: var(--primary-light) !important;
+}
+
 .label {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   line-height: 15px;
 }
