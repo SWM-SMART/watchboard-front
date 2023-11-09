@@ -8,7 +8,7 @@
 }
 
 .content {
-  padding: 10px;
+  padding: 22px;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -20,7 +20,7 @@
 
 .bubbleContainer {
   box-sizing: border-box;
-  padding: 8px;
+  padding: 15px 20px;
   border-radius: 10px;
   flex-grow: 1;
   width: 100%;
@@ -45,7 +45,8 @@
 }
 
 .selected {
-  background-color: var(--highlight);
+  background-color: var(--secondary-light);
+  color: var(--foreground);
 }
 
 .mark {
