@@ -12,7 +12,7 @@ export const useUser = create<UserState>()((set) => ({
   fetchUserData: async () => {
     const newUserData = await getUserData();
     set(() => ({
-      userData: newUserData,
+      userData: newUserData ?? null,
     }));
   },
   accessToken: '',
