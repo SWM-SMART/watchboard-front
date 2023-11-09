@@ -1,10 +1,11 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
 import styles from './optionPanel.module.css';
 import 'material-symbols';
 import { useViewer } from '@/states/viewer';
 import SmallIconButton from '@/components/Button/SmallIconButton';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { updateKeywords } from '@/utils/api';
+import Divider, { useDivider } from '@/components/Divider';
 
 const DEFAULT_WIDTH = 350;
 
@@ -13,8 +14,6 @@ interface OptionPanelProps {
 }
 
 export default function OptionPanel({ children }: OptionPanelProps) {
-  const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
-  const [drag, setDrag] = useState<boolean>(false);
   const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
   const { keywords, currentTool, setCurrentTool, documentId, clearSyncDocument, nextState } =
     useViewer((state) => ({
@@ -31,18 +30,7 @@ export default function OptionPanel({ children }: OptionPanelProps) {
     if (nextState !== null) setSyncInProgress(false);
   }, [nextState]);
 
-  useEffect(() => {
-    if (!drag) return;
-    const pointerUp = () => setDrag(false);
-    const pointerMove = (e: MouseEvent) =>
-      setWidth(Math.max(window.innerWidth - e.clientX + 12, DEFAULT_WIDTH));
-    document.addEventListener('pointermove', pointerMove);
-    document.addEventListener('pointerup', pointerUp);
-    return () => {
-      document.removeEventListener('pointermove', pointerMove);
-      document.removeEventListener('pointerup', pointerUp);
-    };
-  }, [drag]);
+  const { width, setDrag } = useDivider(false, DEFAULT_WIDTH, DEFAULT_WIDTH);
 
   const [stableKeys, addedKeys, removedKeys] = useMemo(() => {
     const stable: string[] = [];
@@ -71,14 +59,7 @@ export default function OptionPanel({ children }: OptionPanelProps) {
 
   return (
     <div className={styles.container} style={{ width: `${width}px` }}>
-      <div
-        className={styles.handle}
-        onPointerDown={() => {
-          setDrag(true);
-        }}
-      >
-        <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
-      </div>
+      <Divider setDrag={setDrag} />
       <div className={styles.content}>
         <div className={styles.utils}>
           {children}

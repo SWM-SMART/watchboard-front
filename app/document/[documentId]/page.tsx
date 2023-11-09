@@ -16,6 +16,7 @@ import FileInput from '@/components/Dialogue/Input/FileInput';
 import { useToast } from '@/states/toast';
 import { uploadFile } from '@/utils/api';
 import { useViewerEvents } from '@/utils/ui';
+import Divider, { useDivider } from '@/components/Divider';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -40,22 +41,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     loadDocument(documentId);
   }, [loadDocument, documentId, resetViewer]);
 
-  const [sideBarWidth, setSideBarWidth] = useState<number>(500);
-  const [dividerActive, setDividerActive] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!dividerActive) return;
-    const onPointerUp = () => setDividerActive(false);
-    const onPointerMove = (e: MouseEvent) => {
-      setSideBarWidth(e.clientX - 5);
-    };
-    document.addEventListener('pointerup', onPointerUp);
-    document.addEventListener('pointermove', onPointerMove);
-    return () => {
-      document.removeEventListener('pointerup', onPointerUp);
-      document.removeEventListener('pointermove', onPointerMove);
-    };
-  }, [dividerActive]);
+  const { width, setDrag } = useDivider(true, 800, 0);
 
   const eventCallback = useCallback(
     (type: ViewerEventType) => {
@@ -74,15 +60,10 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   return (
     <div className={styles.rootContainer}>
       <div className={styles.container}>
-        <div
-          className={styles.sideBar}
-          style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
-        >
+        <div className={styles.sideBar} style={{ width: `${width}px`, flex: `0 0 ${width}px` }}>
           <NodeInfo node={selectedNode} />
         </div>
-        <div className={styles.divider} onPointerDown={() => setDividerActive(true)}>
-          <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
-        </div>
+        <Divider setDrag={setDrag} />
         <div className={styles.content}>
           <SwitchView viewTypes={['HOME', 'DATA']}>
             <GraphViewer />
