@@ -37,6 +37,7 @@ export default function SourceDataView({ hidden = false }: SourceDataViewProps) 
 
   return (
     <div className={styles.container} style={hidden ? { display: 'none' } : undefined}>
+      <p className={styles.text}>{history[index].str}</p>
       <div className={styles.headerContainer}>
         <div className={styles.buttonContainer}>
           <SmallIconButton
@@ -44,7 +45,9 @@ export default function SourceDataView({ hidden = false }: SourceDataViewProps) 
             selected={false}
             onClick={() => setIndex((index) => (index > 0 ? index - 1 : 0))}
           />
-          <p style={{ width: '50px' }}>{index + 1}</p>
+          <p className={styles.text} style={{ width: '50px' }}>
+            {index + 1}
+          </p>
           <SmallIconButton
             icon={'navigate_next'}
             selected={false}
@@ -70,7 +73,6 @@ export default function SourceDataView({ hidden = false }: SourceDataViewProps) 
           }}
         />
       </div>
-      <p>{history[index].str}</p>
     </div>
   );
 }

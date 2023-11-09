@@ -4,7 +4,7 @@ import { create } from 'zustand';
 interface ViewerState {
   dataSource: WBSourceData | null;
   mindMapData: GraphData | null;
-  newMindMapData: GraphData | null;
+  nextState: ViewerStateSlice | null;
   view: ViewerPage;
   document: WBDocument | null;
   selectedNode?: NodeData;
@@ -39,6 +39,12 @@ interface ViewerActions {
   clearSyncDocument: () => void;
 }
 
+interface ViewerStateSlice {
+  dataSource?: WBSourceData;
+  mindMapData?: GraphData;
+  document?: WBDocument;
+}
+
 const initialState = {
   dataSource: null,
   mindMapData: null,
@@ -51,7 +57,7 @@ const initialState = {
   dataStr: [],
   focusKeywordCallback: undefined,
   currentTool: 'SELECT',
-  newMindMapData: null,
+  nextState: null,
 } as ViewerState;
 
 export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
@@ -149,32 +155,45 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     set({ currentTool: tool });
   },
   syncDocument: async () => {
+    // same as loadDocument, but stages new state before applying and compares it with the previous state
     const document = get().document;
+    const nextState: ViewerStateSlice = {};
     if (document === null) return;
-    // fetch mindMapData
-    const newMindMapData = await getMindMapData(document.documentId);
-    set({ newMindMapData: newMindMapData });
+    // fetch documentMetaData
+    const newDocumentData = await getDocument(document.documentId);
+    // fetch mindMapData: always update
+    nextState.mindMapData = await getMindMapData(document.documentId);
+
+    // fetch datasource: update only if datasource has changed
+    const newDataSource = await getDataSource(document.documentId, newDocumentData.dataType);
+    if (newDataSource.url !== get().dataSource?.url) {
+      nextState.dataSource = newDataSource;
+      nextState.document = newDocumentData;
+    }
+    set({ nextState: nextState });
   },
   applySyncDocument: () => {
-    const newMindMapData = get().newMindMapData;
-    if (newMindMapData === null) return;
+    const newState = get().nextState;
+    if (newState === null) return;
     // local keyword map
     const newKeywords = new Map<string, KeywordState>();
-    for (const keyword of newMindMapData.keywords) {
-      newKeywords.set(keyword, {
-        enabled: false,
-        type: 'STABLE',
-      });
+    if (newState.mindMapData !== undefined) {
+      for (const keyword of newState.mindMapData.keywords) {
+        newKeywords.set(keyword, {
+          enabled: false,
+          type: 'STABLE',
+        });
+      }
     }
     set({
       selectedNode: undefined,
-      mindMapData: newMindMapData,
       keywords: newKeywords,
-      newMindMapData: null,
+      nextState: null,
       view: 'HOME',
+      ...newState,
     });
   },
   clearSyncDocument: () => {
-    set({ newMindMapData: null });
+    set({ nextState: null });
   },
 }));

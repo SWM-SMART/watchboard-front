@@ -1,0 +1,19 @@
+.icon {
+  text-align: center;
+  color: var(--grey-dark);
+  rotate: 90deg;
+}
+
+.handle {
+  user-select: none;
+  box-sizing: border-box;
+  background-color: var(--foreground);
+  cursor: col-resize;
+  height: 100%;
+  width: 12px;
+  border: solid 1px var(--grey-light);
+  flex: 0 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

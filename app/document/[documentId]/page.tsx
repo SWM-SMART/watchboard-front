@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { ReactNode, Suspense, useEffect, useState } from 'react';
+import { ReactNode, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './page.module.css';
 import LoadingScreen from '../../../components/LoadingScreen';
 import BottomToolBar from './components/BottomToolBar';
@@ -15,58 +15,55 @@ import Dialogue from '@/components/Dialogue';
 import FileInput from '@/components/Dialogue/Input/FileInput';
 import { useToast } from '@/states/toast';
 import { uploadFile } from '@/utils/api';
+import { useViewerEvents } from '@/utils/ui';
+import Divider, { useDivider } from '@/components/Divider';
 
 interface DocumentPageProps {
   params: { documentId: string };
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const { resetViewer, loadDocument, documentData } = useViewer((state) => ({
-    documentData: state.document,
-    resetViewer: state.reset,
-    loadDocument: state.loadDocument,
-  }));
+  const documentId = parseInt(params.documentId);
+  const { resetViewer, loadDocument, documentData, selectedNode, syncDocument } = useViewer(
+    (state) => ({
+      documentData: state.document,
+      resetViewer: state.reset,
+      loadDocument: state.loadDocument,
+      selectedNode: state.selectedNode,
+      syncDocument: state.syncDocument,
+    }),
+  );
 
   // reset viewer
   useEffect(() => {
     resetViewer();
     // load document
-    loadDocument(parseInt(params.documentId));
-  }, [loadDocument, params.documentId, resetViewer]);
+    loadDocument(documentId);
+  }, [loadDocument, documentId, resetViewer]);
 
-  const [sideBarWidth, setSideBarWidth] = useState<number>(500);
-  const [dividerActive, setDividerActive] = useState<boolean>(false);
+  const { width, setDrag } = useDivider(true, 800, 0);
 
-  useEffect(() => {
-    if (!dividerActive) return;
-    const onPointerUp = () => setDividerActive(false);
-    const onPointerMove = (e: MouseEvent) => {
-      setSideBarWidth(e.clientX - 5);
-    };
-    document.addEventListener('pointerup', onPointerUp);
-    document.addEventListener('pointermove', onPointerMove);
-    return () => {
-      document.removeEventListener('pointerup', onPointerUp);
-      document.removeEventListener('pointermove', onPointerMove);
-    };
-  }, [dividerActive]);
+  const eventCallback = useCallback(
+    (type: ViewerEventType) => {
+      // reload on event
+      // TODO: implement other types of events
+      syncDocument();
+    },
+    [syncDocument],
+  );
 
-  const selectedNode = useViewer((state) => state.selectedNode);
+  // subscribe to events
+  useViewerEvents(documentId, eventCallback);
 
   if (documentData === null) return <LoadingScreen message={'Loading document'} />;
 
   return (
     <div className={styles.rootContainer}>
       <div className={styles.container}>
-        <div
-          className={styles.sideBar}
-          style={{ width: `${sideBarWidth}px`, flex: `0 0 ${sideBarWidth}px` }}
-        >
+        <div className={styles.sideBar} style={{ width: `${width}px`, flex: `0 0 ${width}px` }}>
           <NodeInfo node={selectedNode} />
         </div>
-        <div className={styles.divider} onPointerDown={() => setDividerActive(true)}>
-          <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
-        </div>
+        <Divider setDrag={setDrag} />
         <div className={styles.content}>
           <SwitchView viewTypes={['HOME', 'DATA']}>
             <GraphViewer />
@@ -82,7 +79,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
 
 function UpdateAlert() {
   const { ready, apply } = useViewer((state) => ({
-    ready: state.newMindMapData !== null,
+    ready: state.nextState !== null,
     apply: state.applySyncDocument,
   }));
   const [open, setOpen] = useState<boolean>(false);
@@ -95,7 +92,7 @@ function UpdateAlert() {
 
   return (
     <div
-      className={styles.alertContainer}
+      className={`${styles.alertContainer} `}
       style={{ transform: open ? 'translateX(0)' : 'translateX(100%) translateX(-24px)' }}
     >
       <span
@@ -161,6 +158,8 @@ function DataUploadDialogue() {
 }
 
 function GraphViewer() {
+  const hasGraph = useViewer((state) => state.mindMapData?.keywords.length !== 0);
+  if (!hasGraph) return <p>no graph available</p>;
   return (
     <>
       <div className={styles.whiteBoardContainer}>

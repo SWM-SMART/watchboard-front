@@ -28,8 +28,8 @@ export default function Dialogue({
       <div className={styles.itemContainer}>{children}</div>
       {enabled ? (
         <div className={styles.buttonContainer}>
-          <ClickableBackgroundButton text={'취소'} onClick={onCancel} invert={false} />
-          <BackgroundSubmitButton text={'확인'} invert={true} />
+          <ClickableBackgroundButton text={'취소'} onClick={onCancel} invert={true} />
+          <BackgroundSubmitButton text={'확인'} />
         </div>
       ) : (
         <></>

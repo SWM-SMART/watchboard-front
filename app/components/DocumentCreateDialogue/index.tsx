@@ -12,9 +12,13 @@ import { useState } from 'react';
 
 interface DocumentCreateDialogueProps {
   onCancel: () => void;
+  onSuccess: () => void;
 }
 
-export default function DocumentCreateDialogue({ onCancel }: DocumentCreateDialogueProps) {
+export default function DocumentCreateDialogue({
+  onCancel,
+  onSuccess,
+}: DocumentCreateDialogueProps) {
   const router = useRouter();
   const [load, setLoad] = useState<boolean>(false);
   const documentId = useViewer((state) => state.document?.documentId ?? 0);
@@ -47,15 +51,14 @@ export default function DocumentCreateDialogue({ onCancel }: DocumentCreateDialo
               await uploadFile(documentId, fileInput.files[0]);
             }
 
-            // TODO: implement this
-            setTimeout(() => {
-              pushToast({
-                id: new Date().getTime(),
-                duraton: 3000,
-                msg: `문서 "${newDocument.documentName}" (이)가 생성되었습니다!`,
-              });
-              router.push(`/document/${newDocument.documentId}`);
-            }, 3000);
+            pushToast({
+              id: new Date().getTime(),
+              duraton: 3000,
+              msg: `문서 "${newDocument.documentName}" (이)가 생성되었습니다!`,
+            });
+
+            router.push(`/document/${newDocument.documentId}`);
+            onSuccess();
           })();
         }}
       >

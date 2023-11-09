@@ -1,10 +1,11 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
 import styles from './optionPanel.module.css';
 import 'material-symbols';
 import { useViewer } from '@/states/viewer';
 import SmallIconButton from '@/components/Button/SmallIconButton';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { updateKeywords } from '@/utils/api';
+import Divider, { useDivider } from '@/components/Divider';
 
 const DEFAULT_WIDTH = 350;
 
@@ -13,31 +14,23 @@ interface OptionPanelProps {
 }
 
 export default function OptionPanel({ children }: OptionPanelProps) {
-  const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
-  const [drag, setDrag] = useState<boolean>(false);
   const [syncInProgress, setSyncInProgress] = useState<boolean>(false);
-  const { keywords, currentTool, setCurrentTool, documentId, syncDocument, clearSyncDocument } =
+  const { keywords, currentTool, setCurrentTool, documentId, clearSyncDocument, nextState } =
     useViewer((state) => ({
       keywords: state.keywords,
       currentTool: state.currentTool,
       setCurrentTool: state.setCurrentTool,
       documentId: state.document?.documentId,
-      syncDocument: state.syncDocument,
       clearSyncDocument: state.clearSyncDocument,
+      nextState: state.nextState,
     }));
 
   useEffect(() => {
-    if (!drag) return;
-    const pointerUp = () => setDrag(false);
-    const pointerMove = (e: MouseEvent) =>
-      setWidth(Math.max(window.innerWidth - e.clientX + 12, DEFAULT_WIDTH));
-    document.addEventListener('pointermove', pointerMove);
-    document.addEventListener('pointerup', pointerUp);
-    return () => {
-      document.removeEventListener('pointermove', pointerMove);
-      document.removeEventListener('pointerup', pointerUp);
-    };
-  }, [drag]);
+    // on nextMindmap load complete, disable sync in progress
+    if (nextState !== null) setSyncInProgress(false);
+  }, [nextState]);
+
+  const { width, setDrag } = useDivider(false, DEFAULT_WIDTH, DEFAULT_WIDTH);
 
   const [stableKeys, addedKeys, removedKeys] = useMemo(() => {
     const stable: string[] = [];
@@ -61,25 +54,12 @@ export default function OptionPanel({ children }: OptionPanelProps) {
       await updateKeywords(documentId, addedKeys, removedKeys);
       // wait for sync to finish
       // TODO: implement this
-      setTimeout(() => {
-        // done!
-        setSyncInProgress(false);
-        // reload document
-        syncDocument();
-      }, 3000);
     })();
   };
 
   return (
     <div className={styles.container} style={{ width: `${width}px` }}>
-      <div
-        className={styles.handle}
-        onPointerDown={() => {
-          setDrag(true);
-        }}
-      >
-        <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
-      </div>
+      <Divider setDrag={setDrag} />
       <div className={styles.content}>
         <div className={styles.utils}>
           {children}

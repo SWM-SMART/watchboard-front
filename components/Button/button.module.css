@@ -6,7 +6,7 @@
 }
 
 .container {
-  color: var(--secondary-dark);
+  color: var(--primary-dark);
   display: inline-block;
   height: 40px;
   padding: 0 15px 0 20px;

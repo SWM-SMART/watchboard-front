@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  border-radius: 0;
   width: 100%;
   background-color: var(--primary-dark);
   overflow: clip;
@@ -28,7 +27,8 @@
 }
 
 .utils {
-  padding: 10px 0;
+  padding: 30px;
+  box-sizing: border-box;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -41,7 +41,7 @@
 }
 
 .keywordsContainer {
-  padding: 0 5px 5px 0;
+  padding: 0 5px 5px 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -61,16 +61,17 @@
 }
 
 .keyword {
-  padding: 2px 5px;
-  border-radius: 5px;
+  padding: 12px 18px;
+  font-size: 16px;
+  color: var(--foreground);
+  border-radius: 12px;
   background-color: var(--secondary-light);
-  color: var(--primary-dark);
-  transition: background-color ease-out 0.3s;
+  transition: background-color ease-out 0.1s, color ease-out 0.1s;
 }
 
 .enabled {
   background-color: var(--foreground);
-  color: var(--primary-dark);
+  color: var(--grey-darker);
 }
 
 .icon {
@@ -95,7 +96,7 @@
   position: sticky;
   top: 0;
   width: 100%;
-  padding: 10px;
+  padding: 10px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;

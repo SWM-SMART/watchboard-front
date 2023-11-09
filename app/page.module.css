@@ -1,38 +1,12 @@
 .container {
-  animation: var(--intro-animation);
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
 }
 
-.header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-  height: 45px;
-}
-
-.headerLeft {
-  display: flex;
-  flex-direction: row;
-  justify-content: left;
-  align-items: center;
-}
-
-.headerRight {
-  box-sizing: border-box;
-  padding-right: 5px;
-  height: 45px;
-  display: flex;
-  flex-direction: row;
-  justify-content: right;
-  column-gap: 5px;
-  align-items: center;
-}
-
 .content {
+  animation: var(--intro-animation);
   box-sizing: border-box;
   width: 100%;
   height: auto;
@@ -55,9 +29,10 @@
 
 .contentList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 260px);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, 300px);
+  gap: 20px;
   justify-content: center;
+  align-items: flex-start;
 }
 
 @keyframes fadeIn {

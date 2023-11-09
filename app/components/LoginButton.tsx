@@ -1,10 +1,12 @@
 'use client';
-import Button from '@/components/Button';
+import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { useUser } from '@/states/user';
+import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function LoginButton() {
   const { userData, fetchUserData } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     fetchUserData();
@@ -12,13 +14,27 @@ export default function LoginButton() {
 
   // loading
   if (userData === null) {
-    return <></>;
+    return <ClickableBackgroundButton color="grey" text={'확인중'} icon="cached" />;
   }
 
   // not logged in
   if (userData.userId === 0) {
-    return <Button text={'로그인'} href={'/login'} icon="login" />;
+    return (
+      <ClickableBackgroundButton
+        text={'로그인'}
+        onClick={() => router.push('/login')}
+        icon="login"
+      />
+    );
   }
 
-  return <Button text={'로그아웃'} href={'/logout'} icon="logout" />;
+  return (
+    <ClickableBackgroundButton
+      color="grey"
+      invert={true}
+      text={'로그아웃'}
+      onClick={() => router.push('/logout')}
+      icon="logout"
+    />
+  );
 }
