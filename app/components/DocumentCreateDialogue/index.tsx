@@ -12,9 +12,13 @@ import { useState } from 'react';
 
 interface DocumentCreateDialogueProps {
   onCancel: () => void;
+  onSuccess: () => void;
 }
 
-export default function DocumentCreateDialogue({ onCancel }: DocumentCreateDialogueProps) {
+export default function DocumentCreateDialogue({
+  onCancel,
+  onSuccess,
+}: DocumentCreateDialogueProps) {
   const router = useRouter();
   const [load, setLoad] = useState<boolean>(false);
   const documentId = useViewer((state) => state.document?.documentId ?? 0);
@@ -54,6 +58,7 @@ export default function DocumentCreateDialogue({ onCancel }: DocumentCreateDialo
             });
 
             router.push(`/document/${newDocument.documentId}`);
+            onSuccess();
           })();
         }}
       >

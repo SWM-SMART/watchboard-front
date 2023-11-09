@@ -5,19 +5,30 @@ import { MouseEventHandler } from 'react';
 
 interface ClickableBackgroundButtonProps {
   text: string;
+  color?: ColorScheme;
+  thin?: boolean;
   icon?: string;
   invert?: boolean;
   onClick?: MouseEventHandler;
 }
 
+type ColorScheme = 'primary' | 'secondary' | 'grey';
+
 export default function ClickableBackgroundButton({
   text,
+  color = 'primary',
+  thin = false,
   icon,
   invert,
   onClick,
 }: ClickableBackgroundButtonProps) {
   return (
-    <div onClick={onClick} className={`${styles.container} ${invert ? styles.invert : null}`}>
+    <div
+      onClick={onClick}
+      className={`${styles.container} ${invert ? styles.invert : null} ${getClassFromColor(
+        color,
+      )} ${thin ? styles.thin : null}`}
+    >
       {icon === undefined ? null : (
         <span className={`material-symbols-outlined ${styles.icon}`}>{icon}</span>
       )}
@@ -26,16 +37,32 @@ export default function ClickableBackgroundButton({
   );
 }
 
+function getClassFromColor(color: ColorScheme) {
+  switch (color) {
+    case 'primary':
+      return '';
+    case 'secondary':
+      return styles.secondary;
+    case 'grey':
+      return styles.grey;
+  }
+}
+
 interface BackgroundSubmitButtonProps {
   text: string;
+  color?: ColorScheme;
   invert?: boolean;
 }
 
-export function BackgroundSubmitButton({ text, invert }: BackgroundSubmitButtonProps) {
+export function BackgroundSubmitButton({
+  text,
+  invert,
+  color = 'primary',
+}: BackgroundSubmitButtonProps) {
   return (
     <input
       type="submit"
-      className={`${styles.submit} ${invert ? styles.invert : null}`}
+      className={`${styles.submit} ${invert ? styles.invert : null} ${getClassFromColor(color)}`}
       value={text}
     />
   );

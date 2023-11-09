@@ -4,7 +4,6 @@ import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBa
 import { useViewer } from '@/states/viewer';
 import 'material-symbols';
 import SmallIconButton from '@/components/Button/SmallIconButton';
-import { useRouter } from 'next/navigation';
 
 export default function BottomToolBar() {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -23,11 +22,12 @@ export default function BottomToolBar() {
         y: Math.max(
           0,
           Math.min(
-            e.clientY + drag.y,
+            window.innerHeight - e.clientY + drag.y,
             window.innerHeight - (elementRef.current?.offsetHeight ?? 0),
           ),
         ),
       });
+
     document.addEventListener('pointermove', pointerMove);
     document.addEventListener('pointerup', pointerUp);
     return () => {
@@ -42,26 +42,32 @@ export default function BottomToolBar() {
   }));
 
   return (
-    <div ref={elementRef} className={styles.container} style={{ left: pos.x, top: pos.y }}>
-      <div
-        className={styles.handle}
-        onPointerDown={(e) => setDrag({ x: pos.x - e.clientX, y: pos.y - e.clientY })}
-      >
-        <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
+    <div className={styles.outer} style={{ left: pos.x, bottom: pos.y }} ref={elementRef}>
+      <div className={styles.container}>
+        <div
+          className={styles.handle}
+          onPointerDown={(e) =>
+            setDrag({ x: pos.x - e.clientX, y: pos.y - (window.innerHeight - e.clientY) })
+          }
+        >
+          <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
+        </div>
+        <Title />
+        <ClickableBackgroundButton
+          color={view === 'HOME' ? 'primary' : 'grey'}
+          thin={true}
+          text={'마인드맵'}
+          invert={true}
+          onClick={() => setView('HOME')}
+        />
+        <ClickableBackgroundButton
+          color={view === 'DATA' ? 'primary' : 'grey'}
+          thin={true}
+          text={'자료'}
+          invert={true}
+          onClick={() => setView('DATA')}
+        />
       </div>
-
-      <Title />
-
-      <ClickableBackgroundButton
-        text={'마인드맵'}
-        invert={view !== 'HOME'}
-        onClick={() => setView('HOME')}
-      />
-      <ClickableBackgroundButton
-        text={'자료'}
-        invert={view !== 'DATA'}
-        onClick={() => setView('DATA')}
-      />
     </div>
   );
 }
@@ -70,14 +76,9 @@ function Title() {
   const { title } = useViewer((state) => ({
     title: state.document?.documentName,
   }));
-  const router = useRouter();
 
   return (
     <div className={styles.titleContainer}>
-      <div className={styles.backToList} onClick={() => router.push('/')}>
-        <span>문서</span>
-        <span className={`material-symbols-outlined`}>chevron_right</span>
-      </div>
       <p className={styles.title}>{title}</p>
     </div>
   );
