@@ -37,16 +37,21 @@ export default function NodeInfo({ node }: NodeInfoProps) {
       <h1>{node?.label}</h1>
       <div className={styles.actions}>
         <SmallActionButton
+          border={true}
+          enabled={relationView}
           label={'관계도'}
           icon={'network_node'}
           onClick={() => setRelationView((show) => !show)}
         />
         <SmallActionButton
+          border={true}
+          enabled={sourceView}
           label={'키워드 출처'}
           icon={'find_in_page'}
           onClick={() => setSourceView((show) => !show)}
         />
         <SmallActionButton
+          border={true}
           label={'노드로 이동'}
           icon={'my_location'}
           onClick={() => {
