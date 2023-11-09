@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface LogoProps {
   width: number;
@@ -6,5 +7,9 @@ interface LogoProps {
 }
 
 export default function Logo({ width, height }: LogoProps) {
-  return <Image src="/logo.svg" width={width} height={height} alt={'logo'} />;
+  return (
+    <Link href="/">
+      <Image src="/logo.svg" width={width} height={height} alt={'logo'} />
+    </Link>
+  );
 }
