@@ -1,16 +1,24 @@
-.container {
+.outer {
   z-index: 100;
   position: absolute;
-  opacity: 50%;
+  display: block;
+  padding: 20px;
+}
+
+.container {
+  box-shadow: 5px 5px 20px 5px var(--grey-dark);
+  opacity: 90%;
   padding: 5px 20px;
+  height: 55px;
   display: flex;
   flex-direction: row;
   border-radius: 50px;
-  background-color: var(--secondary-dark);
+  background-color: var(--foreground);
   color: var(--secondary-dark);
   transition: opacity ease-out 0.3s;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  animation: var(--intro-animation);
 }
 
 .handle {
@@ -26,19 +34,8 @@
 
 .icon {
   text-align: center;
-  color: var(--background);
+  color: var(--grey-dark);
   rotate: 90deg;
-}
-
-.backToList {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-  text-align: center;
-  color: var(--background);
 }
 
 .viewerContainer {
@@ -53,7 +50,7 @@
 
 .title {
   margin: 0 10px;
-  color: var(--foreground);
+  color: var(--grey-darker);
   overflow: hidden;
   max-width: 200px;
   text-overflow: ellipsis;
