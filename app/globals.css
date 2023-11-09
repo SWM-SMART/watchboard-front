@@ -116,9 +116,9 @@ div.loading-bar {
 }
 
 mark {
-  text-decoration: dotted;
+  text-decoration: underline dotted;
   text-decoration-color: red;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 3px;
   color: transparent;
   background: transparent;
 }
