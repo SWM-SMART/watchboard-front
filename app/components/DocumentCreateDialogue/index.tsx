@@ -4,7 +4,6 @@ import Dialogue from '@/components/Dialogue';
 import FileInput from '@/components/Dialogue/Input/FileInput';
 import TextInput from '@/components/Dialogue/Input/TextInput';
 import { useToast } from '@/states/toast';
-import { useViewer } from '@/states/viewer';
 import { createDocument, uploadFile } from '@/utils/api';
 import { throwError } from '@/utils/ui';
 import { useRouter } from 'next/navigation';
@@ -21,7 +20,6 @@ export default function DocumentCreateDialogue({
 }: DocumentCreateDialogueProps) {
   const router = useRouter();
   const [load, setLoad] = useState<boolean>(false);
-  const documentId = useViewer((state) => state.document?.documentId ?? 0);
   const pushToast = useToast((state) => state.pushToast);
 
   return (
@@ -43,13 +41,18 @@ export default function DocumentCreateDialogue({
             return setLoad(false);
           }
 
+          // check file
+          if (fileInput.files === null || fileInput.files.length === 0) {
+            throwError('요약할 파일을 입력해 주세요');
+            return setLoad(false);
+          }
+
           (async () => {
             // create new Document
             const newDocument = await createDocument(titleInput.value);
+
             // upload file (if exists)
-            if (fileInput.files !== null && fileInput.files.length > 0) {
-              await uploadFile(documentId, fileInput.files[0]);
-            }
+            await uploadFile(newDocument.documentId, fileInput.files![0]);
 
             pushToast({
               id: new Date().getTime(),

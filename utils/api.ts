@@ -59,7 +59,10 @@ export async function getKeywordInfo(
 
 export async function uploadFile(documentId: number, file: File) {
   const type = uploadFileType(file.type);
-  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, file, true, false);
+  if (type === undefined) return;
+  const form = new FormData();
+  form.append(type, file);
+  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false);
 }
 
 function uploadFileType(type: string) {
