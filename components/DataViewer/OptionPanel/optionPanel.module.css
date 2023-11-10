@@ -61,6 +61,10 @@
 }
 
 .keyword {
+  animation: var(--intro-animation);
+  display: flex;
+  gap: 5px;
+  align-items: center;
   padding: 12px 18px;
   font-size: 16px;
   color: var(--foreground);
@@ -79,6 +83,11 @@
   color: var(--background);
   rotate: 90deg;
   user-select: none;
+}
+
+.keywordIcon {
+  font-size: 18px;
+  color: var(--grey-darker);
 }
 
 .tools {
