@@ -6,6 +6,7 @@ import { Inter } from 'next/font/google';
 import ToastViewer from './components/ToastViewer';
 import OverlayViewer from './components/OverlayViewer';
 import Header from './components/Header';
+import ContextMenuViewer from './components/ContextMenuViewer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
         <OverlayViewer />
+        <ContextMenuViewer />
       </body>
     </html>
   );

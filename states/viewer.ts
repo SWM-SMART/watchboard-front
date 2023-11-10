@@ -25,7 +25,7 @@ interface ViewerActions {
   setFocusNodeCallback: (callback: ((node: NodeData) => void) | undefined) => void;
   addKeyword: (keyword: string, state?: boolean) => void;
   deleteKeyword: (keyword: string) => void;
-  setKeyword: (keyword: string, state: boolean) => void;
+  setKeyword: (keyword: string, state: KeywordState) => void;
   setAllKeyword: (state: boolean) => void;
   setDataStr: (dataStr: string[][]) => void;
   findDataStr: (from: number[], keyword: string) => KeywordSourceResult | undefined;
@@ -80,11 +80,10 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     }),
   deleteKeyword: (keyword) => {
     const keywords = get().keywords;
+    const newKeywords = new Map([...keywords]);
+    newKeywords.delete(keyword);
     set({
-      keywords: new Map([...keywords]).set(keyword, {
-        enabled: false,
-        type: 'DELETE',
-      }),
+      keywords: newKeywords,
     });
   },
   setKeyword: (keyword, state) => {
@@ -92,7 +91,7 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     const prevState = keywords.get(keyword);
     if (prevState === undefined) return;
     set({
-      keywords: new Map([...keywords]).set(keyword, { ...prevState, enabled: state }),
+      keywords: new Map([...keywords]).set(keyword, { ...state }),
     });
   },
   setAllKeyword: (state) => {

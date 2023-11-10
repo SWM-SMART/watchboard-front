@@ -1,0 +1,23 @@
+.container {
+  position: absolute;
+  background-color: var(--background);
+  border-radius: 6px;
+  border: 1px solid var(--grey-normal);
+  margin: 0;
+  padding: 0;
+  animation: var(--intro-animation);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.item {
+  min-width: 100px;
+  cursor: default;
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+}
+
+.item:hover {
+  background-color: var(--grey-normal);
+}

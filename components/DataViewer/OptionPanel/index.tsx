@@ -1,4 +1,4 @@
-import { ReactNode, SetStateAction, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import styles from './optionPanel.module.css';
 import 'material-symbols';
 import { useViewer } from '@/states/viewer';
@@ -6,6 +6,7 @@ import SmallIconButton from '@/components/Button/SmallIconButton';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { updateKeywords } from '@/utils/api';
 import Divider, { useDivider } from '@/components/Divider';
+import { ContextMenuItem, useContextMenu } from '@/states/contextMenu';
 
 const DEFAULT_WIDTH = 350;
 
@@ -52,8 +53,6 @@ export default function OptionPanel({ children }: OptionPanelProps) {
       clearSyncDocument();
       // sync local changes
       await updateKeywords(documentId, addedKeys, removedKeys);
-      // wait for sync to finish
-      // TODO: implement this
     })();
   };
 
@@ -88,9 +87,7 @@ export default function OptionPanel({ children }: OptionPanelProps) {
                   icon={'sync'}
                   onClick={syncKeywords}
                 />
-              ) : (
-                <></>
-              )}
+              ) : null}
             </KeywordHeader>
             {addedKeys.map((v) => (
               <KeywordView key={v} label={v} />
@@ -130,19 +127,72 @@ interface KeywordViewProps {
 }
 
 function KeywordView({ label }: KeywordViewProps) {
-  const { state, setKeyword } = useViewer((state) => ({
+  const setMenu = useContextMenu((state) => state.setMenu);
+  const { state, setKeyword, deleteKeyword } = useViewer((state) => ({
     state: state.keywords.get(label),
     setKeyword: state.setKeyword,
+    deleteKeyword: state.deleteKeyword,
   }));
 
+  const items = useMemo(() => {
+    const trimmedLabel = label.substring(0, 10);
+    const items: ContextMenuItem[] = [];
+    if (state === undefined) return items;
+    switch (state.type) {
+      case 'ADD':
+        items.push({
+          label: `'${trimmedLabel}' 추가 취소`,
+          onClick: () => deleteKeyword(label),
+        });
+        break;
+      case 'STABLE':
+        items.push({
+          label: `'${trimmedLabel}' 삭제`,
+          onClick: () => setKeyword(label, { enabled: false, type: 'DELETE' }),
+        });
+        break;
+      case 'DELETE':
+        items.push({
+          label: `'${trimmedLabel}' 삭제 취소`,
+          onClick: () => setKeyword(label, { ...state, type: 'STABLE' }),
+        });
+        break;
+    }
+
+    return items;
+  }, [deleteKeyword, label, setKeyword, state]);
+
   if (state === undefined) return <></>;
+
+  const icon = typeToIcon(state.type);
 
   return (
     <div
       className={`${styles.keyword} ${state.enabled ? styles.enabled : ''}`}
-      onClick={() => setKeyword(label, !state.enabled)}
+      onClick={() => setKeyword(label, { ...state, enabled: !state.enabled })}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setMenu({
+          items: items,
+          position: { x: e.clientX, y: e.clientY },
+        });
+      }}
     >
+      {icon !== undefined ? (
+        <span className={`material-symbols-outlined ${styles.keywordIcon}`}>{icon}</span>
+      ) : null}
       {label}
     </div>
   );
+}
+
+function typeToIcon(type: KeywordType) {
+  switch (type) {
+    case 'ADD':
+      return 'add';
+    case 'STABLE':
+      return undefined;
+    case 'DELETE':
+      return 'remove';
+  }
 }
