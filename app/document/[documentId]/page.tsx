@@ -11,10 +11,6 @@ const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: fal
 import 'material-symbols';
 import AudioViewer from '@/components/DataViewer/AudioViewer';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
-import Dialogue from '@/components/Dialogue';
-import FileInput from '@/components/Dialogue/Input/FileInput';
-import { useToast } from '@/states/toast';
-import { uploadFile } from '@/utils/api';
 import { useViewerEvents } from '@/utils/ui';
 import Divider, { useDivider } from '@/components/Divider';
 
@@ -46,16 +42,17 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   const eventCallback = useCallback(
     (type: ViewerEventType) => {
       // reload on event
+      if (documentData === null) return loadDocument(documentId);
       // TODO: implement other types of events
       syncDocument();
     },
-    [syncDocument],
+    [documentData, documentId, loadDocument, syncDocument],
   );
 
   // subscribe to events
   useViewerEvents(documentId, eventCallback);
 
-  if (documentData === null) return <LoadingScreen message={'Loading document'} />;
+  if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
 
   return (
     <div className={styles.rootContainer}>
@@ -131,7 +128,7 @@ function GraphViewer() {
   return (
     <>
       <div className={styles.whiteBoardContainer}>
-        <Suspense fallback={<LoadingScreen message={'Loading renderer'} />}>
+        <Suspense fallback={<LoadingScreen message={'렌더러 로드중'} />}>
           <GraphCanvas />
         </Suspense>
       </div>
