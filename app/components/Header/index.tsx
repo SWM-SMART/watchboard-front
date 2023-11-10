@@ -21,7 +21,7 @@ export default function Header() {
         {userDataExists ? (
           <ClickableBackgroundButton
             invert={true}
-            text={'새로운 문서'}
+            text={'학습 생성'}
             icon="add"
             onClick={() =>
               setOverlay(

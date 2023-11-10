@@ -134,6 +134,9 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     // fetch mindMapData
     const newMindMapData = await getMindMapData(documentId);
 
+    // mindmap generation is in progress
+    if (newMindMapData === null) return;
+
     // local keyword map
     const newKeywords = new Map<string, KeywordState>();
     for (const keyword of newMindMapData.keywords) {
@@ -158,17 +161,10 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     const document = get().document;
     const nextState: ViewerStateSlice = {};
     if (document === null) return;
-    // fetch documentMetaData
-    const newDocumentData = await getDocument(document.documentId);
-    // fetch mindMapData: always update
-    nextState.mindMapData = await getMindMapData(document.documentId);
 
-    // fetch datasource: update only if datasource has changed
-    const newDataSource = await getDataSource(document.documentId, newDocumentData.dataType);
-    if (newDataSource.url !== get().dataSource?.url) {
-      nextState.dataSource = newDataSource;
-      nextState.document = newDocumentData;
-    }
+    // fetch mindMapData: always update
+    nextState.mindMapData = (await getMindMapData(document.documentId)) ?? undefined;
+
     set({ nextState: nextState });
   },
   applySyncDocument: () => {

@@ -30,8 +30,10 @@ export async function refreshToken(): Promise<string | null> {
   );
 }
 
-export async function getMindMapData(documentId: number): Promise<GraphData> {
-  return (await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap`))?.json();
+export async function getMindMapData(documentId: number): Promise<GraphData | null> {
+  const res = await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap`);
+  if (res?.status === 200) return res.json();
+  return null;
 }
 
 export async function getDataSource(

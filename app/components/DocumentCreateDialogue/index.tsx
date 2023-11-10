@@ -26,7 +26,7 @@ export default function DocumentCreateDialogue({
     <div className={styles.container} style={load ? { pointerEvents: 'none' } : undefined}>
       <Dialogue
         enabled={!load}
-        title={'문서 생성'}
+        title={'학습 생성'}
         onCancel={onCancel}
         onSubmit={(e) => {
           e.preventDefault();
@@ -35,16 +35,19 @@ export default function DocumentCreateDialogue({
           const titleInput = (e.target as any).title as HTMLInputElement;
           const fileInput = (e.target as any).file as HTMLInputElement;
 
-          // check title
-          if (titleInput.value.length === 0) {
-            throwError('문서의 제목을 입력해 주세요');
-            return setLoad(false);
-          }
-
           // check file
           if (fileInput.files === null || fileInput.files.length === 0) {
             throwError('요약할 파일을 입력해 주세요');
             return setLoad(false);
+          }
+
+          // check title
+          if (titleInput.value.length === 0) {
+            // throwError('문서의 제목을 입력해 주세요');
+            // return setLoad(false);
+
+            // set to filename if left blank
+            titleInput.value = fileInput.files[0].name;
           }
 
           (async () => {

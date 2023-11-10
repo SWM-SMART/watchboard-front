@@ -189,7 +189,7 @@ interface GraphData {
   graph: Map<string, number[]>;
 }
 
-type WBSourceDataType = 'pdf' | 'audio' | 'none';
+type WBSourceDataType = 'pdf' | 'audio';
 
 interface WBSourceData {
   url: string;
