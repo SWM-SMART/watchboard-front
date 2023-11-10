@@ -76,10 +76,10 @@ div.loading-container {
 
 @keyframes barAnimation {
   0% {
-    background-color: var(--primary-light);
+    background-color: var(--primary-dark);
   }
   50% {
-    background-color: var(--primary-dark);
+    background-color: var(--highlight);
   }
   100% {
     background-color: var(--primary-light);
