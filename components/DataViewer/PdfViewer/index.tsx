@@ -100,7 +100,9 @@ function useFocusKeyword(setPage: Dispatch<SetStateAction<number>>) {
     setCallback((keyword, location) => {
       setPage(location[0]);
       setAllKeyword(false);
-      setKeyWord(keyword, true);
+      setKeyWord(keyword, {
+        enabled: true,
+      });
     });
     return () => setCallback(undefined);
   }, [setAllKeyword, setCallback, setKeyWord, setPage]);

@@ -25,7 +25,7 @@ interface ViewerActions {
   setFocusNodeCallback: (callback: ((node: NodeData) => void) | undefined) => void;
   addKeyword: (keyword: string, state?: boolean) => void;
   deleteKeyword: (keyword: string) => void;
-  setKeyword: (keyword: string, state: KeywordState) => void;
+  setKeyword: (keyword: string, state: KeywordStateSlice) => void;
   setAllKeyword: (state: boolean) => void;
   setDataStr: (dataStr: string[][]) => void;
   findDataStr: (from: number[], keyword: string) => KeywordSourceResult | undefined;
@@ -44,6 +44,11 @@ interface ViewerStateSlice {
   dataSource?: WBSourceData;
   mindMapData?: Map<number, GraphData>;
   document?: WBDocument;
+}
+
+interface KeywordStateSlice {
+  enabled?: boolean;
+  type?: KeywordType;
 }
 
 const initialState = {
@@ -92,7 +97,7 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     const prevState = keywords.get(keyword);
     if (prevState === undefined) return;
     set({
-      keywords: new Map([...keywords]).set(keyword, { ...state }),
+      keywords: new Map([...keywords]).set(keyword, { ...prevState, ...state }),
     });
   },
   setAllKeyword: (state) => {
