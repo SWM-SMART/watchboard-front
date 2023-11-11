@@ -16,9 +16,9 @@ export function genId(): string {
  * @return {string} Generated random color value in rgb string
  */
 export function genColor(): string {
-  return `rgb(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 255)},${Math.floor(
-    Math.random() * 255,
-  )})`;
+  return `rgb(${Math.floor(Math.random() * 50) + 130},${Math.floor(Math.random() * 50) + 130},${
+    Math.floor(Math.random() * 50) + 130
+  })`;
 }
 
 /**

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 
 interface ViewerState {
   dataSource: WBSourceData | null;
-  mindMapData: GraphData | null;
+  mindMapData: Map<number, GraphData> | null;
   nextState: ViewerStateSlice | null;
   view: ViewerPage;
   document: WBDocument | null;
@@ -37,11 +37,12 @@ interface ViewerActions {
   syncDocument: () => void;
   applySyncDocument: () => void;
   clearSyncDocument: () => void;
+  setMindMapData: (mindMapData: Map<number, GraphData>) => void;
 }
 
 interface ViewerStateSlice {
   dataSource?: WBSourceData;
-  mindMapData?: GraphData;
+  mindMapData?: Map<number, GraphData>;
   document?: WBDocument;
 }
 
@@ -132,14 +133,18 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     // fetch sourceData
     const newDataSource = await getDataSource(documentId, newDocument.dataType);
     // fetch mindMapData
-    const newMindMapData = await getMindMapData(documentId);
+    const newMindMap = await getMindMapData(documentId);
 
     // mindmap generation is in progress
-    if (newMindMapData === null) return;
+    if (newMindMap === null) return;
+
+    // mindMapData map
+    const newMindMapData = new Map<number, GraphData>();
+    newMindMapData.set(documentId, newMindMap);
 
     // local keyword map
     const newKeywords = new Map<string, KeywordState>();
-    for (const keyword of newMindMapData.keywords) {
+    for (const keyword of newMindMap.keywords) {
       newKeywords.set(keyword, {
         enabled: false,
         type: 'STABLE',
@@ -163,7 +168,10 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     if (document === null) return;
 
     // fetch mindMapData: always update
-    nextState.mindMapData = (await getMindMapData(document.documentId)) ?? undefined;
+    const newMindMap = await getMindMapData(document.documentId);
+    if (newMindMap !== null) {
+      nextState.mindMapData = new Map<number, GraphData>([[document.documentId, newMindMap]]);
+    }
 
     set({ nextState: nextState });
   },
@@ -173,11 +181,13 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
     // local keyword map
     const newKeywords = new Map<string, KeywordState>();
     if (newState.mindMapData !== undefined) {
-      for (const keyword of newState.mindMapData.keywords) {
-        newKeywords.set(keyword, {
-          enabled: false,
-          type: 'STABLE',
-        });
+      for (const [documentId, mindMap] of newState.mindMapData) {
+        for (const keyword of mindMap.keywords) {
+          newKeywords.set(keyword, {
+            enabled: false,
+            type: 'STABLE',
+          });
+        }
       }
     }
     set({
@@ -190,5 +200,8 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
   },
   clearSyncDocument: () => {
     set({ nextState: null });
+  },
+  setMindMapData: (mindMapData: Map<number, GraphData>) => {
+    set({ mindMapData: mindMapData, selectedNode: undefined });
   },
 }));

@@ -66,9 +66,10 @@ type ExtendedSpriteText = import('three-spritetext').default & {
 };
 
 interface NodeData {
+  documentId: number;
   children: NodeData[];
   parent?: NodeData;
-  id: number;
+  id: string;
   label: string;
   labelMesh?: ExtendedSpriteText;
   scale: number;
@@ -90,8 +91,9 @@ interface NodeDataLegacy {
 }
 
 interface LinkData {
-  source: number | NodeData;
-  target: number | NodeData;
+  documentId: number;
+  source: string | NodeData;
+  target: string | NodeData;
 }
 
 interface LinkDataLegacy {

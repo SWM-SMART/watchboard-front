@@ -123,13 +123,13 @@ function DataViewer({ type }: DataViewerProps) {
 }
 
 function GraphViewer() {
-  const hasGraph = useViewer((state) => state.mindMapData?.keywords.length !== 0);
-  if (!hasGraph) return <p>no graph available</p>;
+  const mindMapData = useViewer((state) => state.mindMapData);
+  if (mindMapData === null) return <p>no graph available</p>;
   return (
     <>
       <div className={styles.whiteBoardContainer}>
         <Suspense fallback={<LoadingScreen message={'렌더러 로드중'} />}>
-          <GraphCanvas />
+          <GraphCanvas mindMapData={mindMapData} />
         </Suspense>
       </div>
     </>

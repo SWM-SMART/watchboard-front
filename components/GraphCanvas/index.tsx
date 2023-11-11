@@ -1,18 +1,15 @@
 'use client';
-import { CSSProperties, useEffect } from 'react';
+import { CSSProperties } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { useGraph } from '@/states/graph';
 import dynamic from 'next/dynamic';
-import { useViewer } from '@/states/viewer';
 const GraphRenderer = dynamic(() => import('./GraphRenderer'), { ssr: false });
 
 interface GraphCanvasProps {
   style?: CSSProperties;
+  mindMapData: Map<number, GraphData>;
 }
 
-export default function GraphCanvas({ style }: GraphCanvasProps) {
-  const mindMapData = useViewer((state) => state.mindMapData);
-
+export default function GraphCanvas({ style, mindMapData }: GraphCanvasProps) {
   if (mindMapData === null) return <></>;
 
   return (

@@ -4,11 +4,14 @@ import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBa
 import { useViewer } from '@/states/viewer';
 import 'material-symbols';
 import SmallIconButton from '@/components/Button/SmallIconButton';
+import { useOverlay } from '@/states/overlay';
+import MixModePanel from '@/components/GraphCanvas/MixModePanel';
 
 export default function BottomToolBar() {
   const elementRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<Coord>({ x: 0, y: 0 });
   const [drag, setDrag] = useState<Coord | undefined>(undefined);
+  const setOverlay = useOverlay((state) => state.setOverlay);
 
   useEffect(() => {
     if (!drag) return;
@@ -66,6 +69,13 @@ export default function BottomToolBar() {
           text={'자료'}
           invert={true}
           onClick={() => setView('DATA')}
+        />
+        <ClickableBackgroundButton
+          color={'primary'}
+          thin={true}
+          text={'MIX!'}
+          invert={false}
+          onClick={() => setOverlay(<MixModePanel />)}
         />
       </div>
     </div>
