@@ -67,7 +67,9 @@ function useFocusKeyword(
   useEffect(() => {
     setCallback((keyword, location) => {
       setAllKeyword(false);
-      setKeyWord(keyword, true);
+      setKeyWord(keyword, {
+        enabled: true,
+      });
       setFocusIndex(location[0]);
       setSelectIndex(location[0]);
       if (audioRef.current === null) return;
