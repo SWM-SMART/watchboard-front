@@ -32,16 +32,16 @@ export default function MixModePanel() {
   const applyChanges = () => {
     // loading dialogue
     setOverlay(<LoadingDialogue />);
-    // current mindmap
-    const fixedMindMap = mindMapData.get(currentDocumentId);
-    if (fixedMindMap === undefined) return;
     // create new mindmap state
-    const newMindMapData = new Map<number, GraphData>();
-    newMindMapData.set(currentDocumentId, fixedMindMap);
+    const newMindMapData = new Map<number, GraphData>([...mindMapData]);
     (async () => {
       // fetch new Mindmaps
       for (const [id, v] of selection.entries()) {
-        if (v === false) continue;
+        if (v === false) {
+          // remove mindmap
+          newMindMapData.delete(id);
+          continue;
+        }
         const newData = await getMindMapData(id);
         if (newData === null) continue;
         newMindMapData.set(id, newData);
