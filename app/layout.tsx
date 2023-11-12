@@ -1,4 +1,3 @@
-'use client';
 import ErrorHandler from './components/ErrorHandler';
 import styles from './page.module.css';
 import './globals.css';

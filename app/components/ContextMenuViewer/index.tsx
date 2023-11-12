@@ -1,3 +1,4 @@
+'use client';
 import { useContextMenu } from '@/states/contextMenu';
 import styles from './contextMenuViewer.module.css';
 import { CSSProperties, useEffect } from 'react';
