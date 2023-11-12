@@ -4,7 +4,6 @@ import Dialogue from '@/components/Dialogue';
 import FileInput from '@/components/Dialogue/Input/FileInput';
 import TextInput from '@/components/Dialogue/Input/TextInput';
 import { useToast } from '@/states/toast';
-import { useViewer } from '@/states/viewer';
 import { createDocument, uploadFile } from '@/utils/api';
 import { throwError } from '@/utils/ui';
 import { useRouter } from 'next/navigation';
@@ -21,14 +20,13 @@ export default function DocumentCreateDialogue({
 }: DocumentCreateDialogueProps) {
   const router = useRouter();
   const [load, setLoad] = useState<boolean>(false);
-  const documentId = useViewer((state) => state.document?.documentId ?? 0);
   const pushToast = useToast((state) => state.pushToast);
 
   return (
     <div className={styles.container} style={load ? { pointerEvents: 'none' } : undefined}>
       <Dialogue
         enabled={!load}
-        title={'문서 생성'}
+        title={'학습 생성'}
         onCancel={onCancel}
         onSubmit={(e) => {
           e.preventDefault();
@@ -37,19 +35,27 @@ export default function DocumentCreateDialogue({
           const titleInput = (e.target as any).title as HTMLInputElement;
           const fileInput = (e.target as any).file as HTMLInputElement;
 
+          // check file
+          if (fileInput.files === null || fileInput.files.length === 0) {
+            throwError('요약할 파일을 입력해 주세요');
+            return setLoad(false);
+          }
+
           // check title
           if (titleInput.value.length === 0) {
-            throwError('문서의 제목을 입력해 주세요');
-            return setLoad(false);
+            // throwError('문서의 제목을 입력해 주세요');
+            // return setLoad(false);
+
+            // set to filename if left blank
+            titleInput.value = fileInput.files[0].name;
           }
 
           (async () => {
             // create new Document
             const newDocument = await createDocument(titleInput.value);
+
             // upload file (if exists)
-            if (fileInput.files !== null && fileInput.files.length > 0) {
-              await uploadFile(documentId, fileInput.files[0]);
-            }
+            await uploadFile(newDocument.documentId, fileInput.files![0]);
 
             pushToast({
               id: new Date().getTime(),

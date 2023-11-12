@@ -2,7 +2,7 @@
 import { MutableRefObject, RefObject, useCallback, useEffect, useMemo, useRef } from 'react';
 import { invalidate, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { boundNumber, calculateLineGeometry, getPos } from '@/utils/whiteboardHelper';
+import { boundNumber, calculateLineGeometry, genColor, getPos } from '@/utils/whiteboardHelper';
 import * as d3 from 'd3';
 import SpriteText from 'three-spritetext';
 import { useViewer } from '@/states/viewer';
@@ -26,7 +26,7 @@ const COLOR_HIGHLIGHT_STRING = '#027373';
 const COLOR_HIGHLIGHT = new THREE.Color(COLOR_HIGHLIGHT_STRING);
 
 interface GraphRendererProps {
-  data: GraphData;
+  data: Map<number, GraphData>; // documentId : graphData
 }
 
 export default function GraphRenderer({ data }: GraphRendererProps) {
@@ -41,13 +41,36 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   );
   const lineMesh = useRef<THREE.InstancedMesh>();
   const circleMesh = useRef<THREE.InstancedMesh>();
+  const currentDocumentId = useViewer((state) => state.document?.documentId);
+  const staleColorMapRef = useRef<Map<number, THREE.Color>>(new Map());
+
+  const meshFactory = useCallback(
+    (nodes: NodeData[], links: LinkData[]) => {
+      // create node instancedMesh
+      circleMesh.current = new THREE.InstancedMesh(geometry, nodeMaterial, nodes.length);
+      circleMesh.current.position.setZ(10);
+      circleMesh.current.frustumCulled = false;
+      // need to set color once before render!
+      circleMesh.current.setColorAt(0, COLOR_STALE);
+      groupRef.current!.add(circleMesh.current);
+
+      // create line instancedMesh
+      lineMesh.current = new THREE.InstancedMesh(lineGeometry, lineMaterial, links.length);
+      lineMesh.current.frustumCulled = false;
+      groupRef.current!.add(lineMesh.current);
+    },
+    [geometry, lineGeometry, lineMaterial, nodeMaterial],
+  );
 
   const nodeDataFactory = useCallback(
-    (entries: IterableIterator<[number, string]>) => {
+    (documentId: number, entries: IterableIterator<[number, string]>) => {
       const nodes: NodeData[] = [];
+      // generate color
+      const color = documentId === currentDocumentId ? COLOR_STALE_STRING : genColor();
+      staleColorMapRef.current.set(documentId, new THREE.Color(color));
       for (const [id, keyword] of entries) {
         // label
-        const text = new SpriteText(keyword, 28, 'black') as ExtendedSpriteText;
+        const text = new SpriteText(keyword, 28, color) as ExtendedSpriteText;
         text.position.setZ(15);
         text.strokeColor = 'white';
         text.strokeWidth = 2;
@@ -55,7 +78,8 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
         groupRef.current!.add(text);
 
         nodes.push({
-          id: id,
+          documentId: documentId,
+          id: `${documentId}-${id}`,
           children: [],
           label: keyword,
           labelMesh: text,
@@ -64,35 +88,27 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
         } as NodeData);
       }
 
-      // create instancedMesh
-      circleMesh.current = new THREE.InstancedMesh(geometry, nodeMaterial, nodes.length);
-      circleMesh.current.position.setZ(10);
-      circleMesh.current.frustumCulled = false;
-      // need to set color once before render!
-      circleMesh.current.setColorAt(0, COLOR_STALE);
-      groupRef.current!.add(circleMesh.current);
-
       return nodes;
     },
-    [geometry, nodeMaterial],
+    [currentDocumentId],
   );
 
   const linkDataFactory = useCallback(
-    (entries: IterableIterator<[string, number[]]>) => {
+    (documentId: number, entries: IterableIterator<[string, number[]]>) => {
       const links: LinkData[] = [];
       for (const [key, children] of entries) {
         const id = parseInt(key);
         for (const child of children) {
-          links.push({ source: id, target: child } as LinkData);
+          links.push({
+            source: `${documentId}-${id}`,
+            target: `${documentId}-${child}`,
+            documentId: documentId,
+          } as LinkData);
         }
       }
-      // create instancedMesh
-      lineMesh.current = new THREE.InstancedMesh(lineGeometry, lineMaterial, links.length);
-      lineMesh.current.frustumCulled = false;
-      groupRef.current!.add(lineMesh.current);
       return links;
     },
-    [lineGeometry, lineMaterial],
+    [],
   );
 
   const { simulationRef, linksRef } = useSimulation(
@@ -100,6 +116,7 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     groupRef,
     nodeDataFactory,
     linkDataFactory,
+    meshFactory,
   );
 
   const { selectedNodeRef, hoverNodeRef, pointerDownRef } = usePointer(simulationRef, circleMesh);
@@ -127,8 +144,10 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
     const labelOpacity = needFocusOnNode
       ? Math.min(0.4, labelOpacityBasedOnZoom)
       : labelOpacityBasedOnZoom;
-    const defaultColor = needFocusOnNode ? COLOR_STALE_BACK : COLOR_STALE;
+
     nodes.forEach((node, i) => {
+      const staleColor = staleColorMapRef.current.get(node.documentId) ?? COLOR_STALE;
+      const defaultColor = needFocusOnNode ? COLOR_STALE_BACK : staleColor;
       const m = new THREE.Matrix4();
       if (node === selectedNodeRef.current?.node) {
         // selected node
@@ -240,6 +259,7 @@ function usePointer(
     };
 
     const pointerUp = (e: MouseEvent) => {
+      e.preventDefault();
       if (pointerDownRef.current === undefined) return;
       const upPos = new THREE.Vector2(e.clientX, e.clientY);
       const down = pointerDownRef.current;
@@ -257,6 +277,7 @@ function usePointer(
     };
 
     const pointerDown = (e: MouseEvent) => {
+      e.preventDefault();
       if (nodeMeshRef?.current === undefined) return;
       const intersection = intersectingNode(
         simulationRef.current.nodes(),
@@ -348,10 +369,14 @@ function usePointer(
 }
 
 function useSimulation(
-  data: GraphData,
+  data: Map<number, GraphData>,
   groupRef: RefObject<THREE.Group>,
-  nodeDataFactory: (entries: IterableIterator<[number, string]>) => NodeData[],
-  linkDataFactory: (entries: IterableIterator<[string, number[]]>) => LinkData[],
+  nodeDataFactory: (documentId: number, entries: IterableIterator<[number, string]>) => NodeData[],
+  linkDataFactory: (
+    documentId: number,
+    entries: IterableIterator<[string, number[]]>,
+  ) => LinkData[],
+  meshFactory: (nodes: NodeData[], links: LinkData[]) => void,
 ) {
   const simulationRef = useRef<d3.Simulation<NodeData, undefined>>(d3.forceSimulation<NodeData>());
   const linksRef = useRef<LinkData[]>([]);
@@ -361,7 +386,9 @@ function useSimulation(
     if (simulationRef.current != null) simulationRef.current.stop();
 
     // regenerated on graph data update
-    if (groupRef.current == null) return;
+    if (groupRef.current == null) {
+      return;
+    }
 
     // remove items from mesh group
     for (const child of groupRef.current.children) {
@@ -371,18 +398,33 @@ function useSimulation(
 
     groupRef.current.clear();
 
-    // generate nodes
-    const nodes: NodeData[] = nodeDataFactory(data.keywords.entries());
+    const nodes: NodeData[] = [];
+    linksRef.current = [];
 
-    // generate links
-    const graph = new Map<string, number[]>(Object.entries(data.graph));
-    linksRef.current = linkDataFactory(graph.entries());
+    // support multiple data
+    for (const [documentId, graphData] of data) {
+      // generate nodes
+      const newNodes = nodeDataFactory(documentId, graphData.keywords.entries());
+      const nodesMap: Map<string, NodeData> = new Map();
+      for (const node of newNodes) {
+        nodes.push(node);
+        nodesMap.set(node.id, node);
+      }
 
-    // save links in nodes for future use
-    for (const link of linksRef.current) {
-      nodes[link.source as number].children?.push(nodes[link.target as number]);
-      nodes[link.target as number].parent = nodes[link.source as number];
+      // generate links
+      const graph = new Map<string, number[]>(Object.entries(graphData.graph));
+      const newLinks = linkDataFactory(documentId, graph.entries());
+
+      // save links in nodes for future use
+      for (const link of newLinks) {
+        linksRef.current.push(link);
+        nodesMap.get(link.source as string)!.children?.push(nodesMap.get(link.target as string)!);
+        nodesMap.get(link.target as string)!.parent = nodesMap.get(link.source as string);
+      }
     }
+
+    // generate meshes (from graphRenderer context)
+    meshFactory(nodes, linksRef.current);
 
     simulationRef.current
       .nodes(nodes)
@@ -391,7 +433,7 @@ function useSimulation(
         'link',
         d3
           .forceLink<NodeData, LinkData>(linksRef.current)
-          .id((d) => d.id)
+          .id((node, i, nodesData) => node.id)
           .strength(1),
       )
       .force('collision', d3.forceCollide(GAP))
@@ -399,7 +441,7 @@ function useSimulation(
 
     simulationRef.current.alpha(1).stop();
     invalidate();
-  }, [data.graph, data.keywords, groupRef, linkDataFactory, nodeDataFactory]);
+  }, [data, groupRef, linkDataFactory, nodeDataFactory]);
 
   // simulation tick on frame
   useFrame((_state, delta) => {

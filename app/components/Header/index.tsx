@@ -6,6 +6,7 @@ import { useOverlay } from '@/states/overlay';
 import DocumentCreateDialogue from '../DocumentCreateDialogue';
 import Logo from '@/components/Logo';
 import { useUser } from '@/states/user';
+import { useViewer } from '@/states/viewer';
 export default function Header() {
   const { setOverlay } = useOverlay((state) => ({
     setOverlay: state.setOverlay,
@@ -21,7 +22,7 @@ export default function Header() {
         {userDataExists ? (
           <ClickableBackgroundButton
             invert={true}
-            text={'새로운 문서'}
+            text={'학습 생성'}
             icon="add"
             onClick={() =>
               setOverlay(
@@ -33,7 +34,6 @@ export default function Header() {
             }
           />
         ) : undefined}
-
         <LoginButton />
       </div>
     </div>

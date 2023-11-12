@@ -28,7 +28,7 @@ export default function FileInput({ name, types, onError, typeNames }: FileInput
 
   return (
     <div className={styles.container}>
-      <p className={styles.label}>요약할 파일</p>
+      <p className={styles.label}>학습 자료</p>
       <div
         className={styles.fileContainer}
         onDragOver={(e) => e.preventDefault()}

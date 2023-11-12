@@ -14,6 +14,7 @@
   --grey-darker: #383b40;
   --foreground-disabled: #c7cfd0;
   --foreground: #ffffff;
+  --warning-color: #c2599a;
   --background: #f4f6f8;
   --background-accent: #e6f5f5;
   --intro-animation: show 0.5s;
@@ -76,10 +77,10 @@ div.loading-container {
 
 @keyframes barAnimation {
   0% {
-    background-color: var(--primary-light);
+    background-color: var(--primary-dark);
   }
   50% {
-    background-color: var(--primary-dark);
+    background-color: var(--highlight);
   }
   100% {
     background-color: var(--primary-light);
@@ -116,9 +117,9 @@ div.loading-bar {
 }
 
 mark {
-  text-decoration: dotted;
+  text-decoration: underline dotted;
   text-decoration-color: red;
-  text-decoration-thickness: 2px;
+  text-decoration-thickness: 3px;
   color: transparent;
   background: transparent;
 }

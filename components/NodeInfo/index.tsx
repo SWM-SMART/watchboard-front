@@ -5,15 +5,19 @@ import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
 import SourceDataView from './SourceDataView';
 import { getKeywordInfo } from '@/utils/api';
+import Link from 'next/link';
 
 interface NodeInfoProps {
   node?: NodeData;
 }
+
 export default function NodeInfo({ node }: NodeInfoProps) {
   const [data, setData] = useState<string>();
   const [sourceView, setSourceView] = useState<boolean>(true);
   const [relationView, setRelationView] = useState<boolean>(true);
-  const documentId = useViewer((state) => state.document?.documentId);
+  const currentDocumentId = useViewer((state) => state.document?.documentId);
+  const documentId = node?.documentId;
+  const isLocalNode = documentId === currentDocumentId;
 
   useEffect(() => {
     if (node === undefined || documentId === undefined) return;
@@ -35,6 +39,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
   return (
     <div className={styles.container}>
       <h1>{node?.label}</h1>
+      {isLocalNode ? null : <MixedNodeNotice documentId={documentId ?? 0} />}
       <div className={styles.actions}>
         <SmallActionButton
           border={true}
@@ -43,13 +48,16 @@ export default function NodeInfo({ node }: NodeInfoProps) {
           icon={'network_node'}
           onClick={() => setRelationView((show) => !show)}
         />
-        <SmallActionButton
-          border={true}
-          enabled={sourceView}
-          label={'키워드 출처'}
-          icon={'find_in_page'}
-          onClick={() => setSourceView((show) => !show)}
-        />
+        {isLocalNode ? (
+          <SmallActionButton
+            border={true}
+            enabled={sourceView}
+            label={'키워드 출처'}
+            icon={'find_in_page'}
+            onClick={() => setSourceView((show) => !show)}
+          />
+        ) : null}
+
         <SmallActionButton
           border={true}
           label={'노드로 이동'}
@@ -63,8 +71,27 @@ export default function NodeInfo({ node }: NodeInfoProps) {
       </div>
       <RelationView node={node} hidden={!relationView} />
 
-      <SourceDataView hidden={!sourceView} />
+      {isLocalNode ? <SourceDataView hidden={!sourceView} /> : null}
       <p>{data}</p>
+    </div>
+  );
+}
+
+interface MixedNodeNoticeProps {
+  documentId: number;
+}
+
+function MixedNodeNotice({ documentId }: MixedNodeNoticeProps) {
+  return (
+    <div className={styles.notice}>
+      <span className="material-symbols-outlined">warning</span>
+      <p className={styles.noticeText}>
+        해당 노드는 <b>MIX</b> 로 불러온 외부 노드입니다. 수정하려면{' '}
+        <Link href={`/document/${documentId}`} className={styles.noticeLink}>
+          여기
+        </Link>
+        를 클릭하여 원본 문서로 이동하세요
+      </p>
     </div>
   );
 }

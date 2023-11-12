@@ -30,8 +30,10 @@ export async function refreshToken(): Promise<string | null> {
   );
 }
 
-export async function getMindMapData(documentId: number): Promise<GraphData> {
-  return (await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap`))?.json();
+export async function getMindMapData(documentId: number): Promise<GraphData | null> {
+  const res = await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap`);
+  if (res?.status === 200) return res.json();
+  return null;
 }
 
 export async function getDataSource(
@@ -59,7 +61,10 @@ export async function getKeywordInfo(
 
 export async function uploadFile(documentId: number, file: File) {
   const type = uploadFileType(file.type);
-  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, file, true, false);
+  if (type === undefined) return;
+  const form = new FormData();
+  form.append(type, file);
+  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false);
 }
 
 function uploadFileType(type: string) {
