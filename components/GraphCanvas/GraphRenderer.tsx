@@ -259,6 +259,7 @@ function usePointer(
     };
 
     const pointerUp = (e: MouseEvent) => {
+      e.preventDefault();
       if (pointerDownRef.current === undefined) return;
       const upPos = new THREE.Vector2(e.clientX, e.clientY);
       const down = pointerDownRef.current;
@@ -276,6 +277,7 @@ function usePointer(
     };
 
     const pointerDown = (e: MouseEvent) => {
+      e.preventDefault();
       if (nodeMeshRef?.current === undefined) return;
       const intersection = intersectingNode(
         simulationRef.current.nodes(),
