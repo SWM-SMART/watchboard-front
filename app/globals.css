@@ -83,7 +83,7 @@ div.loading-container {
     background-color: var(--highlight);
   }
   100% {
-    background-color: var(--primary-light);
+    background-color: var(--primary-dark);
   }
 }
 
