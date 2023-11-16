@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ToastViewer />
         <div className={styles.container}>
           <Header />
-          <div className={styles.children}>{children}</div>
+          {children}
         </div>
         <OverlayViewer />
         <ContextMenuViewer />
