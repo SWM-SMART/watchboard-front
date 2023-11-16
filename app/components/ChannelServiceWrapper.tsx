@@ -1,11 +1,12 @@
 'use client';
-import { useUser } from '@/states/user';
 import ChannelService from '@/utils/ChannelService';
-import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ChannelServiceWrapper() {
+  const pathName = usePathname();
+  const [channel, setChannel] = useState<ChannelService>();
   const key = process.env.NEXT_PUBLIC_CHANNEL_PLUGIN_KEY;
-  const userData = useUser((state) => state.userData);
   useEffect(() => {
     if (key === undefined) return;
     const channel = new ChannelService();
@@ -13,7 +14,17 @@ export default function ChannelServiceWrapper() {
     channel.boot({
       pluginKey: key,
     });
-    return () => channel.shutdown();
-  }, [key, userData]);
+    setChannel(channel);
+    return () => {
+      setChannel(undefined);
+      channel.shutdown();
+    };
+  }, [key]);
+
+  useEffect(() => {
+    if (channel === undefined) return;
+    if (pathName === '/' || pathName === '/landing') channel.showChannelButton();
+    return () => channel.hideChannelButton();
+  });
   return <></>;
 }
