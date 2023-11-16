@@ -1,27 +1,82 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './nodeInfo.module.css';
 import SmallActionButton from '../Button/SmallActionButton';
 import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
 import SourceDataView from './SourceDataView';
 import Link from 'next/link';
+import { getKeywordInfo } from '@/utils/api';
+import { useUser } from '@/states/user';
+import { useViewerEvents } from '@/utils/ui';
 
 interface NodeInfoProps {
   node?: NodeData;
-  answer: string | null;
 }
 
-export default function NodeInfo({ node, answer }: NodeInfoProps) {
+interface AnswerData {
+  node: NodeData;
+  answer?: string;
+}
+
+// answerdata label을 노드 객체로 바꾸기
+
+export default function NodeInfo({ node }: NodeInfoProps) {
   const [sourceView, setSourceView] = useState<boolean>(true);
   const [relationView, setRelationView] = useState<boolean>(true);
-  const currentDocumentId = useViewer((state) => state.document?.documentId);
+  const [answer, setAnswer] = useState<AnswerData>();
   const documentId = node?.documentId;
-  const isLocalNode = documentId === currentDocumentId;
-
+  const isLocalNode = documentId === useViewer((state) => state.document?.documentId);
   const { setFocus, setView } = useViewer((state) => ({
     setFocus: state.focusNodeCallback,
     setView: state.setView,
   }));
+
+  useEffect(() => {
+    if (documentId === undefined || node === undefined) return;
+    setAnswer((oldAnswer) =>
+      oldAnswer === undefined
+        ? {
+            node: node,
+          }
+        : oldAnswer,
+    );
+
+    (async () => {
+      const newAnswerText = (await getKeywordInfo(documentId, node?.label))?.text;
+      if (newAnswerText === undefined) return;
+      // should be updated only if oldAnswer is not present || node label matches
+      setAnswer((oldAnswer) =>
+        oldAnswer === undefined || oldAnswer.node === node
+          ? { node: node, answer: newAnswerText }
+          : oldAnswer,
+      );
+    })();
+
+    return () => setAnswer(undefined);
+  }, [documentId, node]);
+
+  const eventCallback = useCallback(
+    (type: ViewerEventType, data: string) => {
+      if (documentId === undefined || node === undefined) return;
+      if (type === 'answer' && data === node?.label) {
+        (async () => {
+          const answerText = (await getKeywordInfo(documentId, node?.label))?.text;
+          if (answerText === undefined) return;
+          setAnswer({
+            node: node,
+            answer: answerText,
+          });
+        })();
+      }
+    },
+    [documentId, node],
+  );
+
+  // subscribe to event
+  useViewerEvents(eventCallback, documentId);
+
+  // access token
+  const accessToken = useUser((state) => state.accessToken);
 
   if (node === undefined) return <EmptyNodeInfo />;
 
@@ -46,7 +101,6 @@ export default function NodeInfo({ node, answer }: NodeInfoProps) {
             onClick={() => setSourceView((show) => !show)}
           />
         ) : null}
-
         <SmallActionButton
           border={true}
           label={'노드로 이동'}
@@ -61,7 +115,7 @@ export default function NodeInfo({ node, answer }: NodeInfoProps) {
       <RelationView node={node} hidden={!relationView} />
 
       {isLocalNode ? <SourceDataView hidden={!sourceView} /> : null}
-      {answer === null ? <LoadingNodeInfoString /> : <p>{answer}</p>}
+      {answer?.answer === undefined ? <LoadingNodeInfoString /> : <p>{answer.answer}</p>}
     </div>
   );
 }
