@@ -17,7 +17,8 @@ export async function createDocument(documentName: string): Promise<WBDocumentCr
 }
 
 export async function deleteDocument(documentId: number) {
-  await httpDelete(`${API_BASE_URL}/documents/${documentId}`, null);
+  const res = await httpDelete(`${API_BASE_URL}/documents/${documentId}`, null);
+  return res?.status;
 }
 
 export async function getUserData(): Promise<UserDataResponse> {
@@ -26,7 +27,9 @@ export async function getUserData(): Promise<UserDataResponse> {
 
 export async function refreshToken(): Promise<string | null> {
   return (
-    (await httpGet(`${API_BASE_URL}/users/token`, false, true))?.headers.get('Authorization') || ''
+    (await httpGet(`${API_BASE_URL}/users/token`, false, true, true))?.headers.get(
+      'Authorization',
+    ) || ''
   );
 }
 
