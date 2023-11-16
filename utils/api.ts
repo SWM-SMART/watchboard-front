@@ -25,7 +25,7 @@ export async function deleteDocument(documentId: number) {
 }
 
 export async function getUserData(): Promise<UserDataResponse> {
-  return (await httpGet(`${API_BASE_URL}/users/info`))?.json();
+  return (await httpGet(`${API_BASE_URL}/users/info`, true, true, true))?.json();
 }
 
 export async function refreshToken(): Promise<string | null> {
