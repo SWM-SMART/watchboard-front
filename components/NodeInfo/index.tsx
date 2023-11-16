@@ -1,33 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styles from './nodeInfo.module.css';
 import SmallActionButton from '../Button/SmallActionButton';
 import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
 import SourceDataView from './SourceDataView';
-import { getKeywordInfo } from '@/utils/api';
 import Link from 'next/link';
 
 interface NodeInfoProps {
   node?: NodeData;
+  answer: string | null;
 }
 
-export default function NodeInfo({ node }: NodeInfoProps) {
-  const [data, setData] = useState<string>();
+export default function NodeInfo({ node, answer }: NodeInfoProps) {
   const [sourceView, setSourceView] = useState<boolean>(true);
   const [relationView, setRelationView] = useState<boolean>(true);
   const currentDocumentId = useViewer((state) => state.document?.documentId);
   const documentId = node?.documentId;
   const isLocalNode = documentId === currentDocumentId;
-
-  useEffect(() => {
-    if (node === undefined || documentId === undefined) return;
-    (async () => {
-      const data = await getKeywordInfo(documentId, node.label);
-      setData(data.text);
-    })();
-
-    return () => setData(undefined);
-  }, [documentId, node]);
 
   const { setFocus, setView } = useViewer((state) => ({
     setFocus: state.focusNodeCallback,
@@ -72,7 +61,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
       <RelationView node={node} hidden={!relationView} />
 
       {isLocalNode ? <SourceDataView hidden={!sourceView} /> : null}
-      <p>{data}</p>
+      {answer === null ? <LoadingNodeInfoString /> : <p>{answer}</p>}
     </div>
   );
 }
@@ -104,4 +93,8 @@ function EmptyNodeInfo() {
       </p>
     </div>
   );
+}
+
+function LoadingNodeInfoString() {
+  return <div className={styles.loadingContainer}>설명을 불러오는 중입니다</div>;
 }

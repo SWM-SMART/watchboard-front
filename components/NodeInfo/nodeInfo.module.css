@@ -48,3 +48,29 @@
   color: var(--warning-color);
   font-weight: bold;
 }
+
+.loadingContainer {
+  padding: 20px;
+  box-sizing: border-box;
+  color: var(--grey-darker);
+  animation: var(--intro-animation);
+  animation-name: loading;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+}
+
+@keyframes loading {
+  0% {
+    border: var(--primary-dark) 2px solid;
+  }
+  50% {
+    border: var(--secondary-light) 2px solid;
+  }
+  100% {
+    border: var(--primary-dark) 2px solid;
+  }
+}

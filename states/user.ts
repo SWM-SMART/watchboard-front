@@ -5,6 +5,7 @@ interface UserState {
   userData: UserData | null;
   fetchUserData: () => void;
   accessToken: string;
+  reset: () => void;
 }
 
 export const useUser = create<UserState>()((set) => ({
@@ -16,4 +17,7 @@ export const useUser = create<UserState>()((set) => ({
     }));
   },
   accessToken: '',
+  reset: () => {
+    set({ userData: null, accessToken: '' });
+  },
 }));
