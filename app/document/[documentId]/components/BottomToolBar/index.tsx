@@ -31,11 +31,11 @@ export default function BottomToolBar() {
         ),
       });
 
-    document.addEventListener('pointermove', pointerMove);
-    document.addEventListener('pointerup', pointerUp);
+    document.addEventListener('mousemove', pointerMove);
+    document.addEventListener('mouseup', pointerUp);
     return () => {
-      document.removeEventListener('pointermove', pointerMove);
-      document.removeEventListener('pointerup', pointerUp);
+      document.removeEventListener('mousemove', pointerMove);
+      document.removeEventListener('mouseup', pointerUp);
     };
   }, [drag]);
 
@@ -49,7 +49,7 @@ export default function BottomToolBar() {
       <div className={styles.container}>
         <div
           className={styles.handle}
-          onPointerDown={(e) =>
+          onMouseDown={(e) =>
             setDrag({ x: pos.x - e.clientX, y: pos.y - (window.innerHeight - e.clientY) })
           }
         >

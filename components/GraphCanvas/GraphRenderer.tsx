@@ -295,14 +295,14 @@ function usePointer(
       selectedNodeRef.current = intersection;
       simulationRef.current.alphaTarget(0.1).restart();
     };
-    domElement.addEventListener('pointermove', pointerMove);
-    domElement.addEventListener('pointerup', pointerUp);
-    domElement.addEventListener('pointerdown', pointerDown);
+    domElement.addEventListener('mousemove', pointerMove);
+    domElement.addEventListener('mouseup', pointerUp);
+    domElement.addEventListener('mousedown', pointerDown);
     domElement.addEventListener('wheel', wheel);
     return () => {
-      domElement.removeEventListener('pointermove', pointerMove);
-      domElement.removeEventListener('pointerup', pointerUp);
-      domElement.removeEventListener('pointerdown', pointerDown);
+      domElement.removeEventListener('mousemove', pointerMove);
+      domElement.removeEventListener('mouseup', pointerUp);
+      domElement.removeEventListener('mousedown', pointerDown);
       domElement.removeEventListener('wheel', wheel);
     };
   }, [camera, domElement, mouse, nodeMeshRef, raycasterRef, setSelectedNode, simulationRef]);
