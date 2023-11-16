@@ -6,7 +6,7 @@ import { useOverlay } from '@/states/overlay';
 import DocumentCreateDialogue from '../DocumentCreateDialogue';
 import Logo from '@/components/Logo';
 import { useUser } from '@/states/user';
-import { useViewer } from '@/states/viewer';
+
 export default function Header() {
   const { setOverlay } = useOverlay((state) => ({
     setOverlay: state.setOverlay,

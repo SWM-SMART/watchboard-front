@@ -5,6 +5,14 @@
   width: 100%;
 }
 
+.children {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  margin-top: 65px;
+}
+
 .content {
   animation: var(--intro-animation);
   box-sizing: border-box;

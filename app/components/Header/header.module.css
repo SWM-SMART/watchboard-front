@@ -1,4 +1,7 @@
 .header {
+  position: fixed;
+  top: 0;
+  z-index: 100;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -7,7 +10,7 @@
   border-bottom: 1px solid #e5e8ec;
   align-items: center;
   width: 100%;
-  flex: 0 0 65px;
+  height: 65px;
   padding: 0 20px;
 }
 
