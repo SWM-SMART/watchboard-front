@@ -12,7 +12,9 @@ export default function Header() {
   const { setOverlay } = useOverlay((state) => ({
     setOverlay: state.setOverlay,
   }));
-  const userDataExists = useUser((state) => state.userData !== null);
+  const userDataExists = useUser(
+    (state) => state.userData !== undefined && state.userData !== null,
+  );
 
   return (
     <div className={styles.header}>

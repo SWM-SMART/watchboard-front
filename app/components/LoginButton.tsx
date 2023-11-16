@@ -14,12 +14,12 @@ export default function LoginButton() {
   }, [fetchUserData]);
 
   // loading
-  if (userData === null) {
+  if (userData === undefined) {
     return <ClickableBackgroundButton color="grey" text={'확인중'} icon="cached" />;
   }
 
   // not logged in
-  if (userData.userId === 0) {
+  if (userData === null) {
     return (
       <ClickableBackgroundButton
         text={'로그인'}
