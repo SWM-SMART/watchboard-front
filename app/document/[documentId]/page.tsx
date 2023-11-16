@@ -30,7 +30,6 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
       syncDocument: state.syncDocument,
     }),
   );
-  const [nodeInfoString, setNodeInfoString] = useState<string | null>(null);
 
   // reset viewer
   useEffect(() => {
@@ -41,16 +40,8 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
 
   const { width, setDrag } = useDivider(true, 800, 0);
 
-  const loadNodeInfo = (node: NodeData) => {
-    (async () => {
-      const data = await getKeywordInfo(node.documentId, node.label);
-      setNodeInfoString(data?.text ?? null);
-    })();
-  };
-
   const eventCallback = useCallback(
     (type: ViewerEventType, data: string) => {
-      console.log(type);
       // reload on event
       if (type === 'mindmap') {
         // mindmap reload
@@ -58,24 +49,12 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
         // mindmap updated
         return syncDocument();
       }
-
-      if (type === 'answer' && selectedNode !== undefined) {
-        // answers are loaded
-        if (selectedNode.label) return loadNodeInfo(selectedNode);
-      }
     },
-    [documentData, documentId, loadDocument, selectedNode, syncDocument],
+    [documentData, documentId, loadDocument, syncDocument],
   );
 
   // subscribe to events
-  useViewerEvents(documentId, eventCallback);
-
-  // fetch nodeInfo
-  useEffect(() => {
-    if (selectedNode === undefined) return;
-    loadNodeInfo(selectedNode);
-    return () => setNodeInfoString(null);
-  }, [documentId, selectedNode]);
+  useViewerEvents(eventCallback, documentId);
 
   if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
 
@@ -83,7 +62,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     <div className={styles.rootContainer}>
       <div className={styles.container}>
         <div className={styles.sideBar} style={{ width: `${width}px`, flex: `0 0 ${width}px` }}>
-          <NodeInfo node={selectedNode} answer={nodeInfoString} />
+          <NodeInfo node={selectedNode} />
         </div>
         <Divider setDrag={setDrag} />
         <div className={styles.content}>

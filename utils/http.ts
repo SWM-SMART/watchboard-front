@@ -4,15 +4,22 @@ import { refreshToken } from './api';
 import { throwError } from './ui';
 
 // refresh token on failure
-export async function httpGet(url: string, retry: boolean = true, credentials: boolean = false) {
+export async function httpGet(
+  url: string,
+  retry: boolean = true,
+  credentials: boolean = false,
+  silent: boolean = false,
+  signal?: AbortSignal,
+) {
   const headers = createHeaders();
   const getRes = (headers: Headers) =>
     fetch(url, {
       method: 'GET',
       headers: headers,
       credentials: credentials ? 'include' : undefined,
+      signal: signal,
     });
-  return doGetRes(getRes, headers, retry);
+  return doGetRes(getRes, headers, retry, silent);
 }
 
 export async function httpPost(
@@ -20,6 +27,7 @@ export async function httpPost(
   body: any,
   retry: boolean = true,
   json: boolean = true,
+  silent: boolean = false,
 ) {
   const headers = createHeaders();
   if (json) headers.set('Content-Type', 'application/json');
@@ -29,26 +37,36 @@ export async function httpPost(
       headers: headers,
       body: json ? JSON.stringify(body) : body,
     });
-  return doGetRes(getRes, headers, retry);
+  return doGetRes(getRes, headers, retry, silent);
 }
 
-export async function httpPut(url: string, body: any, retry: boolean = true) {
+export async function httpPut(
+  url: string,
+  body: any,
+  retry: boolean = true,
+  silent: boolean = false,
+) {
   const headers = createHeaders();
   const getRes = (headers: Headers) =>
     fetch(url, { method: 'PUT', headers: headers, body: JSON.stringify(body) });
 
-  return doGetRes(getRes, headers, retry);
+  return doGetRes(getRes, headers, retry, silent);
 }
 
-export async function httpDelete(url: string, body: any, retry: boolean = true) {
+export async function httpDelete(
+  url: string,
+  body: any,
+  retry: boolean = true,
+  silent: boolean = false,
+) {
   const headers = createHeaders();
   const getRes = (headers: Headers) =>
     fetch(url, { method: 'DELETE', headers: headers, body: JSON.stringify(body) });
 
-  return doGetRes(getRes, headers, retry);
+  return doGetRes(getRes, headers, retry, silent);
 }
 
-function createHeaders() {
+export function createHeaders() {
   const accessToken = useUser.getState().accessToken;
   const headers = new Headers();
   if (accessToken.length > 0) headers.set('Authorization', accessToken);
@@ -67,14 +85,18 @@ async function doGetRes(
   getRes: (headers: Headers) => Promise<Response>,
   headers: Headers,
   retry: boolean,
+  silent?: boolean,
 ): Promise<Response | undefined> {
   try {
     const res = await getRes(headers);
-    if (res.status >= 400) throw Error;
+    // todo: retry only 401
+    if (res.status >= 400) throw Error();
     return res;
   } catch (e) {
-    if (e instanceof Error && e.message.length > 0) throwError(e.message);
     if (!retry) return;
+    // abort 무시
+    if (!silent && e instanceof Error && !(e instanceof DOMException) && e.message.length > 0)
+      throwError(e.message);
     if ((await preRetry(headers)) === false) return;
   }
   return await doGetRes(getRes, headers, false);

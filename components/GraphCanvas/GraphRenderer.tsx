@@ -418,8 +418,8 @@ function useSimulation(
       // save links in nodes for future use
       for (const link of newLinks) {
         linksRef.current.push(link);
-        nodesMap.get(link.source as string)!.children?.push(nodesMap.get(link.target as string)!);
-        nodesMap.get(link.target as string)!.parent = nodesMap.get(link.source as string);
+        nodesMap.get(link.source as string)!.children.push(nodesMap.get(link.target as string)!);
+        nodesMap.get(link.target as string)!.children.push(nodesMap.get(link.source as string)!);
       }
     }
 
@@ -441,7 +441,7 @@ function useSimulation(
 
     simulationRef.current.alpha(1).stop();
     invalidate();
-  }, [data, groupRef, linkDataFactory, nodeDataFactory]);
+  }, [data, groupRef, linkDataFactory, meshFactory, nodeDataFactory]);
 
   // simulation tick on frame
   useFrame((_state, delta) => {

@@ -5,12 +5,13 @@ import Link from 'next/link';
 interface ButtonProps {
   text: string;
   icon?: string;
+  highlight?: boolean;
   href: string;
 }
 
-export default function Button({ text, icon, href }: ButtonProps) {
+export default function Button({ text, icon, href, highlight = true }: ButtonProps) {
   return (
-    <Link href={href}>
+    <Link href={href} style={highlight ? undefined : { color: 'var(--primary-dark)' }}>
       <div className={styles.container}>
         <span className={styles.text}>{text}</span>
         {icon === undefined ? null : (
