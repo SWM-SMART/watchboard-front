@@ -4,14 +4,14 @@ import { create } from 'zustand';
 
 interface DocumentState {
   documentList: WBDocument[];
-  fetchDocumentList: () => void;
+  fetchDocumentList: (demo?: boolean) => void;
   deleteDocument: (documentId: number) => void;
 }
 
 export const useDocument = create<DocumentState>()((set, get) => ({
   documentList: [],
-  fetchDocumentList: async () => {
-    const newList = (await getDocumentList()) as WBDocument[];
+  fetchDocumentList: async (demo) => {
+    const newList = (await getDocumentList(demo)) as WBDocument[];
     set(() => ({ documentList: newList }));
   },
   deleteDocument: async (documentId: number) => {
