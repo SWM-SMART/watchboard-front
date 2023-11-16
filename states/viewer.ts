@@ -51,7 +51,7 @@ interface KeywordStateSlice {
   type?: KeywordType;
 }
 
-const initialState = {
+const initialState: ViewerState = {
   dataSource: null,
   mindMapData: null,
   selectedNode: undefined,
@@ -64,7 +64,7 @@ const initialState = {
   focusKeywordCallback: undefined,
   currentTool: 'SELECT',
   nextState: null,
-} as ViewerState;
+};
 
 export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
   ...initialState,
