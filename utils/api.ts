@@ -53,10 +53,10 @@ export async function updateKeywords(documentId: number, addition: string[], del
 export async function getKeywordInfo(
   documentId: number,
   keyword: string,
-): Promise<KeywordResponse> {
-  return (
-    await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`)
-  )?.json();
+): Promise<KeywordResponse | null> {
+  const res = await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`);
+  if (res?.status === 200) return res?.json();
+  return null;
 }
 
 export async function uploadFile(documentId: number, file: File) {
