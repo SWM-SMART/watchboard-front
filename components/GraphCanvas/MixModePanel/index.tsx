@@ -22,8 +22,8 @@ export default function MixModePanel() {
   const [selection, setSelection] = useState<Map<number, boolean>>(new Map());
 
   useEffect(() => {
-    fetchDocumentList();
-  }, [fetchDocumentList]);
+    fetchDocumentList(currentDocumentId < 0); // check demo
+  }, [currentDocumentId, fetchDocumentList]);
 
   const setOverlay = useOverlay((state) => state.setOverlay);
 
