@@ -7,7 +7,7 @@ interface DividerProps {
 
 export default function Divider({ setDrag }: DividerProps) {
   return (
-    <div className={styles.handle} onPointerDown={() => setDrag(true)}>
+    <div className={styles.handle} onMouseDown={() => setDrag(true)}>
       <span className={`material-symbols-outlined ${styles.icon}`}>drag_handle</span>
     </div>
   );
@@ -22,11 +22,11 @@ export function useDivider(left: boolean, defaultWidth: number, minWidth: number
     const pointerUp = () => setDrag(false);
     const pointerMove = (e: MouseEvent) =>
       setWidth(Math.max(left ? e.clientX - 6 : window.innerWidth - e.clientX + 6, minWidth));
-    document.addEventListener('pointermove', pointerMove);
-    document.addEventListener('pointerup', pointerUp);
+    document.addEventListener('mousemove', pointerMove);
+    document.addEventListener('mouseup', pointerUp);
     return () => {
-      document.removeEventListener('pointermove', pointerMove);
-      document.removeEventListener('pointerup', pointerUp);
+      document.removeEventListener('mousemove', pointerMove);
+      document.removeEventListener('mouseup', pointerUp);
     };
   }, [drag, left, minWidth]);
 
