@@ -18,6 +18,7 @@
 .headerLeft {
   display: flex;
   flex-direction: row;
+  column-gap: 5px;
   justify-content: left;
   align-items: center;
 }

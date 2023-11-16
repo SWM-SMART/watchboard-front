@@ -6,6 +6,7 @@ import { useOverlay } from '@/states/overlay';
 import DocumentCreateDialogue from '../DocumentCreateDialogue';
 import Logo from '@/components/Logo';
 import { useUser } from '@/states/user';
+import Button from '@/components/Button';
 
 export default function Header() {
   const { setOverlay } = useOverlay((state) => ({
@@ -17,6 +18,7 @@ export default function Header() {
     <div className={styles.header}>
       <div className={styles.headerLeft}>
         <Logo width={178} height={40} />
+        <Button highlight={false} text={'데모'} href={'/landing'} />
       </div>
       <div className={styles.headerRight}>
         {userDataExists ? (
