@@ -13,17 +13,10 @@ interface NodeInfoProps {
   node?: NodeData;
 }
 
-interface AnswerData {
-  node: NodeData;
-  answer?: string;
-}
-
-// answerdata label을 노드 객체로 바꾸기
-
 export default function NodeInfo({ node }: NodeInfoProps) {
   const [sourceView, setSourceView] = useState<boolean>(true);
   const [relationView, setRelationView] = useState<boolean>(true);
-  const [answer, setAnswer] = useState<AnswerData>();
+  const [answer, setAnswer] = useState<string>();
   const documentId = node?.documentId;
   const isLocalNode = documentId === useViewer((state) => state.document?.documentId);
   const { setFocus, setView } = useViewer((state) => ({
@@ -33,26 +26,21 @@ export default function NodeInfo({ node }: NodeInfoProps) {
 
   useEffect(() => {
     if (documentId === undefined || node === undefined) return;
-    setAnswer((oldAnswer) =>
-      oldAnswer === undefined
-        ? {
-            node: node,
-          }
-        : oldAnswer,
-    );
+
+    const abortController = new AbortController();
 
     (async () => {
-      const newAnswerText = (await getKeywordInfo(documentId, node?.label))?.text;
+      const newAnswerText = (await getKeywordInfo(documentId, node?.label, abortController.signal))
+        ?.text;
       if (newAnswerText === undefined) return;
       // should be updated only if oldAnswer is not present || node label matches
-      setAnswer((oldAnswer) =>
-        oldAnswer === undefined || oldAnswer.node === node
-          ? { node: node, answer: newAnswerText }
-          : oldAnswer,
-      );
+      setAnswer(newAnswerText);
     })();
 
-    return () => setAnswer(undefined);
+    return () => {
+      abortController.abort();
+      setAnswer(undefined);
+    };
   }, [documentId, node]);
 
   const eventCallback = useCallback(
@@ -62,10 +50,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
         (async () => {
           const answerText = (await getKeywordInfo(documentId, node?.label))?.text;
           if (answerText === undefined) return;
-          setAnswer({
-            node: node,
-            answer: answerText,
-          });
+          setAnswer(answerText);
         })();
       }
     },
@@ -115,7 +100,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
       <RelationView node={node} hidden={!relationView} />
 
       {isLocalNode ? <SourceDataView hidden={!sourceView} /> : null}
-      {answer?.answer === undefined ? <LoadingNodeInfoString /> : <p>{answer.answer}</p>}
+      {answer === undefined ? <LoadingNodeInfoString /> : <p>{answer}</p>}
     </div>
   );
 }
