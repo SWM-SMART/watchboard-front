@@ -41,7 +41,7 @@ export function useError(callback: (msg: string) => void) {
 
 export function useViewerEvents(
   documentId: number,
-  callback: (eventType: ViewerEventType) => void,
+  callback: (eventType: string, data: string) => void,
 ) {
   useEffect(() => {
     const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
@@ -49,7 +49,7 @@ export function useViewerEvents(
     });
     // TODO: 이벤트 구분
     eventSource.onmessage = (e) => {
-      callback('reload');
+      callback(e.type, e.data);
     };
     return () => eventSource.close();
   }, [callback, documentId]);

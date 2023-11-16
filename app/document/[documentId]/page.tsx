@@ -13,6 +13,7 @@ import AudioViewer from '@/components/DataViewer/AudioViewer';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { useViewerEvents } from '@/utils/ui';
 import Divider, { useDivider } from '@/components/Divider';
+import { getKeywordInfo } from '@/utils/api';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -29,6 +30,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
       syncDocument: state.syncDocument,
     }),
   );
+  const [nodeInfoString, setNodeInfoString] = useState<string>();
 
   // reset viewer
   useEffect(() => {
@@ -39,18 +41,42 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
 
   const { width, setDrag } = useDivider(true, 800, 0);
 
+  const loadNodeInfo = (node: NodeData) => {
+    (async () => {
+      const data = await getKeywordInfo(node.documentId, node.label);
+      setNodeInfoString(data.text);
+    })();
+  };
+
   const eventCallback = useCallback(
-    (type: ViewerEventType) => {
+    (type: string, data: string) => {
       // reload on event
-      if (documentData === null) return loadDocument(documentId);
-      // TODO: implement other types of events
-      syncDocument();
+      if (type === 'mindmap') {
+        // mindmap reload
+        if (documentData === null) return loadDocument(documentId);
+        // mindmap updated
+        return syncDocument();
+      }
+      // answer loaded
+      // not needed atm
+      // if (type === 'answer') {
+      //   if (selectedNode === undefined) return;
+      //   if (selectedNode.label === data) return loadNodeInfo(selectedNode);
+      // }
     },
     [documentData, documentId, loadDocument, syncDocument],
   );
 
   // subscribe to events
   useViewerEvents(documentId, eventCallback);
+
+  // fetch nodeInfo
+  useEffect(() => {
+    if (selectedNode === undefined) return;
+    loadNodeInfo(selectedNode);
+
+    return () => setNodeInfoString(undefined);
+  }, [documentId, selectedNode]);
 
   if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
 
