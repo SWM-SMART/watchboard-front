@@ -9,7 +9,7 @@ export default function LandingPage() {
       <p className={styles.title} style={{ animation: 'var(--intro-animation)' }}>
         마인드맵으로 어떠한 자료든 쉽게 학습하세요
       </p>
-      <BackgroundButton text={'데모 시작'} href={'/document/demo'} />
+      <BackgroundButton text={'사용해 보기 (로그인 불필요)'} href={'/document/demo'} />
       <div className={styles.image}>
         <Image
           src={screenshot}
