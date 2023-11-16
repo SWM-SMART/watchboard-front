@@ -11,18 +11,6 @@ export default function RelationView({ node, hidden = false }: RelationViewProps
     <div className={styles.container} style={hidden ? { display: 'none' } : undefined}>
       <div className={styles.nodeContainer}>
         <div className={styles.node}>
-          <div
-            className={styles.label}
-            onClick={() => {
-              if (node.parent != undefined) setSelectedNode(node.parent);
-            }}
-          >
-            {node.parent?.label}
-          </div>
-        </div>
-      </div>
-      <div className={styles.nodeContainer}>
-        <div className={styles.node}>
           <div className={`${styles.label} ${styles.current}`}>{node.label}</div>
         </div>
       </div>
