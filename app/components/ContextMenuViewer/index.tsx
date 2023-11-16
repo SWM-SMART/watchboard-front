@@ -12,8 +12,8 @@ export default function ContextMenuViewer() {
   useEffect(() => {
     if (menu === null) return;
     const pointerDown = () => setMenu(null);
-    document.addEventListener('pointerdown', pointerDown);
-    return () => document.removeEventListener('pointerdown', pointerDown);
+    document.addEventListener('mousedown', pointerDown);
+    return () => document.removeEventListener('mousedown', pointerDown);
   }, [menu, setMenu]);
 
   if (menu === null) return <></>;
@@ -30,7 +30,7 @@ export default function ContextMenuViewer() {
     <ul className={styles.container} style={style}>
       {menu.items.map((v) => {
         return (
-          <li className={styles.item} key={v.label} onPointerDown={v.onClick}>
+          <li className={styles.item} key={v.label} onMouseDown={v.onClick}>
             {v.label}
           </li>
         );

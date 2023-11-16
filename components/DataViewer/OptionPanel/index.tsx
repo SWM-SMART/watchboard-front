@@ -46,7 +46,7 @@ export default function OptionPanel({ children }: OptionPanelProps) {
   }, [keywords]);
 
   const syncKeywords = () => {
-    if (documentId === undefined) return;
+    if (documentId === undefined || documentId < 0) return;
     setSyncInProgress(true);
     (async () => {
       // clear prev document

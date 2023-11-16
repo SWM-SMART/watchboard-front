@@ -1,38 +1,67 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styles from './nodeInfo.module.css';
 import SmallActionButton from '../Button/SmallActionButton';
 import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
 import SourceDataView from './SourceDataView';
-import { getKeywordInfo } from '@/utils/api';
 import Link from 'next/link';
+import { getKeywordInfo } from '@/utils/api';
+import { useUser } from '@/states/user';
+import { useViewerEvents } from '@/utils/ui';
 
 interface NodeInfoProps {
   node?: NodeData;
 }
 
 export default function NodeInfo({ node }: NodeInfoProps) {
-  const [data, setData] = useState<string>();
   const [sourceView, setSourceView] = useState<boolean>(true);
   const [relationView, setRelationView] = useState<boolean>(true);
-  const currentDocumentId = useViewer((state) => state.document?.documentId);
+  const [answer, setAnswer] = useState<string>();
   const documentId = node?.documentId;
-  const isLocalNode = documentId === currentDocumentId;
-
-  useEffect(() => {
-    if (node === undefined || documentId === undefined) return;
-    (async () => {
-      const data = await getKeywordInfo(documentId, node.label);
-      setData(data.text);
-    })();
-
-    return () => setData(undefined);
-  }, [documentId, node]);
-
+  const isLocalNode = documentId === useViewer((state) => state.document?.documentId);
   const { setFocus, setView } = useViewer((state) => ({
     setFocus: state.focusNodeCallback,
     setView: state.setView,
   }));
+
+  useEffect(() => {
+    if (documentId === undefined || node === undefined) return;
+
+    const abortController = new AbortController();
+
+    (async () => {
+      const newAnswerText = (await getKeywordInfo(documentId, node?.label, abortController.signal))
+        ?.text;
+      if (newAnswerText === undefined) return;
+      // should be updated only if oldAnswer is not present || node label matches
+      setAnswer(newAnswerText);
+    })();
+
+    return () => {
+      abortController.abort();
+      setAnswer(undefined);
+    };
+  }, [documentId, node]);
+
+  const eventCallback = useCallback(
+    (type: ViewerEventType, data: string) => {
+      if (documentId === undefined || node === undefined) return;
+      if (type === 'answer' && data === node?.label) {
+        (async () => {
+          const answerText = (await getKeywordInfo(documentId, node?.label))?.text;
+          if (answerText === undefined) return;
+          setAnswer(answerText);
+        })();
+      }
+    },
+    [documentId, node],
+  );
+
+  // subscribe to event
+  useViewerEvents(eventCallback, documentId);
+
+  // access token
+  const accessToken = useUser((state) => state.accessToken);
 
   if (node === undefined) return <EmptyNodeInfo />;
 
@@ -57,7 +86,6 @@ export default function NodeInfo({ node }: NodeInfoProps) {
             onClick={() => setSourceView((show) => !show)}
           />
         ) : null}
-
         <SmallActionButton
           border={true}
           label={'노드로 이동'}
@@ -72,7 +100,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
       <RelationView node={node} hidden={!relationView} />
 
       {isLocalNode ? <SourceDataView hidden={!sourceView} /> : null}
-      <p>{data}</p>
+      {answer === undefined ? <LoadingNodeInfoString /> : <p>{answer}</p>}
     </div>
   );
 }
@@ -104,4 +132,8 @@ function EmptyNodeInfo() {
       </p>
     </div>
   );
+}
+
+function LoadingNodeInfoString() {
+  return <div className={styles.loadingContainer}>설명을 불러오는 중입니다</div>;
 }

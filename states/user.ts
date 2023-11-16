@@ -2,13 +2,14 @@ import { getUserData, refreshToken } from '@/utils/api';
 import { create } from 'zustand';
 
 interface UserState {
-  userData: UserData | null;
+  userData: UserData | null | undefined;
   fetchUserData: () => void;
   accessToken: string;
+  reset: () => void;
 }
 
 export const useUser = create<UserState>()((set) => ({
-  userData: null,
+  userData: undefined,
   fetchUserData: async () => {
     const newUserData = await getUserData();
     set(() => ({
@@ -16,4 +17,7 @@ export const useUser = create<UserState>()((set) => ({
     }));
   },
   accessToken: '',
+  reset: () => {
+    set({ userData: null, accessToken: '' });
+  },
 }));

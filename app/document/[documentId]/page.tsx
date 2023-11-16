@@ -13,13 +13,14 @@ import AudioViewer from '@/components/DataViewer/AudioViewer';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import { useViewerEvents } from '@/utils/ui';
 import Divider, { useDivider } from '@/components/Divider';
+import { useToast } from '@/states/toast';
 
 interface DocumentPageProps {
   params: { documentId: string };
 }
 
 export default function DoucumentsPage({ params }: DocumentPageProps) {
-  const documentId = parseInt(params.documentId);
+  const documentId = params.documentId === 'demo' ? -1 : parseInt(params.documentId);
   const { resetViewer, loadDocument, documentData, selectedNode, syncDocument } = useViewer(
     (state) => ({
       documentData: state.document,
@@ -29,28 +30,39 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
       syncDocument: state.syncDocument,
     }),
   );
+  const pushToast = useToast((state) => state.pushToast);
 
   // reset viewer
   useEffect(() => {
+    // is demo
+    if (documentId < 0)
+      pushToast({
+        id: new Date().getTime(),
+        duraton: 10000,
+        msg: '현재 문서는 예시 문서 입니다.',
+      });
     resetViewer();
     // load document
     loadDocument(documentId);
-  }, [loadDocument, documentId, resetViewer]);
+  }, [loadDocument, documentId, resetViewer, pushToast]);
 
   const { width, setDrag } = useDivider(true, 800, 0);
 
   const eventCallback = useCallback(
-    (type: ViewerEventType) => {
+    (type: ViewerEventType, data: string) => {
       // reload on event
-      if (documentData === null) return loadDocument(documentId);
-      // TODO: implement other types of events
-      syncDocument();
+      if (type === 'mindmap') {
+        // mindmap reload
+        if (documentData === null) return loadDocument(documentId);
+        // mindmap updated
+        return syncDocument();
+      }
     },
     [documentData, documentId, loadDocument, syncDocument],
   );
 
   // subscribe to events
-  useViewerEvents(documentId, eventCallback);
+  useViewerEvents(eventCallback, documentId);
 
   if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
 

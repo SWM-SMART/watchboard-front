@@ -68,7 +68,6 @@ type ExtendedSpriteText = import('three-spritetext').default & {
 interface NodeData {
   documentId: number;
   children: NodeData[];
-  parent?: NodeData;
   id: string;
   label: string;
   labelMesh?: ExtendedSpriteText;
@@ -233,4 +232,4 @@ interface KeywordResponse {
   text: string;
 }
 
-type ViewerEventType = 'create' | 'reload';
+type ViewerEventType = 'mindmap' | 'answer';

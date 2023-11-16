@@ -1,6 +1,9 @@
 'use client';
 import { useEffect } from 'react';
 import { API_BASE_URL } from './api';
+import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
+import { useUser } from '@/states/user';
+const EventSource = EventSourcePolyfill || NativeEventSource;
 
 const DAY = 86400000;
 const HOUR = 3600000;
@@ -40,17 +43,19 @@ export function useError(callback: (msg: string) => void) {
 }
 
 export function useViewerEvents(
-  documentId: number,
-  callback: (eventType: ViewerEventType) => void,
+  callback: (type: ViewerEventType, data: string) => void,
+  documentId?: number,
 ) {
+  const accessToken = useUser((state) => state.accessToken);
   useEffect(() => {
+    if (documentId === undefined || documentId < 0) return; // is demo
     const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
       withCredentials: true,
+      headers: { Authorization: accessToken },
     });
-    // TODO: 이벤트 구분
-    eventSource.onmessage = (e) => {
-      callback('reload');
-    };
+    eventSource.addEventListener('sse', (e) => console.log('connection open', e));
+    eventSource.addEventListener('mindmap', (e) => callback('mindmap', (e as any)!.data));
+    eventSource.addEventListener('answer', (e) => callback('answer', (e as any)!.data));
     return () => eventSource.close();
-  }, [callback, documentId]);
+  }, [accessToken, callback, documentId]);
 }

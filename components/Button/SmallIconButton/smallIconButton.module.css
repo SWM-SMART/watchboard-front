@@ -4,8 +4,8 @@
   align-items: center;
   border-radius: 50%;
   cursor: default;
-  min-width: 33px;
-  min-height: 33px;
+  min-width: 33px !important;
+  min-height: 33px !important;
   flex: 0;
   color: var(--foreground);
   background-color: transparent;

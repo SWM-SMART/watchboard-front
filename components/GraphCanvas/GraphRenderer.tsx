@@ -295,14 +295,14 @@ function usePointer(
       selectedNodeRef.current = intersection;
       simulationRef.current.alphaTarget(0.1).restart();
     };
-    domElement.addEventListener('pointermove', pointerMove);
-    domElement.addEventListener('pointerup', pointerUp);
-    domElement.addEventListener('pointerdown', pointerDown);
+    domElement.addEventListener('mousemove', pointerMove);
+    domElement.addEventListener('mouseup', pointerUp);
+    domElement.addEventListener('mousedown', pointerDown);
     domElement.addEventListener('wheel', wheel);
     return () => {
-      domElement.removeEventListener('pointermove', pointerMove);
-      domElement.removeEventListener('pointerup', pointerUp);
-      domElement.removeEventListener('pointerdown', pointerDown);
+      domElement.removeEventListener('mousemove', pointerMove);
+      domElement.removeEventListener('mouseup', pointerUp);
+      domElement.removeEventListener('mousedown', pointerDown);
       domElement.removeEventListener('wheel', wheel);
     };
   }, [camera, domElement, mouse, nodeMeshRef, raycasterRef, setSelectedNode, simulationRef]);
@@ -418,8 +418,8 @@ function useSimulation(
       // save links in nodes for future use
       for (const link of newLinks) {
         linksRef.current.push(link);
-        nodesMap.get(link.source as string)!.children?.push(nodesMap.get(link.target as string)!);
-        nodesMap.get(link.target as string)!.parent = nodesMap.get(link.source as string);
+        nodesMap.get(link.source as string)!.children.push(nodesMap.get(link.target as string)!);
+        nodesMap.get(link.target as string)!.children.push(nodesMap.get(link.source as string)!);
       }
     }
 
@@ -441,7 +441,7 @@ function useSimulation(
 
     simulationRef.current.alpha(1).stop();
     invalidate();
-  }, [data, groupRef, linkDataFactory, nodeDataFactory]);
+  }, [data, groupRef, linkDataFactory, meshFactory, nodeDataFactory]);
 
   // simulation tick on frame
   useFrame((_state, delta) => {
