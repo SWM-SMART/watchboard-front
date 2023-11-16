@@ -48,7 +48,7 @@ export function useViewerEvents(
 ) {
   const accessToken = useUser((state) => state.accessToken);
   useEffect(() => {
-    if (documentId === undefined) return;
+    if (documentId === undefined || documentId < 0) return; // is demo
     const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
       withCredentials: true,
       headers: { Authorization: accessToken },
