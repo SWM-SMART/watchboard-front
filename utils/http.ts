@@ -9,6 +9,7 @@ export async function httpGet(
   retry: boolean = true,
   credentials: boolean = false,
   silent: boolean = false,
+  signal?: AbortSignal,
 ) {
   const headers = createHeaders();
   const getRes = (headers: Headers) =>
@@ -16,6 +17,7 @@ export async function httpGet(
       method: 'GET',
       headers: headers,
       credentials: credentials ? 'include' : undefined,
+      signal: signal,
     });
   return doGetRes(getRes, headers, retry, silent);
 }
@@ -88,11 +90,13 @@ async function doGetRes(
   try {
     const res = await getRes(headers);
     // todo: retry only 401
-    if (res.status >= 400) throw Error;
+    if (res.status >= 400) throw Error();
     return res;
   } catch (e) {
     if (!retry) return;
-    if (!silent && e instanceof Error && e.message.length > 0) throwError(e.message);
+    // abort 무시
+    if (!silent && e instanceof Error && !(e instanceof DOMException) && e.message.length > 0)
+      throwError(e.message);
     if ((await preRetry(headers)) === false) return;
   }
   return await doGetRes(getRes, headers, false);

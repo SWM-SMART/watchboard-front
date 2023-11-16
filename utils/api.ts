@@ -56,8 +56,15 @@ export async function updateKeywords(documentId: number, addition: string[], del
 export async function getKeywordInfo(
   documentId: number,
   keyword: string,
+  signal?: AbortSignal,
 ): Promise<KeywordResponse | null> {
-  const res = await httpGet(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`);
+  const res = await httpGet(
+    `${API_BASE_URL}/documents/${documentId}/mindmap/keyword/${keyword}`,
+    true,
+    true,
+    false,
+    signal,
+  );
   if (res?.status === 200) return res?.json();
   return null;
 }
