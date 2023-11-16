@@ -30,7 +30,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
       syncDocument: state.syncDocument,
     }),
   );
-  const [nodeInfoString, setNodeInfoString] = useState<string>();
+  const [nodeInfoString, setNodeInfoString] = useState<string | null>(null);
 
   // reset viewer
   useEffect(() => {
@@ -44,12 +44,13 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   const loadNodeInfo = (node: NodeData) => {
     (async () => {
       const data = await getKeywordInfo(node.documentId, node.label);
-      setNodeInfoString(data.text);
+      setNodeInfoString(data?.text ?? null);
     })();
   };
 
   const eventCallback = useCallback(
-    (type: string, data: string) => {
+    (type: ViewerEventType, data: string) => {
+      console.log(type);
       // reload on event
       if (type === 'mindmap') {
         // mindmap reload
@@ -57,14 +58,13 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
         // mindmap updated
         return syncDocument();
       }
-      // answer loaded
-      // not needed atm
-      // if (type === 'answer') {
-      //   if (selectedNode === undefined) return;
-      //   if (selectedNode.label === data) return loadNodeInfo(selectedNode);
-      // }
+
+      if (type === 'answer' && selectedNode !== undefined) {
+        // answers are loaded
+        if (selectedNode.label) return loadNodeInfo(selectedNode);
+      }
     },
-    [documentData, documentId, loadDocument, syncDocument],
+    [documentData, documentId, loadDocument, selectedNode, syncDocument],
   );
 
   // subscribe to events
@@ -74,8 +74,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   useEffect(() => {
     if (selectedNode === undefined) return;
     loadNodeInfo(selectedNode);
-
-    return () => setNodeInfoString(undefined);
+    return () => setNodeInfoString(null);
   }, [documentId, selectedNode]);
 
   if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
@@ -84,7 +83,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     <div className={styles.rootContainer}>
       <div className={styles.container}>
         <div className={styles.sideBar} style={{ width: `${width}px`, flex: `0 0 ${width}px` }}>
-          <NodeInfo node={selectedNode} />
+          <NodeInfo node={selectedNode} answer={nodeInfoString} />
         </div>
         <Divider setDrag={setDrag} />
         <div className={styles.content}>

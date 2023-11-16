@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 interface NodeInfoProps {
   node?: NodeData;
-  answer?: string;
+  answer: string | null;
 }
 
 export default function NodeInfo({ node, answer }: NodeInfoProps) {
@@ -61,7 +61,7 @@ export default function NodeInfo({ node, answer }: NodeInfoProps) {
       <RelationView node={node} hidden={!relationView} />
 
       {isLocalNode ? <SourceDataView hidden={!sourceView} /> : null}
-      {answer === undefined ? <LoadingNodeInfoString /> : <p>{answer}</p>}
+      {answer === null ? <LoadingNodeInfoString /> : <p>{answer}</p>}
     </div>
   );
 }

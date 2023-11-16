@@ -41,16 +41,15 @@ export function useError(callback: (msg: string) => void) {
 
 export function useViewerEvents(
   documentId: number,
-  callback: (eventType: string, data: string) => void,
+  callback: (type: ViewerEventType, data: string) => void,
 ) {
   useEffect(() => {
     const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
       withCredentials: true,
     });
-    // TODO: 이벤트 구분
-    eventSource.onmessage = (e) => {
-      callback(e.type, e.data);
-    };
+    eventSource.addEventListener('mindmap', (e) => callback('mindmap', e.data));
+
+    eventSource.addEventListener('answer', (e) => callback('answer', e.data));
     return () => eventSource.close();
   }, [callback, documentId]);
 }
