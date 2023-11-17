@@ -107,23 +107,17 @@ export function createDocumentEventSource(documentId?: number) {
     withCredentials: true,
     headers: { Authorization: accessToken },
   });
-  eventSource.addEventListener('sse', (e) => console.log('connection open', e));
-  eventSource.addEventListener('mindmap', (e) => {
-    console.log('mindmap', e);
-    document.dispatchEvent(
-      new CustomEvent(`VIEWER_UPDATE_${documentId}`, {
-        detail: { type: 'mindmap', data: (e as any)!.data },
-      }),
-    );
-  });
-  eventSource.addEventListener('answer', (e) => {
-    console.log('answer', e);
-    document.dispatchEvent(
-      new CustomEvent(`VIEWER_UPDATE_${documentId}`, {
-        detail: { type: 'answer', data: (e as any)!.data },
-      }),
-    );
-  });
+  const eventTypes: ViewerEventType[] = ['answer', 'audio', 'keywords', 'mindmap', 'sse'];
+  for (const type of eventTypes) {
+    eventSource.addEventListener(type, (e) => {
+      console.log(type, e);
+      document.dispatchEvent(
+        new CustomEvent(`VIEWER_UPDATE_${documentId}`, {
+          detail: { type: type, data: (e as any)!.data },
+        }),
+      );
+    });
+  }
   return eventSource;
 }
 
