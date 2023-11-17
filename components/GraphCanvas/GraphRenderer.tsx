@@ -43,6 +43,15 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   const circleMesh = useRef<THREE.InstancedMesh>();
   const currentDocumentId = useViewer((state) => state.document?.documentId);
   const staleColorMapRef = useRef<Map<number, THREE.Color>>(new Map());
+  const { camera } = useThree();
+
+  // reset camera
+  useEffect(() => {
+    console.log('reset camera');
+    camera.position.set(0, 0, 1000);
+    camera.zoom = 1;
+    camera.updateProjectionMatrix();
+  }, [camera, data]);
 
   const meshFactory = useCallback(
     (nodes: NodeData[], links: LinkData[]) => {
