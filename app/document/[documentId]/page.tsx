@@ -34,9 +34,6 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   );
   const pushToast = useToast((state) => state.pushToast);
 
-  const [mainEventSource, setMainEventSource] = useState<EventSourcePolyfill>(); // mindmap + keyword
-  const [subEventSource, setSubEventSource] = useState<EventSourcePolyfill>(); // keyword
-
   // reset viewer
   useEffect(() => {
     // is demo
