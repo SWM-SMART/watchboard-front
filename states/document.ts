@@ -10,7 +10,6 @@ interface DocumentState {
 export const useDocument = create<DocumentState>()((set, get) => ({
   documentList: [],
   fetchDocumentList: async (demo) => {
-    console.log(demo);
     const newList = (await getDocumentList(demo)) as WBDocument[];
     set(() => ({ documentList: newList }));
   },
