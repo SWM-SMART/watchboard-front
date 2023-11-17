@@ -89,7 +89,8 @@ export async function uploadFile(documentId: number, file: File) {
   if (type === undefined) return;
   const form = new FormData();
   form.append(type, file);
-  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false);
+  return (await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false))
+    ?.status;
 }
 
 export async function logout(): Promise<boolean> {

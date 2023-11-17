@@ -4,7 +4,7 @@ import Dialogue from '@/components/Dialogue';
 import FileInput from '@/components/Dialogue/Input/FileInput';
 import TextInput from '@/components/Dialogue/Input/TextInput';
 import { useToast } from '@/states/toast';
-import { createDocument, uploadFile } from '@/utils/api';
+import { createDocument, deleteDocument, uploadFile } from '@/utils/api';
 import { throwError } from '@/utils/ui';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -55,7 +55,20 @@ export default function DocumentCreateDialogue({
             const newDocument = await createDocument(titleInput.value);
 
             // upload file (if exists)
-            await uploadFile(newDocument.documentId, fileInput.files![0]);
+            const uploadCode = await uploadFile(newDocument.documentId, fileInput.files![0]);
+
+            // error
+            if (uploadCode != 200) {
+              // cleanup
+              await deleteDocument(newDocument.documentId);
+              pushToast({
+                id: new Date().getTime(),
+                duraton: 3000,
+                msg: `자료 파일에 문제가 있습니다. 지원 형식을 확인해 주세요`,
+              });
+              setLoad(false);
+              return;
+            }
 
             pushToast({
               id: new Date().getTime(),
@@ -72,7 +85,7 @@ export default function DocumentCreateDialogue({
         <FileInput
           name="file"
           types={['application/pdf', 'audio/mpeg']}
-          typeNames={['pdf', 'mp3']}
+          typeNames={['pdf(최대 30페이지)', 'mp3']}
           onError={(msg) => pushToast({ id: new Date().getTime(), duraton: 3000, msg: msg })}
         />
       </Dialogue>
