@@ -5,7 +5,7 @@ import { throwError } from './ui';
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
 
-export async function getDocumentList(demo?: boolean): Promise<WBDocumentListReponse> {
+export async function getDocumentList(demo?: boolean): Promise<WBDocumentListReponse | undefined> {
   if (demo) return demoDocumentList;
   return (await httpGet(`${API_BASE_URL}/documents`))?.json();
 }

@@ -10,7 +10,7 @@ export default function DocumentList() {
     fetchDocumentList();
   }, [fetchDocumentList]);
 
-  return documentList.map((document) => {
+  return documentList?.map((document) => {
     return <Card key={`document-card-${document.documentId}`} document={document} />;
   });
 }
