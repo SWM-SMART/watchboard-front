@@ -83,6 +83,12 @@ export async function uploadFile(documentId: number, file: File) {
   return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false);
 }
 
+export async function logout(): Promise<boolean> {
+  const res = await httpGet(`${API_BASE_URL}/users/logout`, true, true, true);
+  if (res?.status === 200) return true;
+  return false;
+}
+
 function uploadFileType(type: string) {
   switch (type) {
     case 'application/pdf':
