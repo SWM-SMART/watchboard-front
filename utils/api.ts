@@ -55,10 +55,16 @@ export async function getDataSource(
 }
 
 export async function updateKeywords(documentId: number, addition: string[], deletion: string[]) {
-  return await httpPut(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword`, {
-    add: addition,
-    delete: deletion,
-  });
+  return await httpPut(
+    `${API_BASE_URL}/documents/${documentId}/mindmap/keyword`,
+    {
+      add: addition,
+      delete: deletion,
+    },
+    true,
+    true,
+    false,
+  );
 }
 
 export async function getKeywordInfo(
