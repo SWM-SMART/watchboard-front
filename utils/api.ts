@@ -1,6 +1,9 @@
+import { useUser } from '@/states/user';
 import { demoDocumentList, demoGraphData, getDemoDocument } from './demoHelper';
 import { httpDelete, httpGet, httpPost, httpPut } from './http';
 import { throwError } from './ui';
+import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
+const EventSource = EventSourcePolyfill || NativeEventSource;
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
@@ -87,6 +90,34 @@ export async function logout(): Promise<boolean> {
   const res = await httpGet(`${API_BASE_URL}/users/logout`, true, true, true);
   if (res?.status === 200) return true;
   return false;
+}
+
+export function createDocumentEventSource(documentId?: number) {
+  if (documentId === undefined || documentId < 0) return undefined; // is demo
+
+  const accessToken = useUser.getState().accessToken;
+  const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
+    withCredentials: true,
+    headers: { Authorization: accessToken },
+  });
+  eventSource.addEventListener('sse', (e) => console.log('connection open', e));
+  eventSource.addEventListener('mindmap', (e) => {
+    console.log('mindmap', e);
+    document.dispatchEvent(
+      new CustomEvent(`VIEWER_UPDATE_${documentId}`, {
+        detail: { type: 'mindmap', data: (e as any)!.data },
+      }),
+    );
+  });
+  eventSource.addEventListener('answer', (e) => {
+    console.log('answer', e);
+    document.dispatchEvent(
+      new CustomEvent(`VIEWER_UPDATE_${documentId}`, {
+        detail: { type: 'answer', data: (e as any)!.data },
+      }),
+    );
+  });
+  return eventSource;
 }
 
 function uploadFileType(type: string) {

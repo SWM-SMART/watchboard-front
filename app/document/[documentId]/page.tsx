@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { ReactNode, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './page.module.css';
 import LoadingScreen from '../../../components/LoadingScreen';
 import BottomToolBar from './components/BottomToolBar';
@@ -11,9 +11,11 @@ const GraphCanvas = dynamic(() => import('@/components/GraphCanvas'), { ssr: fal
 import 'material-symbols';
 import AudioViewer from '@/components/DataViewer/AudioViewer';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
-import { useViewerEvents } from '@/utils/ui';
 import Divider, { useDivider } from '@/components/Divider';
 import { useToast } from '@/states/toast';
+import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
+import { createDocumentEventSource } from '@/utils/api';
+import { useViewerEvent } from '@/utils/ui';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -32,6 +34,9 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   );
   const pushToast = useToast((state) => state.pushToast);
 
+  const [mainEventSource, setMainEventSource] = useState<EventSourcePolyfill>(); // mindmap + keyword
+  const [subEventSource, setSubEventSource] = useState<EventSourcePolyfill>(); // keyword
+
   // reset viewer
   useEffect(() => {
     // is demo
@@ -46,8 +51,15 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     loadDocument(documentId);
   }, [loadDocument, documentId, resetViewer, pushToast]);
 
+  // create mainEventSource
+  useEffect(() => {
+    const documentEventSource = createDocumentEventSource(documentId);
+    return () => documentEventSource?.close();
+  }, [documentId]);
+
   const { width, setDrag } = useDivider(true, 800, 0);
 
+  // handle events
   const eventCallback = useCallback(
     (type: ViewerEventType, data: string) => {
       // reload on event
@@ -61,8 +73,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     [documentData, documentId, loadDocument, syncDocument],
   );
 
-  // subscribe to events
-  useViewerEvents(eventCallback, documentId);
+  useViewerEvent(eventCallback, documentId);
 
   if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
 
@@ -101,7 +112,7 @@ function UpdateAlert() {
 
   return (
     <div
-      className={`${styles.alertContainer} `}
+      className={styles.alertContainer}
       style={{ transform: open ? 'translateX(0)' : 'translateX(100%) translateX(-24px)' }}
     >
       <span
