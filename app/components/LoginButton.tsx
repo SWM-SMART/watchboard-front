@@ -1,13 +1,15 @@
 'use client';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
+import { useToast } from '@/states/toast';
 import { useUser } from '@/states/user';
-import { API_BASE_URL } from '@/utils/api';
+import { logout } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function LoginButton() {
   const { userData, fetchUserData, reset } = useUser();
   const router = useRouter();
+  const pushToast = useToast((state) => state.pushToast);
 
   useEffect(() => {
     fetchUserData();
@@ -35,8 +37,17 @@ export default function LoginButton() {
       invert={true}
       text={'로그아웃'}
       onClick={() => {
-        reset();
-        router.push(`${API_BASE_URL}/users/logout`);
+        (async () => {
+          if (!(await logout())) {
+            return pushToast({
+              id: new Date().getTime(),
+              duraton: 3000,
+              msg: '로그아웃 실패',
+            });
+          }
+          reset();
+          router.push('/');
+        })();
       }}
       icon="logout"
     />

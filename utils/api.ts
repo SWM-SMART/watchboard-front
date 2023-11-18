@@ -1,11 +1,14 @@
+import { useUser } from '@/states/user';
 import { demoDocumentList, demoGraphData, getDemoDocument } from './demoHelper';
 import { httpDelete, httpGet, httpPost, httpPut } from './http';
 import { throwError } from './ui';
+import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
+const EventSource = EventSourcePolyfill || NativeEventSource;
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const KAKAO_AUTH_URL = `${API_BASE_URL}/oauth2/authorization/kakao`;
 
-export async function getDocumentList(demo?: boolean): Promise<WBDocumentListReponse> {
+export async function getDocumentList(demo?: boolean): Promise<WBDocumentListReponse | undefined> {
   if (demo) return demoDocumentList;
   return (await httpGet(`${API_BASE_URL}/documents`))?.json();
 }
@@ -52,10 +55,16 @@ export async function getDataSource(
 }
 
 export async function updateKeywords(documentId: number, addition: string[], deletion: string[]) {
-  return await httpPut(`${API_BASE_URL}/documents/${documentId}/mindmap/keyword`, {
-    add: addition,
-    delete: deletion,
-  });
+  return await httpPut(
+    `${API_BASE_URL}/documents/${documentId}/mindmap/keyword`,
+    {
+      add: addition,
+      delete: deletion,
+    },
+    true,
+    true,
+    false,
+  );
 }
 
 export async function getKeywordInfo(
@@ -80,7 +89,36 @@ export async function uploadFile(documentId: number, file: File) {
   if (type === undefined) return;
   const form = new FormData();
   form.append(type, file);
-  return await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false);
+  return (await httpPost(`${API_BASE_URL}/documents/${documentId}/${type}`, form, false, false))
+    ?.status;
+}
+
+export async function logout(): Promise<boolean> {
+  const res = await httpGet(`${API_BASE_URL}/users/logout`, true, true, true);
+  if (res?.status === 200) return true;
+  return false;
+}
+
+export function createDocumentEventSource(documentId?: number) {
+  if (documentId === undefined || documentId < 0) return undefined; // is demo
+
+  const accessToken = useUser.getState().accessToken;
+  const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
+    withCredentials: true,
+    headers: { Authorization: accessToken },
+  });
+  const eventTypes: ViewerEventType[] = ['answer', 'audio', 'keywords', 'mindmap', 'sse'];
+  for (const type of eventTypes) {
+    eventSource.addEventListener(type, (e) => {
+      console.log(type, e);
+      document.dispatchEvent(
+        new CustomEvent(`VIEWER_UPDATE_${documentId}`, {
+          detail: { type: type, data: (e as any)!.data },
+        }),
+      );
+    });
+  }
+  return eventSource;
 }
 
 function uploadFileType(type: string) {

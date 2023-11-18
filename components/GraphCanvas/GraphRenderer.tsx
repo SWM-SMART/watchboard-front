@@ -43,6 +43,14 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
   const circleMesh = useRef<THREE.InstancedMesh>();
   const currentDocumentId = useViewer((state) => state.document?.documentId);
   const staleColorMapRef = useRef<Map<number, THREE.Color>>(new Map());
+  const { camera } = useThree();
+
+  // reset camera
+  useEffect(() => {
+    camera.position.set(0, 0, 1000);
+    camera.zoom = 1;
+    camera.updateProjectionMatrix();
+  }, [camera, data]);
 
   const meshFactory = useCallback(
     (nodes: NodeData[], links: LinkData[]) => {
@@ -418,8 +426,8 @@ function useSimulation(
       // save links in nodes for future use
       for (const link of newLinks) {
         linksRef.current.push(link);
-        nodesMap.get(link.source as string)!.children.push(nodesMap.get(link.target as string)!);
-        nodesMap.get(link.target as string)!.children.push(nodesMap.get(link.source as string)!);
+        nodesMap.get(link.source as string)?.children.push(nodesMap.get(link.target as string)!);
+        nodesMap.get(link.target as string)?.children.push(nodesMap.get(link.source as string)!);
       }
     }
 

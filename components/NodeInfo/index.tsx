@@ -5,9 +5,8 @@ import { useViewer } from '@/states/viewer';
 import RelationView from './RelationView';
 import SourceDataView from './SourceDataView';
 import Link from 'next/link';
-import { getKeywordInfo } from '@/utils/api';
-import { useUser } from '@/states/user';
-import { useViewerEvents } from '@/utils/ui';
+import { createDocumentEventSource, getKeywordInfo } from '@/utils/api';
+import { useViewerEvent } from '@/utils/ui';
 
 interface NodeInfoProps {
   node?: NodeData;
@@ -24,6 +23,14 @@ export default function NodeInfo({ node }: NodeInfoProps) {
     setView: state.setView,
   }));
 
+  // create subEventSource(nodeInfo)
+  useEffect(() => {
+    if (isLocalNode) return;
+    const nodeEventSource = createDocumentEventSource(documentId);
+    return () => nodeEventSource?.close();
+  }, [documentId, isLocalNode]);
+
+  // request answer for first time
   useEffect(() => {
     if (documentId === undefined || node === undefined) return;
 
@@ -43,6 +50,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
     };
   }, [documentId, node]);
 
+  // setup event handler
   const eventCallback = useCallback(
     (type: ViewerEventType, data: string) => {
       if (documentId === undefined || node === undefined) return;
@@ -58,10 +66,7 @@ export default function NodeInfo({ node }: NodeInfoProps) {
   );
 
   // subscribe to event
-  useViewerEvents(eventCallback, documentId);
-
-  // access token
-  const accessToken = useUser((state) => state.accessToken);
+  useViewerEvent(eventCallback, documentId);
 
   if (node === undefined) return <EmptyNodeInfo />;
 

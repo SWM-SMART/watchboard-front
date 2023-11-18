@@ -24,6 +24,7 @@ export default function ChannelServiceWrapper() {
   useEffect(() => {
     if (channel === undefined) return;
     if (pathName === '/' || pathName === '/landing') channel.showChannelButton();
+    else channel.hideChannelButton();
     return () => channel.hideChannelButton();
   });
   return <></>;
