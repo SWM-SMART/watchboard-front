@@ -1,9 +1,5 @@
 'use client';
 import { useEffect } from 'react';
-import { API_BASE_URL } from './api';
-import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
-import { useUser } from '@/states/user';
-const EventSource = EventSourcePolyfill || NativeEventSource;
 
 const DAY = 86400000;
 const HOUR = 3600000;
@@ -42,20 +38,26 @@ export function useError(callback: (msg: string) => void) {
   }, [callback]);
 }
 
-export function useViewerEvents(
+export function dispatchViewerEvent(documentId: number, type: ViewerEventType, data: string) {
+  document.dispatchEvent(
+    new CustomEvent(`VIEWER_UPDATE_${documentId}`, { detail: { type, data } }),
+  );
+}
+
+type CustomViewerEvent = Event & { detail?: { type: ViewerEventType; data: string } };
+
+export function useViewerEvent(
   callback: (type: ViewerEventType, data: string) => void,
   documentId?: number,
 ) {
-  const accessToken = useUser((state) => state.accessToken);
   useEffect(() => {
     if (documentId === undefined || documentId < 0) return; // is demo
-    const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
-      withCredentials: true,
-      headers: { Authorization: accessToken },
-    });
-    eventSource.addEventListener('sse', (e) => console.log('connection open', e));
-    eventSource.addEventListener('mindmap', (e) => callback('mindmap', (e as any)!.data));
-    eventSource.addEventListener('answer', (e) => callback('answer', (e as any)!.data));
-    return () => eventSource.close();
-  }, [accessToken, callback, documentId]);
+    const viewerEventHandler = (e: CustomViewerEvent) => {
+      const msg = e.detail;
+      if (msg === undefined) return;
+      callback(msg.type, msg.data);
+    };
+    document.addEventListener(`VIEWER_UPDATE_${documentId}`, viewerEventHandler);
+    return () => document.removeEventListener(`VIEWER_UPDATE_${documentId}`, viewerEventHandler);
+  }, [callback, documentId]);
 }

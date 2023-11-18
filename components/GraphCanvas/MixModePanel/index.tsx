@@ -22,7 +22,7 @@ export default function MixModePanel() {
   const [selection, setSelection] = useState<Map<number, boolean>>(new Map());
 
   useEffect(() => {
-    fetchDocumentList(currentDocumentId < 0); // check demo
+    fetchDocumentList(currentDocumentId < 0); // check
   }, [currentDocumentId, fetchDocumentList]);
 
   const setOverlay = useOverlay((state) => state.setOverlay);
@@ -78,7 +78,7 @@ export default function MixModePanel() {
         />
       </div>
       <div className={styles.content}>
-        {documentList.map((v) => {
+        {documentList?.map((v) => {
           const selected =
             (mindMapData.get(v.documentId) !== undefined &&
               selection.get(v.documentId) === undefined) ||

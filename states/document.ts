@@ -1,9 +1,8 @@
-import DocumentList from '@/app/components/DocumentList';
 import { deleteDocument, getDocumentList } from '@/utils/api';
 import { create } from 'zustand';
 
 interface DocumentState {
-  documentList: WBDocument[];
+  documentList?: WBDocument[];
   fetchDocumentList: (demo?: boolean) => void;
   deleteDocument: (documentId: number) => void;
 }
@@ -17,6 +16,6 @@ export const useDocument = create<DocumentState>()((set, get) => ({
   deleteDocument: async (documentId: number) => {
     const res = await deleteDocument(documentId);
     if (res !== 200) return;
-    set({ documentList: get().documentList.filter((v) => v.documentId !== documentId) });
+    set({ documentList: get().documentList?.filter((v) => v.documentId !== documentId) });
   },
 }));

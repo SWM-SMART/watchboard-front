@@ -44,9 +44,11 @@ export async function httpPut(
   url: string,
   body: any,
   retry: boolean = true,
+  json: boolean = true,
   silent: boolean = false,
 ) {
   const headers = createHeaders();
+  if (json) headers.set('Content-Type', 'application/json');
   const getRes = (headers: Headers) =>
     fetch(url, { method: 'PUT', headers: headers, body: JSON.stringify(body) });
 
