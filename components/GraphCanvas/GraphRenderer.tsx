@@ -427,8 +427,8 @@ function useSimulation(
       // save links in nodes for future use
       for (const link of newLinks) {
         linksRef.current.push(link);
-        nodesMap.get(link.source as string)!.children.push(nodesMap.get(link.target as string)!);
-        nodesMap.get(link.target as string)!.children.push(nodesMap.get(link.source as string)!);
+        nodesMap.get(link.source as string)?.children.push(nodesMap.get(link.target as string)!);
+        nodesMap.get(link.target as string)?.children.push(nodesMap.get(link.source as string)!);
       }
     }
 
