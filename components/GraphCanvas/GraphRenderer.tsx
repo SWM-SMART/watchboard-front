@@ -47,7 +47,6 @@ export default function GraphRenderer({ data }: GraphRendererProps) {
 
   // reset camera
   useEffect(() => {
-    console.log('reset camera');
     camera.position.set(0, 0, 1000);
     camera.zoom = 1;
     camera.updateProjectionMatrix();
