@@ -32,7 +32,7 @@ interface ViewerActions {
   setFocusKeywordCallback: (
     callback: ((keyword: string, location: number[]) => void) | undefined,
   ) => void;
-  loadDocument: (documentId: number) => void;
+  loadDocument: (documentId: number) => Promise<boolean>;
   setCurrentTool: (tool: Tool) => void;
   syncDocument: () => void;
   applySyncDocument: () => void;
@@ -135,13 +135,14 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
   loadDocument: async (documentId) => {
     // fetch document
     const newDocument = await getDocument(documentId);
+    if (newDocument === undefined) return false;
     // fetch sourceData
     const newDataSource = await getDataSource(documentId, newDocument.dataType);
     // fetch mindMapData
     const newMindMap = await getMindMapData(documentId);
 
     // mindmap generation is in progress
-    if (newMindMap === null) return;
+    if (newMindMap === null) return true;
 
     // mindMapData map
     const newMindMapData = new Map<number, GraphData>();
@@ -162,6 +163,7 @@ export const useViewer = create<ViewerState & ViewerActions>()((set, get) => ({
       mindMapData: newMindMapData,
       keywords: newKeywords,
     });
+    return true;
   },
   setCurrentTool: (tool) => {
     set({ currentTool: tool });
