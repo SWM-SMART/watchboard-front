@@ -1,6 +1,6 @@
 import { useUser } from '@/states/user';
 import { demoDocumentList, demoGraphData, getDemoDocument } from './demoHelper';
-import { httpDelete, httpGet, httpPost, httpPut } from './http';
+import { httpDelete, httpGet, httpPost, httpPut, preRetry } from './http';
 import { throwError } from './ui';
 import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
 const EventSource = EventSourcePolyfill || NativeEventSource;
@@ -13,7 +13,7 @@ export async function getDocumentList(demo?: boolean): Promise<WBDocumentListRep
   return (await httpGet(`${API_BASE_URL}/documents`))?.json();
 }
 
-export async function getDocument(documentId: number): Promise<WBDocumentReponse> {
+export async function getDocument(documentId: number): Promise<WBDocumentReponse | undefined> {
   if (documentId < 0) return getDemoDocument(documentId); //is demo
   return (await httpGet(`${API_BASE_URL}/documents/${documentId}`))?.json();
 }
@@ -102,11 +102,19 @@ export async function logout(): Promise<boolean> {
 export function createDocumentEventSource(documentId?: number) {
   if (documentId === undefined || documentId < 0) return undefined; // is demo
 
-  const accessToken = useUser.getState().accessToken;
+  const headers = { Authorization: useUser.getState().accessToken };
   const eventSource = new EventSource(`${API_BASE_URL}/documents/${documentId}/subscribe`, {
     withCredentials: true,
-    headers: { Authorization: accessToken },
+    headers: headers,
   });
+
+  eventSource.addEventListener('error', async (e) => {
+    const newAccessToken = await refreshToken();
+    if (newAccessToken === null || newAccessToken.length === 0) return false;
+    useUser.setState(() => ({ accessToken: newAccessToken }));
+    headers.Authorization = newAccessToken;
+  });
+
   const eventTypes: ViewerEventType[] = ['answer', 'audio', 'keywords', 'mindmap', 'sse'];
   for (const type of eventTypes) {
     eventSource.addEventListener(type, (e) => {
