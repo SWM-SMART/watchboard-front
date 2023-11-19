@@ -75,7 +75,7 @@ export function createHeaders() {
   return headers;
 }
 
-async function preRetry(headers: Headers) {
+export async function preRetry(headers: Headers) {
   const newAccessToken = await refreshToken();
   if (newAccessToken === null || newAccessToken.length === 0) return false;
   headers.set('Authorization', newAccessToken);
@@ -92,13 +92,15 @@ async function doGetRes(
   try {
     const res = await getRes(headers);
     // todo: retry only 401
-    if (res.status >= 400) throw Error();
+    if (res.status >= 300) throw Error();
     return res;
   } catch (e) {
-    if (!retry) return;
-    // abort 무시
-    if (!silent && e instanceof Error && !(e instanceof DOMException) && e.message.length > 0)
-      throwError(e.message);
+    if (!retry) {
+      // abort 무시
+      if (!silent && e instanceof Error && !(e instanceof DOMException) && e.message.length > 0)
+        throwError(e.message);
+      return;
+    }
     if ((await preRetry(headers)) === false) return;
   }
   return await doGetRes(getRes, headers, false);
