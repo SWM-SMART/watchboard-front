@@ -16,6 +16,7 @@ import { useToast } from '@/states/toast';
 import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
 import { createDocumentEventSource } from '@/utils/api';
 import { useViewerEvent } from '@/utils/ui';
+import { useRouter } from 'next/navigation';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -33,6 +34,7 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
     }),
   );
   const pushToast = useToast((state) => state.pushToast);
+  const router = useRouter();
 
   // reset viewer
   useEffect(() => {
@@ -45,8 +47,17 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
       });
     resetViewer();
     // load document
-    loadDocument(documentId);
-  }, [loadDocument, documentId, resetViewer, pushToast]);
+    loadDocument(documentId).then((success) => {
+      // handle error
+      if (success) return;
+      router.push('/');
+      pushToast({
+        id: new Date().getTime(),
+        duraton: 3000,
+        msg: '해당 문서에 대한 권한이 없습니다!',
+      });
+    });
+  }, [loadDocument, documentId, resetViewer, pushToast, router]);
 
   // create mainEventSource
   useEffect(() => {
