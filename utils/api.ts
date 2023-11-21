@@ -115,7 +115,7 @@ export function createDocumentEventSource(documentId?: number) {
     headers.Authorization = newAccessToken;
   });
 
-  const eventTypes: ViewerEventType[] = ['answer', 'audio', 'keywords', 'mindmap', 'sse'];
+  const eventTypes: ViewerEventType[] = ['answer', 'audio', 'keywords', 'mindmap', 'sse', 'ping'];
   for (const type of eventTypes) {
     eventSource.addEventListener(type, (e) => {
       console.log(type, e);
