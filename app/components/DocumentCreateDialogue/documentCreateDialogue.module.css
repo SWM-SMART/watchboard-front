@@ -2,3 +2,20 @@
   max-width: 500px;
   width: 100%;
 }
+.notice {
+  box-sizing: border-box;
+  margin: 5px;
+  gap: 10px;
+  padding: 5px 20px;
+  display: flex;
+  border-radius: 20px;
+  align-items: center;
+  border: 2px solid var(--warning-color);
+  color: var(--warning-color) !important;
+  animation: var(--intro-animation);
+}
+
+.noticeText {
+  padding: 0;
+  margin: 0;
+}

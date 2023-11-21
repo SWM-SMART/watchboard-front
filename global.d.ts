@@ -232,4 +232,4 @@ interface KeywordResponse {
   text: string;
 }
 
-type ViewerEventType = 'mindmap' | 'answer' | 'audio' | 'keywords' | 'sse';
+type ViewerEventType = 'mindmap' | 'answer' | 'audio' | 'keywords' | 'sse' | 'ping';

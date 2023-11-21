@@ -84,11 +84,25 @@ export default function DocumentCreateDialogue({
         <TextInput label="제목" name="title" />
         <FileInput
           name="file"
-          types={['application/pdf', 'audio/mpeg']}
-          typeNames={['pdf(최대 30페이지)', 'mp3']}
+          types={['application/pdf']}
+          typeNames={['pdf(최대 30페이지)']}
           onError={(msg) => pushToast({ id: new Date().getTime(), duraton: 3000, msg: msg })}
         />
+        <Notice text="STT 오류로 인해 mp3 파일 업로드가 일시적으로 제한됩니다." />
       </Dialogue>
+    </div>
+  );
+}
+
+interface NoticeProps {
+  text: string;
+}
+
+function Notice({ text }: NoticeProps) {
+  return (
+    <div className={styles.notice}>
+      <span className="material-symbols-outlined">warning</span>
+      <p className={styles.noticeText}>{text}</p>
     </div>
   );
 }
