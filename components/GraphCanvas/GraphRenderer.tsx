@@ -425,9 +425,13 @@ function useSimulation(
 
       // save links in nodes for future use
       for (const link of newLinks) {
+        // check if link is valid
+        const source = nodesMap.get(link.source as string);
+        const target = nodesMap.get(link.target as string);
+        if (source === undefined || target === undefined) continue;
         linksRef.current.push(link);
-        nodesMap.get(link.source as string)?.children.push(nodesMap.get(link.target as string)!);
-        nodesMap.get(link.target as string)?.children.push(nodesMap.get(link.source as string)!);
+        source.children.push(target);
+        target.children.push(source);
       }
     }
 
