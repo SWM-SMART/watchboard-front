@@ -13,10 +13,10 @@ import AudioViewer from '@/components/DataViewer/AudioViewer';
 import ClickableBackgroundButton from '@/components/BackgroundButton/ClickableBackgroundButton';
 import Divider, { useDivider } from '@/components/Divider';
 import { useToast } from '@/states/toast';
-import { EventSourcePolyfill, NativeEventSource } from 'event-source-polyfill';
 import { createDocumentEventSource } from '@/utils/api';
 import { useViewerEvent } from '@/utils/ui';
 import { useRouter } from 'next/navigation';
+import { isMobile } from 'react-device-detect';
 
 interface DocumentPageProps {
   params: { documentId: string };
@@ -38,6 +38,8 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
 
   // reset viewer
   useEffect(() => {
+    // is mobile
+    if (isMobile) return;
     // is demo
     if (documentId < 0)
       pushToast({
@@ -61,6 +63,8 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
 
   // create mainEventSource
   useEffect(() => {
+    // is mobile
+    if (isMobile) return;
     const documentEventSource = createDocumentEventSource(documentId);
     return () => documentEventSource?.close();
   }, [documentId]);
@@ -82,6 +86,17 @@ export default function DoucumentsPage({ params }: DocumentPageProps) {
   );
 
   useViewerEvent(eventCallback, documentId);
+
+  // is mobile
+  if (isMobile)
+    return (
+      <div className={styles.mobileContainer}>
+        <p>
+          모바일은 지원하지 않아요 😥 <br />
+          PC환경에서 이용해주세요!
+        </p>
+      </div>
+    );
 
   if (documentData === null) return <LoadingScreen message={'요약 마인드맵 로드중'} />;
 
