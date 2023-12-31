@@ -41,16 +41,14 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
 
-      - name: Deploy with AWS SSM Send-Command
-        uses: peterkimzz/aws-ssm-send-command@v1.1.1
-        id: ssm
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          instance-ids: ${{ secrets.INSTANCE_ID }}
-          working-directory: /usr/bin
-          command: |
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
             docker pull ${{ steps.meta.outputs.tags }}
             docker stop $(docker ps -a -q -f "NAME=${{ secrets.DOCKER_NAME }}")
             docker rm $(docker ps -a -q -f "NAME=${{ secrets.DOCKER_NAME }}")
